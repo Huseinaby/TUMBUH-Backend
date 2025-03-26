@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -63,7 +64,6 @@ class AuthController extends Controller
             'token' => $token
         ],200);
     }
-    
 
     public function logout(Request $request)
     {
@@ -73,4 +73,47 @@ class AuthController extends Controller
             'message' => 'User logged out successfully'
         ], 200);
     }
-}
+
+    public function redirectToProvider()
+    {
+        return response()->json([
+            'url' => Socialite::driver('google')->stateless()->redirect()->getTargetUrl()
+        ]);
+    }
+
+    public function handleProviderCallback()
+    {
+        try {
+            $user = Socialite::driver('google')->user();
+
+            $finduser = User::where('gauth_id', $user->id)->first();
+
+            if(!$finduser){
+                $user = User::where('email', $user->email)->first();
+
+                if($user){
+                    $user->update([
+                        'gauth_id' => $user->id,
+                        'gauth_type' => 'google'
+                    ]);
+                } else {
+                    $user = User::create([
+                        'username' => $user->name,
+                        'email' => $user->email,
+                        'role' => 'user',
+                        'gauth_id' => $user->id,
+                        'gauth_type' => 'google',
+                        'password' => Hash::make('1234password')
+                    ]);
+                }
+            }
+            }  catch (\Exception $e) {
+                return response()->json([
+                    'error' => 'Login gagal',
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTrace(),
+                ], 500);
+            }
+        }
+    }
+
