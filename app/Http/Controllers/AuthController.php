@@ -84,29 +84,38 @@ class AuthController extends Controller
     public function handleProviderCallback()
     {
         try {
-            $user = Socialite::driver('google')->user();
+            $googleUser = Socialite::driver('google')->stateless()->user();
 
-            $finduser = User::where('gauth_id', $user->id)->first();
+            $user = User::where('gauth_id', $googleUser->id)->first();
 
-            if(!$finduser){
-                $user = User::where('email', $user->email)->first();
+            if(!$user){
+                $user = User::where('email', $googleUser->email)->first();
 
                 if($user){
                     $user->update([
-                        'gauth_id' => $user->id,
+                        'gauth_id' => $googleUser->id,
                         'gauth_type' => 'google'
                     ]);
                 } else {
                     $user = User::create([
-                        'username' => $user->name,
-                        'email' => $user->email,
+                        'username' => $googleUser->name,
+                        'email' => $googleUser->email,
                         'role' => 'user',
-                        'gauth_id' => $user->id,
+                        'gauth_id' => $googleUser->id,
                         'gauth_type' => 'google',
                         'password' => Hash::make('1234password')
                     ]);
                 }
             }
+
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'message' => 'User logged in successfully',
+                'user' => $user,
+                'token' => $token
+            ], 200);
+
             }  catch (\Exception $e) {
                 return response()->json([
                     'error' => 'Login gagal',
