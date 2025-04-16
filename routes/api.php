@@ -19,10 +19,3 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 Route::get('/oauth/google', [AuthController::class, 'redirectToProvider']);
 
 Route::get('/oauth/google/callback', [AuthController::class, 'handleProviderCallback']);
-
-Route::get('/test', function () {
-    Mail::raw('Halo dari TUMBUH!', function ($message) {
-        $message->to('huseinabu01@gmail.com')
-            ->subject('Test Email');
-    });
-});

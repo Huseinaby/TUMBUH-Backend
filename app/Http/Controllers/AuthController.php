@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\VerifyAccountMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
@@ -33,6 +35,10 @@ class AuthController extends Controller
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
+
+        $verificationUrl = url('/api/verify-email/' . $user->id);
+
+        Mail::to($user->email)->send(new VerifyAccountMail($user->username, $verificationUrl));
 
         return response()->json([
             'message' => 'User created successfully',
