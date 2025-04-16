@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
@@ -36,7 +37,11 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        $verificationUrl = url('/api/verify-email/' . $user->id);
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $user->id]
+        );
 
         Mail::to($user->email)->send(new VerifyAccountMail($user->username, $verificationUrl));
 
@@ -68,7 +73,7 @@ class AuthController extends Controller
             'message' => 'User logged in successfully',
             'user' => $user,
             'token' => $token
-        ],200);
+        ], 200);
     }
 
     public function logout(Request $request)
@@ -94,10 +99,10 @@ class AuthController extends Controller
 
             $user = User::where('gauth_id', $googleUser->id)->first();
 
-            if(!$user){
+            if (!$user) {
                 $user = User::where('email', $googleUser->email)->first();
 
-                if($user){
+                if ($user) {
                     $user->update([
                         'gauth_id' => $googleUser->id,
                         'gauth_type' => 'google'
@@ -122,13 +127,36 @@ class AuthController extends Controller
                 'token' => $token
             ], 200);
 
-            }  catch (\Exception $e) {
-                return response()->json([
-                    'error' => 'Login gagal',
-                    'message' => $e->getMessage(),
-                    'trace' => $e->getTrace(),
-                ], 500);
-            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Login gagal',
+                'message' => $e->getMessage(),
+                'trace' => $e->getTrace(),
+            ], 500);
         }
     }
+
+    public function verifyEmail(Request $request, $id)
+    {
+        if (!$request->hasValidSignature()) {
+            return response()->json([
+                'message' => 'Link tidak valid atau sudah kadaluarsa'
+            ], 422);
+        }
+
+        $user = User::findOrFail($id);
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'Email sudah terverifikasi'
+            ], 200);
+        }
+
+        $user->markEmailAsVerified();
+
+        return response()->json([
+            'message' => 'Email berhasil terverifikasi',
+        ], 200);
+    }
+}
 
