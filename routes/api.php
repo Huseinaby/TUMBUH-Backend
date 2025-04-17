@@ -29,3 +29,12 @@ Route::get('/reset-password/{token}', function (Request $request, $token){
 })->name('password.reset');
 
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
+Route::get('/test-email', function () {
+    Mail::raw('Halo dari TUMBUH!', function ($message) {
+        $message->to('adef6477@gmail.com')
+                ->subject('Tes Email dari Resend');
+    });
+
+    return 'Email terkirim';
+});

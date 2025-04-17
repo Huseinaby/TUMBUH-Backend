@@ -40,8 +40,6 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
         $otp = rand(100000, 999999);
 
         DB::table('otp_verification')->updateOrInsert(
@@ -54,7 +52,6 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'User created successfully',
             'user' => $user,
-            'token' => $token
         ], 201);
     }
 
