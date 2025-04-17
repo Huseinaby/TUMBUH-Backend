@@ -110,6 +110,7 @@ class AuthController extends Controller
 
                 if ($user) {
                     $user->update([
+                        'email_verified_at' => now(),
                         'gauth_id' => $googleUser->id,
                         'gauth_type' => 'google'
                     ]);
@@ -118,6 +119,7 @@ class AuthController extends Controller
                         'username' => $googleUser->name,
                         'email' => $googleUser->email,
                         'role' => 'user',
+                        'email_verified_at' => now(),
                         'gauth_id' => $googleUser->id,
                         'gauth_type' => 'google',
                         'password' => Hash::make('1234password')
