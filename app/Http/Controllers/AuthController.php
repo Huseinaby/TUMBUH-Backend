@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Mail\VerifyAccountMail;
+use App\Mail\ResetPasswordMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\DB;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
@@ -156,6 +158,34 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Email berhasil terverifikasi',
+        ], 200);
+    }
+
+    public function sendResetPasswordOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Email tidak ditemukan'
+            ], 404);
+        }
+
+        $otp = rand(100000, 999999);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $user->email],
+            ['token' => $otp, 'created_at' => now()]
+        );
+
+        Mail::to($user->email)->send(new ResetPasswordMail($user->username, $otp));
+
+        return response()->json([
+            'message' => 'OTP telah dikirim ke email anda'
         ], 200);
     }
 }
