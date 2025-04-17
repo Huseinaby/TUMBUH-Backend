@@ -141,26 +141,45 @@ class AuthController extends Controller
         }
     }
 
-    public function verifyEmail(Request $request, $id)
+    public function verifyEmail(Request $request)
     {
-        if (!$request->hasValidSignature()) {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|string|size:6'
+        ]);
+
+        $otpRecord = DB::table('otp_verification')
+            ->where('email', $request->email)
+            ->where('otp', $request->otp)
+            ->where('otp_expired', '>', now())
+            ->first();
+
+        if (!$otpRecord) {
             return response()->json([
-                'message' => 'Link tidak valid atau sudah kadaluarsa'
+                'message' => 'OTP tidak valid atau sudah kadaluarsa'
             ], 422);
         }
 
-        $user = User::findOrFail($id);
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User tidak ditemukan'
+            ], 404);
+        }
 
         if ($user->hasVerifiedEmail()) {
             return response()->json([
-                'message' => 'Email sudah terverifikasi'
+                'message' => 'Email sudah diverifikasi'
             ], 200);
         }
 
         $user->markEmailAsVerified();
 
+        DB::table('otp_verification')->where('email', $request->email)->delete();
+
         return response()->json([
-            'message' => 'Email berhasil terverifikasi',
+            'message' => 'Email berhasil diverifikasi'
         ], 200);
     }
 
