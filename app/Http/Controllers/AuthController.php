@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password;
 use Laravel\Socialite\Facades\Socialite;
 use Mockery\VerificationDirector;
 use function Laravel\Prompts\table;
@@ -183,59 +184,50 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function sendResetPasswordOtp(Request $request)
+    public function sendResetPassword(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $status = Password::sendResetLink($request->only('email'));
 
-        if (!$user) {
+        if($status === Password::RESET_LINK_SENT) {
             return response()->json([
-                'message' => 'Email tidak ditemukan'
-            ], 404);
+                'message' => 'Link reset password telah dikirim ke email Anda'
+            ], 200);
         }
 
-        $otp = rand(100000, 999999);
-
-        DB::table('password_reset_tokens')->updateOrInsert(
-            ['email' => $user->email],
-            ['token' => $otp, 'created_at' => now()]
-        );
-
-        Mail::to($user->email)->send(new ResetPasswordMail($user->username, $otp));
-
         return response()->json([
-            'message' => 'OTP telah dikirim ke email anda'
-        ], 200);
+            'message' => 'Gagal mengirim link reset password'
+        ], 500);
     }
 
-    public function verifyResetOtp(Request $request) {
+    public function resetPassword(Request $request)
+    {
         $request->validate([
             'email' => 'required|email',
-            'otp' => 'required|string|size:6'
+            'password' => 'required|string|min:6',
+            'token' => 'required|string'
         ]);
 
-        $token = DB::table('password_reset_tokens')
-            ->where('email', $request->email)
-            ->where('token', $request->otp)
-            ->first();
+        $status = Password::reset(
+            $request->only('email', 'password','token'),
+            function ($user, $password) {
+                $user->password = Hash::make($password);
+                $user->save();
+            }
+        );
 
-        if (!$token) {
+        if($status === Password::PASSWORD_RESET) {
             return response()->json([
-                'message' => 'OTP tidak valid atau sudah kadaluarsa'
-            ], 422);
+                'message' => 'Password berhasil direset'
+            ], 200);
         }
 
-        DB::table('password_reset_tokens')
-            ->where('email', $request->email)
-            ->where('token', $request->otp)
-            ->delete();
-
         return response()->json([
-            'message' => 'OTP valid, silahkan buat password baru'
-        ], 200);
+            'message' => 'Gagal mereset password'
+        ], 500);
     }
 }
 

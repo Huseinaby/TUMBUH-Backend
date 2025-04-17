@@ -22,4 +22,10 @@ Route::get('/oauth/google/callback', [AuthController::class, 'handleProviderCall
 
 Route::post('/verify-email', [AuthController::class, 'verifyEmail'])->name('verification.verify');
 
-Route::post('/forgot-password', [AuthController::class, 'sendResetPasswordOtp']);
+Route::post('/forgot-password', [AuthController::class, 'sendResetPassword']);
+
+Route::get('/reset-password/{token}', function (Request $request, $token){
+    return redirect()->away(config('app.frontend_url') . '/reset-password?token=' . $token . '&email=' . urlencode($request->email));
+})->name('password.reset');
+
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
