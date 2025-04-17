@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\DB;
 use Laravel\Socialite\Facades\Socialite;
+use Mockery\VerificationDirector;
+use function Laravel\Prompts\table;
 
 class AuthController extends Controller
 {
@@ -39,13 +41,14 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        $verificationUrl = URL::temporarySignedRoute(
-            'verification.verify',
-            now()->addMinutes(60),
-            ['id' => $user->id]
+        $otp = rand(100000, 999999);
+
+        DB::table('otp_verification')->updateOrInsert(
+            ['email' => $user->email],
+            ['otp' => $otp, 'otp_expired' => now()->addMinutes(10)]
         );
 
-        Mail::to($user->email)->send(new VerifyAccountMail($user->username, $verificationUrl));
+        Mail::to($user->email)->send(new VerifyAccountMail($user->username, $otp));
 
         return response()->json([
             'message' => 'User created successfully',
@@ -186,6 +189,33 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'OTP telah dikirim ke email anda'
+        ], 200);
+    }
+
+    public function verifyResetOtp(Request $request) {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|string|size:6'
+        ]);
+
+        $token = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->where('token', $request->otp)
+            ->first();
+
+        if (!$token) {
+            return response()->json([
+                'message' => 'OTP tidak valid atau sudah kadaluarsa'
+            ], 422);
+        }
+
+        DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->where('token', $request->otp)
+            ->delete();
+
+        return response()->json([
+            'message' => 'OTP valid, silahkan buat password baru'
         ], 200);
     }
 }

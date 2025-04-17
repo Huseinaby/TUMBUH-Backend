@@ -17,12 +17,12 @@ class VerifyAccountMail extends Mailable
      * Create a new message instance.
      */
     public $username;
-    public $verificationUrl;
+    public $otp;
 
-    public function __construct($username, $verificationUrl)
+    public function __construct($username, $otp)
     {
         $this->username = $username;
-        $this->verificationUrl = $verificationUrl;
+        $this->otp = $otp;
     }
 
     /**
@@ -44,7 +44,7 @@ class VerifyAccountMail extends Mailable
             markdown: 'emails.verify',
             with: [
                 'username' => $this->username,
-                'verificationUrl' => $this->verificationUrl,
+                'otp' => $this->otp,
             ],
         );
     }
