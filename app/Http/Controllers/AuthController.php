@@ -91,14 +91,6 @@ class AuthController extends Controller
             'message' => 'User logged out successfully'
         ], 200);
     }
-
-    public function redirectToProvider()
-    {
-        return response()->json([
-            'url' => Socialite::driver('google')->stateless()->redirect()->getTargetUrl()
-        ]);
-    }
-
     public function handleProviderCallback(Request $request)
     {
         try {

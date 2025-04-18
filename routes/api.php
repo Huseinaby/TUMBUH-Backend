@@ -16,9 +16,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
-Route::get('/oauth/google', [AuthController::class, 'redirectToProvider']);
-
-Route::get('/oauth/google/callback', [AuthController::class, 'handleProviderCallback']);
+Route::post('/oauth/google/callback', [AuthController::class, 'handleProviderCallback']);
 
 Route::post('/verify-email', [AuthController::class, 'verifyEmail'])->name('verification.verify');
 
