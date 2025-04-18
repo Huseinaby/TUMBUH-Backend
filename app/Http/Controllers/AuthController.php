@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Mail\VerifyAccountMail;
-use App\Mail\ResetPasswordMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -12,8 +11,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Laravel\Socialite\Facades\Socialite;
-use Mockery\VerificationDirector;
-use function Laravel\Prompts\table;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -101,31 +99,50 @@ class AuthController extends Controller
         ]);
     }
 
-    public function handleProviderCallback()
+    public function handleProviderCallback(Request $request)
     {
         try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
+            $idToken = $request->input('id_token');
 
-            $user = User::where('gauth_id', $googleUser->id)->first();
+            if(! $idToken) {
+                return response()->json([
+                    'message' => 'ID token tidak ditemukan'
+                ],400);
+            }
 
-            if (!$user) {
-                $user = User::where('email', $googleUser->email)->first();
+            $client = new \Google_Client(['client_id' => env('GOOGLE_CLIENT_ID')]);
+            $payload = $client->verifyIdToken($idToken);
 
-                if ($user) {
+            if (!$payload) {
+                return response()->json([
+                    'message' => 'ID token tidak valid'
+                ], 401);
+            }
+
+            $googleId = $payload['sub'];
+            $email = $payload['email'];
+            $name = $payload['name'];
+            
+            $user = User::where('gauth_id', $googleId)->first();
+
+            if(!$user){
+                $user = User::where('email', $email)->first();
+
+                if($user){
                     $user->update([
                         'email_verified_at' => now(),
-                        'gauth_id' => $googleUser->id,
+                        'gauth_id' => $googleId,
                         'gauth_type' => 'google'
                     ]);
                 } else {
                     $user = User::create([
-                        'username' => $googleUser->name,
-                        'email' => $googleUser->email,
+                        'username' => $name,
+                        'email' => $email,
                         'role' => 'user',
                         'email_verified_at' => now(),
-                        'gauth_id' => $googleUser->id,
-                        'gauth_type' => 'google',
-                        'password' => Hash::make('1234password')
+                        'password' => Hash::make(Str::random(16)),
+                        'gauth_id' => $googleId,
+                        'gauth_type' => 'google'
                     ]);
                 }
             }
@@ -133,16 +150,14 @@ class AuthController extends Controller
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
-                'message' => 'User logged in successfully',
+                'message' => 'Login berhasil',
                 'user' => $user,
                 'token' => $token
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Login gagal',
-                'message' => $e->getMessage(),
-                'trace' => $e->getTrace(),
+                'message' => 'Login gagal',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
