@@ -22,6 +22,8 @@ Route::get('/oauth/google/callback', [AuthController::class, 'handleProviderCall
 
 Route::post('/verify-email', [AuthController::class, 'verifyEmail'])->name('verification.verify');
 
+Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
+
 Route::post('/forgot-password', [AuthController::class, 'sendResetPassword']);
 
 Route::get('/reset-password/{token}', function (Request $request, $token){

@@ -183,6 +183,33 @@ class AuthController extends Controller
         ], 200);
     }
 
+    public function resendOtp(Request $request){
+        $request->validate([
+            'email' => 'required|email|exists:users,email'
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if($user->hasVerifiedEmail()){
+            return response()->json([
+                'message' => 'Email sudah diverifikasi'
+            ], 200);
+        }
+
+        $otp = rand(100000, 999999);
+
+        DB::table('otp_verification')->updateOrInsert(
+            ['email' => $user->email],
+            ['otp' => $otp, 'otp_expired' => now()->addMinutes(10)]
+        );
+
+        Mail::to($user->email)->send(new VerifyAccountMail($user->username, $otp));
+
+        return response()->json([
+            'message' => 'OTP baru telah dikirim ke email Anda'
+        ], 200);
+    }
+
     public function sendResetPassword(Request $request)
     {
         $request->validate([
