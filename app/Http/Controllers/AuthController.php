@@ -22,6 +22,7 @@ class AuthController extends Controller
         $validator = validator($request->all(), [
             'username' => 'required|string|min:3|max:20|unique:users',
             'email' => 'required|email|unique:users',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'password' => 'required|string|min:6|max:20'
         ]);
 
@@ -32,10 +33,14 @@ class AuthController extends Controller
             ], 422);
         }
 
+        $photo = $request->photo ?? 'https://avatar.iran.liara.run/public'; 
+
         $user = User::create([
             'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'user',
+            'photo' => $photo,
         ]);
 
         $otp = rand(100000, 999999);
@@ -114,6 +119,7 @@ class AuthController extends Controller
             $googleId = $payload['sub'];
             $email = $payload['email'];
             $name = $payload['name'];
+            $photo = $payload['picture'] ?? 'https://avatar.iran.liara.run/public';
             
             $user = User::where('gauth_id', $googleId)->first();
 
@@ -122,6 +128,7 @@ class AuthController extends Controller
 
                 if($user){
                     $user->update([
+                        'photo' => $photo,
                         'email_verified_at' => now(),
                         'gauth_id' => $googleId,
                         'gauth_type' => 'google'
@@ -131,6 +138,7 @@ class AuthController extends Controller
                         'username' => $name,
                         'email' => $email,
                         'role' => 'user',
+                        'photo' => $photo,
                         'email_verified_at' => now(),
                         'password' => Hash::make(Str::random(16)),
                         'gauth_id' => $googleId,
