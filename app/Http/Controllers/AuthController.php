@@ -33,7 +33,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $photo = $request->photo ?? 'https://avatar.iran.liara.run/public'; 
+        $photo = $request->input('photo', 'https://avatar.iran.liara.run/public');
 
         $user = User::create([
             'username' => $request->username,
@@ -101,10 +101,10 @@ class AuthController extends Controller
         try {
             $idToken = $request->input('id_token');
 
-            if(! $idToken) {
+            if (! $idToken) {
                 return response()->json([
                     'message' => 'ID token tidak ditemukan'
-                ],400);
+                ], 400);
             }
 
             $client = new \Google_Client(['client_id' => env('GOOGLE_CLIENT_ID')]);
@@ -120,15 +120,15 @@ class AuthController extends Controller
             $email = $payload['email'];
             $name = $payload['name'];
             $photo = $payload['picture'] ?? 'https://avatar.iran.liara.run/public';
-            
+
             $user = User::where('gauth_id', $googleId)->first();
 
-            if(!$user){
+            if (!$user) {
                 $user = User::where('email', $email)->first();
 
-                if($user){
+                if ($user) {
                     $user->update([
-                        'photo' => $photo,
+                        'photo' => $user->photo ?? $photo,
                         'email_verified_at' => now(),
                         'gauth_id' => $googleId,
                         'gauth_type' => 'google'
@@ -144,6 +144,10 @@ class AuthController extends Controller
                         'gauth_id' => $googleId,
                         'gauth_type' => 'google'
                     ]);
+                }
+            } else {
+                if (!$user->photo) {
+                    $user->update(['photo' => $photo]);
                 }
             }
 
@@ -204,14 +208,15 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function resendOtp(Request $request){
+    public function resendOtp(Request $request)
+    {
         $request->validate([
             'email' => 'required|email|exists:users,email'
         ]);
 
         $user = User::where('email', $request->email)->first();
 
-        if($user->hasVerifiedEmail()){
+        if ($user->hasVerifiedEmail()) {
             return response()->json([
                 'message' => 'Email sudah diverifikasi'
             ], 200);
@@ -239,7 +244,7 @@ class AuthController extends Controller
 
         $status = Password::sendResetLink($request->only('email'));
 
-        if($status === Password::RESET_LINK_SENT) {
+        if ($status === Password::RESET_LINK_SENT) {
             return response()->json([
                 'message' => 'Link reset password telah dikirim ke email Anda'
             ], 200);
@@ -259,14 +264,14 @@ class AuthController extends Controller
         ]);
 
         $status = Password::reset(
-            $request->only('email', 'password','token'),
+            $request->only('email', 'password', 'token'),
             function ($user, $password) {
                 $user->password = Hash::make($password);
                 $user->save();
             }
         );
 
-        if($status === Password::PASSWORD_RESET) {
+        if ($status === Password::PASSWORD_RESET) {
             return response()->json([
                 'message' => 'Password berhasil direset'
             ], 200);
@@ -277,4 +282,3 @@ class AuthController extends Controller
         ], 500);
     }
 }
-

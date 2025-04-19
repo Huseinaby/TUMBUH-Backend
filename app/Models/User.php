@@ -25,6 +25,7 @@ class User extends Authenticatable
         'email_verified_at',
         'gauth_id',
         'gauth_type',
+        'photo',
     ];
 
     /**
