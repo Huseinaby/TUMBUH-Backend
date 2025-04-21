@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\modulController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
@@ -29,6 +30,20 @@ Route::get('/reset-password/{token}', function (Request $request, $token) {
 })->name('password.reset');
 
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
+Route::get('/modul', [modulController::class, 'index']);
+
+Route::post('/modul', [modulController::class, 'store']);
+
+Route::get('/modul/{id}', [modulController::class, 'show']);
+
+Route::put('/modul/{id}', [modulController::class, 'update']);
+
+Route::delete('/modul/{id}', [modulController::class, 'destroy']);
+
+
+
+
 
 Route::get('/test-email', function () {
     Mail::raw('Halo dari TUMBUH!', function ($message) {
