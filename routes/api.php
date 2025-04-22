@@ -41,6 +41,8 @@ Route::put('/modul/{id}', [modulController::class, 'update']);
 
 Route::delete('/modul/{id}', [modulController::class, 'destroy']);
 
+Route::post('/modul/generate', [modulController::class, 'generateContent']);
+
 
 
 

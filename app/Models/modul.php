@@ -7,6 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 class modul extends Model
 {
     //
-    public $proteced = ['id'];
-    
+    public $guarded = ['id'];
 }
