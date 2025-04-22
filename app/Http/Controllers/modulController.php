@@ -161,7 +161,7 @@ class modulController extends Controller
             'content' => $generateContent,
             'articles' => $articles,
             'videos' => $videos,
-            'quiz' => json_decode($quizText, true),
+            'quiz' => json_decode($quizText, true), 
         ]);
     }
 }
