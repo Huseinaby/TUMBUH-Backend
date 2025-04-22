@@ -101,7 +101,23 @@ class modulController extends Controller
             ]
         ]);
 
-           $genetareContent = $response['candidates'][0]['content']['parts'][0]['text'] ?? 'Konten tidak ditemukan';
+        $generateContent = $response['candidates'][0]['content']['parts'][0]['text'] ?? 'Konten tidak ditemukan';
+
+        $quizPromt = "Buatkan 3 soal pilihan ganda berdasarkan bacaan berikut:\n\n\"{$generateContent}\"\n\nFormat JSON:\n" .
+            '[{"question":"...","option_a":"...","option_b":"...","option_c":"...","option_d":"...","correct_answer":"a"}]';
+
+        $quizResponse = Http::post($url, [
+            'contents' => [
+                'parts' => [
+                    ['text' => $quizPromt]
+                ]
+            ]
+        ]);
+
+        $quizText = $quizResponse['candidates'][0]['content']['parts'][0]['text'] ?? 'Soal tidak ditemukan';
+
+        $quizText = preg_replace('/```json|```/', '', $quizText);
+        $quizText = trim($quizText);
 
         $googleApiKey = env('GOOGLE_API_KEY');
         $googleCx = env('GOOGLE_CSE_ID');
@@ -142,9 +158,10 @@ class modulController extends Controller
         });
 
         return response()->json([
-            'content' => $genetareContent,
+            'content' => $generateContent,
             'articles' => $articles,
             'videos' => $videos,
+            'quiz' => json_decode($quizText, true),
         ]);
     }
 }
