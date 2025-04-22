@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('modul_id')->constrained()->onDelete('cascade');
             $table->string('title');
             $table->string('link');
+            $table->string('thumbnail')->nullable();
             $table->timestamps();
         });
     }

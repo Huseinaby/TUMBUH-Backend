@@ -6,6 +6,9 @@ use Google\Service\CloudTrace\Module;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use App\Models\modul;
+use App\Models\Quiz;
+use App\Models\Article;
+use App\Models\Video;
 
 class modulController extends Controller
 {
@@ -77,6 +80,11 @@ class modulController extends Controller
 
     public function generateContent(Request $request)
     {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+        ]);
+
         $geminiKey = env('GEMINI_API_KEY');
 
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$geminiKey}";
@@ -90,7 +98,7 @@ class modulController extends Controller
         - Panjang sekitar 2–3 paragraf.
         
         Catatan penting: Jangan awali dengan sapaan seperti 'Halo!', 'Oke, siap!', atau 'Mari kita mulai'. Langsung mulai dengan pembahasan inti.
-        Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum.";
+        Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum. Jangan tambahkan judul diawal konten, cukup tulis konten saja.";
 
 
         $response = Http::post($url, [
@@ -101,7 +109,17 @@ class modulController extends Controller
             ]
         ]);
 
-        $generateContent = $response['candidates'][0]['content']['parts'][0]['text'] ?? 'Konten tidak ditemukan';
+        $generateContent = $response['candidates'][0]['content']['parts'][0]['text'] ?? null;
+
+        if(!$generateContent) return response()->json([
+            'message' => 'Gagal mendapatkan konten'
+        ], 500);
+
+        $modul = Modul::create([
+            'title' => $request->title,
+            'content' => $generateContent,
+            'category' => $request->category,
+        ]);
 
         $quizPromt = "Buatkan 3 soal pilihan ganda berdasarkan bacaan berikut:\n\n\"{$generateContent}\"\n\nFormat JSON:\n" .
             '[{"question":"...","option_a":"...","option_b":"...","option_c":"...","option_d":"...","correct_answer":"a"}]';
@@ -118,6 +136,26 @@ class modulController extends Controller
 
         $quizText = preg_replace('/```json|```/', '', $quizText);
         $quizText = trim($quizText);
+
+        try{
+            $quizzes = json_decode($quizText, true);
+            foreach($quizzes as $q){
+                Quiz::create([
+                    'modul_id' => $modul->id,
+                    'question' => $q['question'],
+                    'option_a' => $q['option_a'],
+                    'option_b' => $q['option_b'],
+                    'option_c' => $q['option_c'],
+                    'option_d' => $q['option_d'],
+                    'correct_answer' => $q['correct_answer'],
+                ]);
+            }
+        } catch(\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal menyimpan soal',
+                'error' => $e->getMessage()
+            ], 500);
+        }
 
         $googleApiKey = env('GOOGLE_API_KEY');
         $googleCx = env('GOOGLE_CSE_ID');
@@ -138,6 +176,15 @@ class modulController extends Controller
             })
             : [];
 
+        foreach($articles as $article){
+            Article::create([
+                'modul_id' => $modul->id,
+                'title' => $article['title'],
+                'link' => $article['link'],
+                'snippet' => $article['snippet'],
+            ]);
+        }
+
         $youtubeApiKey = env('YOUTUBE_API_KEY');
 
         $videoResponse = Http::get('https://www.googleapis.com/youtube/v3/search', [
@@ -157,8 +204,17 @@ class modulController extends Controller
             ];
         });
 
+        foreach($videos as $video){
+            Video::create([
+                'modul_id' => $modul->id,
+                'title' => $video['title'],
+                'link' => $video['url'],
+                'thumbnail' => $video['thumbnail'],
+            ]);
+        }
+
         return response()->json([
-            'content' => $generateContent,
+            'content' => $modul,
             'articles' => $articles,
             'videos' => $videos,
             'quiz' => json_decode($quizText, true), 
