@@ -152,10 +152,9 @@ class modulController extends Controller
 
         $quizText = preg_replace('/```json|```/', '', $quizText);
         $quizText = trim($quizText);
-        $quizzes = json_decode($quizText, true);
 
         try {
-
+            $quizzes = json_decode($quizText, true);
             foreach ($quizzes as $q) {
                 Quiz::create([
                     'modul_id' => $modulId,
