@@ -61,6 +61,36 @@ class modulController extends Controller
         ]);
     }
 
+    public function update(Request $request, $id){
+        $modul = Modul::find($id);
+
+        if (!$modul) {
+            return response()->json([
+                'message' => 'Modul not found'
+            ], 404);
+        }
+
+        $validator = validator($request->all(), [
+            'title' => 'string|max:255',
+            'content' => 'string',
+            'category' => 'string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $modul->update($request->all());
+
+        return response()->json([
+            'message' => 'Modul updated successfully',
+            'data' => $modul
+        ]);
+    }
+
     public function destroy($id)
     {
         $modul = Modul::find($id);
