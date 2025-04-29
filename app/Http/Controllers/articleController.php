@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Article;
+use Illuminate\Support\Facades\Http;
 
 class articleController extends Controller
 {
@@ -100,5 +101,38 @@ class articleController extends Controller
         return response()->json([
             'message' => 'Artikel deleted successfully'
         ]);
+    }
+
+    public function generateArticles(Request $request, $modulId)
+    {
+        $googleApiKey = env('GOOGLE_API_KEY');
+        $googleCx = env('GOOGLE_CSE_ID');
+        $searchResponse = Http::get('https://www.googleapis.com/customsearch/v1', [
+            'key' => $googleApiKey,
+            'cx' => $googleCx,
+            'q' => $request->title,
+            'num' => 3,
+        ]);
+
+        $articles = $searchResponse->successful()
+            ? collect($searchResponse['items'])->map(function ($item) {
+                return [
+                    'title' => $item['title'],
+                    'link' => $item['link'],
+                    'snippet' => $item['snippet'],
+                ];
+            })
+            : [];
+
+        foreach ($articles as $article) {
+            Article::create([
+                'modul_id' => $modulId,
+                'title' => $article['title'],
+                'link' => $article['link'],
+                'snippet' => $article['snippet'],
+            ]);
+        }
+
+        return $articles;
     }
 }
