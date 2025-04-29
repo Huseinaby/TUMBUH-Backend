@@ -36,12 +36,14 @@ Route::get('/article', [articleController::class, 'index']);
 Route::get('/article/{id}', [articleController::class, 'show']);
 Route::delete('/article/{id}', [articleController::class, 'destroy']);
 Route::get('/article/modul/{modulId}', [articleController::class, 'getByModul']);
+Route::post('/article/generate', [articleController::class, 'generateMoreArticle']);
 
 //video
 Route::get('/video', [videoController::class, 'index']);
 Route::get('/video/{id}', [videoController::class, 'show']);
 Route::delete('/video/{id}', [videoController::class, 'destroy']);
 Route::get('/video/modul/{modulId}', [videoController::class, 'getByModul']);
+Route::post('/video/generate', [videoController::class, 'generateMoreVideo']);
 
 //quiz
 Route::get('/quiz', [QuizController::class, 'index']);

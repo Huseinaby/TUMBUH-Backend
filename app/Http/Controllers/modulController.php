@@ -158,7 +158,7 @@ class modulController extends Controller
         
 
         $quizzes = $quizController->generateQuiz($modul->id, $generateContent, $url);
-        $articles = $articleController->generateArticles($request, $modul->id);
+        $articles = $articleController->generateArticles($request->title, $modul->id);
         $videos = $videoController->generateVideos($request, $modul->id);
 
 

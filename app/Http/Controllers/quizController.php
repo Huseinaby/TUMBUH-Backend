@@ -70,7 +70,7 @@ class quizController extends Controller
     public function generateQuiz($modulId, $generateContent, $url)
     {
 
-        $quizPromt = "Buatkan 3 soal pilihan ganda berdasarkan bacaan berikut:\n\n\"{$generateContent}\"\n\nFormat JSON:\n" .
+        $quizPromt = "Buatkan 10 soal pilihan ganda berdasarkan bacaan berikut:\n\n\"{$generateContent}\"\n\nFormat JSON:\n" .
             '[{"question":"...","option_a":"...","option_b":"...","option_c":"...","option_d":"...","correct_answer":"a"}]';
 
         $quizResponse = Http::post($url, [
