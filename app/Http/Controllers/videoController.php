@@ -9,6 +9,62 @@ use Illuminate\Support\Facades\Http;
 class videoController extends Controller
 {
     //
+    public function index()
+    {
+        $videos = Video::all();
+
+        return response()->json([
+            'message' => 'semua video',
+            'data' => $videos
+        ]);
+    }
+
+    public function show($id){
+        $video = Video::find($id);
+
+        if (!$video) {
+            return response()->json([
+                'message' => 'Video not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Video found',
+            'data' => $video
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $video = Video::find($id);
+
+        if (!$video) {
+            return response()->json([
+                'message' => 'Video not found'
+            ], 404);
+        }
+
+        $video->delete();
+
+        return response()->json([
+            'message' => 'Video deleted successfully'
+        ]);
+    }
+
+    public function getByModul($modulId){
+        $videos = Video::where('modul_id', $modulId)->get();
+
+        if($videos->isEmpty()) {
+            return response()->json([
+                'message' => 'No videos found for this module'
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Videos found',
+            'data' => $videos
+        ]);
+    }
 
     public function generateVideos(Request $request, $modulId)
     {
