@@ -95,30 +95,35 @@ class articleController extends Controller
         return $articles;
     }
 
-    public function genereteMoreArticles($title, $modulId)
+    public function generateMoreArticle(Request $request)
     {
         $googleApiKey = env('GOOGLE_API_KEY');
         $googleCx = env('GOOGLE_CSE_ID');
         $searchResponse = Http::get('https://www.googleapis.com/customsearch/v1', [
             'key' => $googleApiKey,
             'cx' => $googleCx,
-            'q' => $title,
+            'q' => $request->title,
             'num' => 10,
         ]);
 
-        $articles = $searchResponse->successful()
-            ? collect($searchResponse['items'])->map(function ($item) {
+        if($searchResponse->successful() && isset($searchResponse['items'])){
+            $articles = collect($searchResponse['items'])
+            ->filter(fn($item) => isset($item['title'], $item['link'], $item['snippet']))
+            ->map(function ($item) {
                 return [
                     'title' => $item['title'],
                     'link' => $item['link'],
                     'snippet' => $item['snippet'],
                 ];
-            })
-            : [];
+            });
+        }
+        else {
+            $articles = collect();
+        }
 
         foreach ($articles as $article) {
             Article::create([
-                'modul_id' => $modulId,
+                'modul_id' => $request->modulId,
                 'title' => $article['title'],
                 'link' => $article['link'],
                 'snippet' => $article['snippet'],

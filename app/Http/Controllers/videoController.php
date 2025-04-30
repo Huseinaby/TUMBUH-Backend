@@ -78,12 +78,23 @@ class videoController extends Controller
             'key' => $youtubeApiKey,
         ]);
 
-        $videos = collect($videoResponse['items'])->map(function ($item) {
+        $videoIds = collect($videoResponse['items'])->pluck('id.videoId')->implode(',');
+
+        $detailVideo = Http::get('https://www.googleapis.com/youtube/v3/videos', [
+            'part' => 'snippet, contentDetails',
+            'id' => $videoIds,
+            'key' => $youtubeApiKey,
+        ]);
+
+        $videos = collect($detailVideo['items'])->map(function ($item) {
             return [
                 'title' => $item['snippet']['title'],
+                'desription' => $item['snippet']['description'],
+                'creator' => $item['snippet']['channelTitle'],
+                'duration' => $this->convertToTime($item['contentDetails']['duration']),
                 'thumbnail' => $item['snippet']['thumbnails']['high']['url'],
-                'videoId' => $item['id']['videoId'],
-                'url' => 'https://www.youtube.com/watch?v=' . $item['id']['videoId'],
+                'videoId' => $item['id'],
+                'url' => 'https://www.youtube.com/watch?v=' . $item['id'],
             ];
         });
 
@@ -91,6 +102,9 @@ class videoController extends Controller
             Video::create([
                 'modul_id' => $modulId,
                 'title' => $video['title'],
+                'desription' => $video['desription'],
+                'creator' => $video['creator'],
+                'duration' => $video['duration'],
                 'link' => $video['url'],
                 'thumbnail' => $video['thumbnail'],
             ]);
@@ -98,34 +112,56 @@ class videoController extends Controller
         return $videos;
     }
 
-    public function generateMoreVideo($title, $modulId){
+    public function generateMoreVideo(Request $request){
         $youtubeApiKey = env('YOUTUBE_API_KEY');
 
         $videoResponse = Http::get('https://www.googleapis.com/youtube/v3/search', [
             'part' => 'snippet',
-            'q' => $title,
+            'q' => $request->title,
             'type' => 'video',
-            'maxResults' => 3,
+            'maxResults' => 10,
             'key' => $youtubeApiKey,
         ]);
 
-        $videos = collect($videoResponse['items'])->map(function ($item) {
+        $videoIds = collect($videoResponse['items'])->pluck('id.videoId')->implode(',');
+
+        $detailVideo = Http::get('https://www.googleapis.com/youtube/v3/videos', [
+            'part' => 'snippet, contentDetails',
+            'id' => $videoIds,
+            'key' => $youtubeApiKey,
+        ]);
+
+        $videos = collect($detailVideo['items'])->map(function ($item) {
             return [
                 'title' => $item['snippet']['title'],
+                'desription' => $item['snippet']['description'],
+                'creator' => $item['snippet']['channelTitle'],
+                'duration' => $this->convertToTime($item['contentDetails']['duration']),
                 'thumbnail' => $item['snippet']['thumbnails']['high']['url'],
-                'videoId' => $item['id']['videoId'],
-                'url' => 'https://www.youtube.com/watch?v=' . $item['id']['videoId'],
+                'videoId' => $item['id'],
+                'url' => 'https://www.youtube.com/watch?v=' . $item['id'],
             ];
         });
 
         foreach ($videos as $video) {
             Video::create([
-                'modul_id' => $modulId,
+                'modul_id' => $request->modulId,
                 'title' => $video['title'],
+                'desription' => $video['desription'],
+                'creator' => $video['creator'],
+                'duration' => $video['duration'],
                 'link' => $video['url'],
                 'thumbnail' => $video['thumbnail'],
             ]);
         }
         return $videos;
+    }
+
+    public function convertToTime($duration){
+        $interval = new \DateInterval($duration);
+        $minutes = ($interval->h * 60) + $interval->i;
+        $seconds = $interval->s;
+
+        return sprintf('%02d:%02d', $minutes, $seconds);
     }
 }
