@@ -131,6 +131,7 @@ merupakan nama dari tanaman. Jika ya, jawab dengan format JSON seperti ini:
   \"searchKeywords\": {
     \"video\": \"isi kata kunci video\",
     \"article\": \"isi kata kunci artikel\"
+    \"image\" : \"nama tanaman dalam bahasa inggris atau nama ilmiah\"
   }
 }
 
@@ -167,6 +168,7 @@ Jangan tambahkan penjelasan, langsung beri JSON saja.
 
         $videoKeyword = $jsonResult['searchKeywords']['video'] ?? $request->title;
         $articleKeyword = $jsonResult['searchKeywords']['article'] ?? $request->title;
+        $imageKeyword = $jsonResult['searchKeywords']['image'] ?? $request->title;
 
 
         $contentPrompt = "
@@ -198,7 +200,7 @@ Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum. Jangan tamb
             ], 500);
         }
 
-        $imageUtl = $this->fetchImage($request->title);
+        $imageUtl = $this->fetchImage($imageKeyword);
 
         $modul = Modul::create([
             'title' => $request->title,
@@ -225,12 +227,12 @@ Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum. Jangan tamb
         ]);
     }
 
-    public function fetchImage(Request $request)
+    public function fetchImage($imageKeyword)
     {
         $accessKey = env('UNSPLASH_ACCESS_KEY');
 
         $response = Http::get('https://api.unsplash.com/search/photos', [
-            'query' => 'tanaman' . $request->title,
+            'query' => $imageKeyword,
             'client_id' => $accessKey,
             'per_page' => 1
         ]);
