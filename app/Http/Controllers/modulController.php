@@ -217,10 +217,8 @@ Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum. Jangan tamb
             'articles' => $articles,
             'videos' => $videos,
             'quiz' => $quizzes,
-            'keywords' => [
-                'video' => $videoKeyword,
-                'article' => $articleKeyword,
-            ],
+            'videoKeyword' => $videoKeyword,
+            'articleKeyword' => $articleKeyword,
         ]);
     }
 }

@@ -117,7 +117,7 @@ class videoController extends Controller
 
         $videoResponse = Http::get('https://www.googleapis.com/youtube/v3/search', [
             'part' => 'snippet',
-            'q' => $request->title,
+            'q' => $request->videoKeyword,
             'type' => 'video',
             'maxResults' => 10,
             'key' => $youtubeApiKey,

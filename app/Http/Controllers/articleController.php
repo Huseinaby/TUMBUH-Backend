@@ -102,7 +102,7 @@ class articleController extends Controller
         $searchResponse = Http::get('https://www.googleapis.com/customsearch/v1', [
             'key' => $googleApiKey,
             'cx' => $googleCx,
-            'q' => $request->title,
+            'q' => $request->articleKeyword,
             'num' => 10,
         ]);
 
