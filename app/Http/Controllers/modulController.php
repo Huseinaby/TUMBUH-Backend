@@ -168,7 +168,7 @@ Jangan tambahkan penjelasan, langsung beri JSON saja.
         $videoKeyword = $jsonResult['searchKeywords']['video'] ?? $request->title;
         $articleKeyword = $jsonResult['searchKeywords']['article'] ?? $request->title;
 
-    
+
         $contentPrompt = "
 Tuliskan konten edukatif singkat tentang tanaman dengan judul: \"{$request->title}\".
 
@@ -198,6 +198,8 @@ Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum. Jangan tamb
             ], 500);
         }
 
+        $imageUtl = $this->fetchImage($request->title);
+
         $modul = Modul::create([
             'title' => $request->title,
             'content' => $generateContent,
@@ -214,6 +216,7 @@ Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum. Jangan tamb
 
         return response()->json([
             'content' => $modul,
+            'image' => $imageUtl,
             'articles' => $articles,
             'videos' => $videos,
             'quiz' => $quizzes,
@@ -221,4 +224,22 @@ Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum. Jangan tamb
             'articleKeyword' => $articleKeyword,
         ]);
     }
+
+    public function fetchImage(Request $request)
+    {
+        $accessKey = env('UNSPLASH_ACCESS_KEY');
+
+        $response = Http::get('https://api.unsplash.com/search/photos', [
+            'query' => 'tanaman' . $request->title,
+            'client_id' => $accessKey,
+            'per_page' => 1
+        ]);
+
+        if ($response->successful() && !empty($response['results'])) {
+            return $response['results'][0]['urls']['small'];
+        }
+
+        return null;
+    }
 }
+

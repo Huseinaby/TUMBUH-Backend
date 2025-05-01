@@ -55,7 +55,8 @@ Route::get('/quiz/{id}', [QuizController::class, 'show']);
 Route::delete('/quiz/{id}', [quizController::class, 'destroy']);
 Route::get('/quiz/modul/{modulId}', [QuizController::class, 'getByModul']);
 
-
+//test unsplash
+Route::post('/unsplash/test', [modulController::class, 'fetchImage']);
 
 
 //Test Email

@@ -89,7 +89,7 @@ class videoController extends Controller
         $videos = collect($detailVideo['items'])->map(function ($item) {
             return [
                 'title' => $item['snippet']['title'],
-                'desription' => $item['snippet']['description'],
+                'desc ription' => $item['snippet']['description'],
                 'creator' => $item['snippet']['channelTitle'],
                 'duration' => $this->convertToTime($item['contentDetails']['duration']),
                 'thumbnail' => $item['snippet']['thumbnails']['high']['url'],
@@ -102,7 +102,7 @@ class videoController extends Controller
             Video::create([
                 'modul_id' => $modulId,
                 'title' => $video['title'],
-                'desription' => $video['desription'],
+                'description' => $video['description'] ?? '',
                 'creator' => $video['creator'],
                 'duration' => $video['duration'],
                 'link' => $video['url'],
@@ -134,7 +134,7 @@ class videoController extends Controller
         $videos = collect($detailVideo['items'])->map(function ($item) {
             return [
                 'title' => $item['snippet']['title'],
-                'desription' => $item['snippet']['description'],
+                'description' => $item['snippet']['description'],
                 'creator' => $item['snippet']['channelTitle'],
                 'duration' => $this->convertToTime($item['contentDetails']['duration']),
                 'thumbnail' => $item['snippet']['thumbnails']['high']['url'],
@@ -147,7 +147,7 @@ class videoController extends Controller
             Video::create([
                 'modul_id' => $request->modulId,
                 'title' => $video['title'],
-                'desription' => $video['desription'],
+                'description' => $video['description'],
                 'creator' => $video['creator'],
                 'duration' => $video['duration'],
                 'link' => $video['url'],
