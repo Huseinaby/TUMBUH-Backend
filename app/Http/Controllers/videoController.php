@@ -66,13 +66,13 @@ class videoController extends Controller
         ]);
     }
 
-    public function generateVideos($title, $modulId)
+    public function generateVideos($videoKeyword, $modulId)
     {
         $youtubeApiKey = env('YOUTUBE_API_KEY');
 
         $videoResponse = Http::get('https://www.googleapis.com/youtube/v3/search', [
             'part' => 'snippet',
-            'q' => $title,
+            'q' => $videoKeyword,
             'type' => 'video',
             'maxResults' => 3,
             'key' => $youtubeApiKey,
