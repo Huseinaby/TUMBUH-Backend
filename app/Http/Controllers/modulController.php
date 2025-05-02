@@ -14,7 +14,8 @@ class modulController extends Controller
 {
     public function index()
     {
-        $moduls = Modul::all();
+        $moduls = Modul::withCount('quiz', 'article', 'video')
+            ->get();
 
         return response()->json([
             'message' => 'semua modul',
@@ -75,6 +76,7 @@ class modulController extends Controller
             'title' => 'string|max:255',
             'content' => 'string',
             'category' => 'string|max:255',
+            'image' => 'string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -200,11 +202,12 @@ Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum. Jangan tamb
             ], 500);
         }
 
-        $imageUtl = $this->fetchImage($imageKeyword);
+        $imageUrl = $this->fetchImage($imageKeyword);
 
         $modul = Modul::create([
             'title' => $request->title,
             'content' => $generateContent,
+            'image' => $imageUrl,
             'category' => $request->category,
         ]);
 
@@ -218,7 +221,7 @@ Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum. Jangan tamb
 
         return response()->json([
             'content' => $modul,
-            'image' => $imageUtl,
+            'image' => $imageUrl,
             'imageKeyword' => $imageKeyword,
             'articles' => $articles,
             'videos' => $videos,
@@ -235,7 +238,7 @@ Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum. Jangan tamb
         $response = Http::get('https://api.unsplash.com/search/photos', [
             'query' => $imageKeyword,
             'client_id' => $accessKey,
-            'per_page' => 1
+            'per_page' => 5
         ]);
 
         if ($response->successful() && !empty($response['results'])) {
