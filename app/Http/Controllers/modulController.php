@@ -131,7 +131,7 @@ merupakan nama dari tanaman. Jika ya, jawab dengan format JSON seperti ini:
   \"searchKeywords\": {
     \"video\": \"isi kata kunci video\",
     \"article\": \"isi kata kunci artikel\"
-    \"image\" : \"nama tanaman dalam bahasa inggris atau nama ilmiah\"
+    \"image\" : \"nama tanaman dalam nama ilmiah\"
   }
 }
 
@@ -219,6 +219,7 @@ Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum. Jangan tamb
         return response()->json([
             'content' => $modul,
             'image' => $imageUtl,
+            'imageKeyword' => $imageKeyword,
             'articles' => $articles,
             'videos' => $videos,
             'quiz' => $quizzes,
