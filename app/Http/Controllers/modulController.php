@@ -122,7 +122,6 @@ class modulController extends Controller
 
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$geminiKey}";
 
-        // Prompt untuk validasi tanaman dan generate keyword
         $checkPrompt = "
 Apakah  \"{$request->title}\"
 
@@ -133,7 +132,7 @@ merupakan nama dari tanaman. Jika ya, jawab dengan format JSON seperti ini:
   \"searchKeywords\": {
     \"video\": \"isi kata kunci video\",
     \"article\": \"isi kata kunci artikel\"
-    \"image\" : \"nama tanaman dalam nama ilmiah\"
+    \"image\" : \"nama tanaman dalam bahasa inggris atau nama ilmiah\"
   }
 }
 
@@ -207,9 +206,14 @@ Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum. Jangan tamb
         $modul = Modul::create([
             'title' => $request->title,
             'content' => $generateContent,
-            'image' => $imageUrl,
             'category' => $request->category,
         ]);
+
+        foreach ($imageUrl as $url) {
+            $modul->modulImage()->create([
+                'url' => $url,
+            ]);
+        }
 
         $quizController = new quizController();
         $videoController = new videoController();
@@ -238,11 +242,11 @@ Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum. Jangan tamb
         $response = Http::get('https://api.unsplash.com/search/photos', [
             'query' => $imageKeyword,
             'client_id' => $accessKey,
-            'per_page' => 5
+            'per_page' => 5,
         ]);
 
         if ($response->successful() && !empty($response['results'])) {
-            return $response['results'][0]['urls']['small'];
+            return collect($response['results'])->pluck('urls.small')->all();
         }
 
         return null;

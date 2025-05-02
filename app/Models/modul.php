@@ -9,6 +9,10 @@ class modul extends Model
     //
     public $guarded = ['id'];
 
+    protected $casts = [
+        'image' => 'array',
+    ];
+
     public function video()
     {
         return $this->hasMany(Video::class);
@@ -22,5 +26,10 @@ class modul extends Model
     public function quiz()
     {
         return $this->hasMany(Quiz::class);
+    }
+
+    public function modulImage()
+    {
+        return $this->hasMany(ModulImage::class);
     }
 }
