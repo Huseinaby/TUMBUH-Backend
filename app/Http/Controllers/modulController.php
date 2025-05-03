@@ -77,7 +77,6 @@ class modulController extends Controller
             'title' => 'string|max:255',
             'content' => 'string',
             'category' => 'string|max:255',
-            'image' => 'string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -116,7 +115,6 @@ class modulController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
         ]);
 
         $geminiKey = env('GEMINI_API_KEY');
@@ -130,6 +128,7 @@ class modulController extends Controller
         
         {
           "isPlant": true,
+          "category": "kategori tanaman antara : sayuran, buah, hias, herbal, rempah-rempah",
           "searchKeywords": {
             "video": "kata kunci untuk mencari video tentang tanaman ini",
             "article": "kata kunci untuk mencari artikel",
@@ -181,6 +180,7 @@ class modulController extends Controller
         $videoKeyword = $jsonResult['searchKeywords']['video'] ?? $request->title;
         $articleKeyword = $jsonResult['searchKeywords']['article'] ?? $request->title;
         $imageKeyword = $jsonResult['searchKeywords']['image'] ?? $request->title;
+        $category = $jsonResult['category'] ?? null;
         $generateContent = $jsonResult['content'] ?? null;
 
 
@@ -196,7 +196,7 @@ class modulController extends Controller
         $modul = Modul::create([
             'title' => $request->title,
             'content' => $generateContent,
-            'category' => $request->category,
+            'category' => $category,
         ]);
 
         foreach ($imageUrl as $url) {
@@ -216,6 +216,7 @@ class modulController extends Controller
 
         return response()->json([
             'content' => $modul,
+            'category' => $category,
             'image' => $imageUrl,
             'imageKeyword' => $imageKeyword,
             'articles' => $articles,
