@@ -55,6 +55,8 @@ Route::get('/quiz/{id}', [QuizController::class, 'show']);
 Route::delete('/quiz/{id}', [quizController::class, 'destroy']);
 Route::get('/quiz/modul/{modulId}', [QuizController::class, 'getByModul']);
 
+//test generate quiz
+Route::post('/quiz/generate', [QuizController::class, 'generateQuiz']);
 
 //Test Email
 Route::get('/test-email', function () {

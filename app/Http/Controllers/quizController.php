@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\support\Facades\Http;
 use App\Models\Quiz;
+use Illuminate\Support\Facades\Log;
 
 class quizController extends Controller
 {
@@ -52,10 +52,11 @@ class quizController extends Controller
         ]);
     }
 
-    public function getByModul($modulId){
+    public function getByModul($modulId)
+    {
         $quizzes = Quiz::where('modul_id', $modulId)->get();
 
-        if($quizzes->isEmpty()) {
+        if ($quizzes->isEmpty()) {
             return response()->json([
                 'message' => 'No quizzes found for this module'
             ], 404);
@@ -67,44 +68,83 @@ class quizController extends Controller
         ]);
     }
 
-    public function generateQuiz($modulId, $generateContent, $url)
+    public function generateQuiz($modulId, $generateContent)
     {
-
-        $quizPromt = "Buatkan 10 soal pilihan ganda berdasarkan bacaan berikut:\n\n\"{$generateContent}\"\n\nFormat JSON:\n" .
-            '[{"question":"...","option_a":"...","option_b":"...","option_c":"...","option_d":"...","correct_answer":"a"}]';
-
+        $geminiKey = env('GEMINI_API_KEY');
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$geminiKey}";
+        
+        // Prompt yang lebih ketat
+        $quizPrompt = <<<EOT
+        Buatkan 10 soal pilihan ganda berdasarkan bacaan berikut:
+       
+        {$generateContent}
+       
+        Jawab hanya dalam format JSON valid seperti ini:
+       
+        [
+          {
+            "question": "Apa manfaat utama dari tanaman ini?",
+            "option_a": "Untuk dekorasi",
+            "option_b": "Sebagai sumber makanan",
+            "option_c": "Untuk obat-obatan",
+            "option_d": "Untuk penelitian",
+            "correct_answer": "c"
+          }
+        ]
+        EOT;
+       
+        // Kirim permintaan ke Gemini API
         $quizResponse = Http::post($url, [
             'contents' => [
                 'parts' => [
-                    ['text' => $quizPromt]
+                    ['text' => $quizPrompt]
                 ]
             ]
         ]);
-        $quizText = $quizResponse['candidates'][0]['content']['parts'][0]['text'] ?? 'Soal tidak ditemukan';
-
-        $quizText = preg_replace('/```json|```/', '', $quizText);
-        $quizText = trim($quizText);
-
+        
         try {
-            $quizzes = json_decode($quizText, true);
-            foreach ($quizzes as $q) {
-                Quiz::create([
-                    'modul_id' => $modulId,
-                    'question' => $q['question'],
-                    'option_a' => $q['option_a'],
-                    'option_b' => $q['option_b'],
-                    'option_c' => $q['option_c'],
-                    'option_d' => $q['option_d'],
-                    'correct_answer' => $q['correct_answer'],
+            // Ekstrak teks dari respons
+            $text = $quizResponse['candidates'][0]['content']['parts'][0]['text'] ?? '';
+            
+            // Bersihkan teks dari markdown code blocks dan whitespace
+            $cleaned = preg_replace('/```json|```|json|\n/', '', $text);
+            $cleaned = trim($cleaned);
+            
+            // Decode JSON
+            $quizzes = json_decode($cleaned, true);
+            
+            if (!$quizzes || !is_array($quizzes)) {
+                // Log untuk debugging
+                Log::error('Failed to parse quiz JSON', [
+                    'text' => $text,
+                    'cleaned' => $cleaned
                 ]);
+                
+                return [];
             }
+            
+            // Simpan quiz ke database
+            $savedQuizzes = [];
+            foreach ($quizzes as $quizData) {
+                $quiz = Quiz::create([
+                    'modul_id' => $modulId,
+                    'question' => $quizData['question'],
+                    'option_a' => $quizData['option_a'],
+                    'option_b' => $quizData['option_b'],
+                    'option_c' => $quizData['option_c'],
+                    'option_d' => $quizData['option_d'],
+                    'correct_answer' => $quizData['correct_answer'],
+                ]);
+                
+                $savedQuizzes[] = $quiz;
+            }
+            
+            return $savedQuizzes;
+            
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Gagal menyimpan soal',
-                'error' => $e->getMessage()
-            ], 500);
+            Log::error('Error generating quiz: ' . $e->getMessage());
+            return [];
         }
-
-        return $quizzes;
     }
+
 }

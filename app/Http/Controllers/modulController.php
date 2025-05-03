@@ -14,8 +14,9 @@ class modulController extends Controller
 {
     public function index()
     {
-        $moduls = Modul::withCount('quiz', 'article', 'video')
-            ->get();
+        $moduls = Modul::with(['modulImage']) 
+        ->withCount('quiz', 'article', 'video')
+        ->get();
 
         return response()->json([
             'message' => 'semua modul',
@@ -122,29 +123,39 @@ class modulController extends Controller
 
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$geminiKey}";
 
-        $checkPrompt = "
-Apakah  \"{$request->title}\"
-
-merupakan nama dari tanaman. Jika ya, jawab dengan format JSON seperti ini:
-
-{
-  \"isPlant\": true,
-  \"searchKeywords\": {
-    \"video\": \"isi kata kunci video\",
-    \"article\": \"isi kata kunci artikel\"
-    \"image\" : \"nama tanaman dalam bahasa inggris atau nama ilmiah\"
-  }
-}
-
-Jika bukan tanaman, kembalikan:
-
-{
-  \"isPlant\": false
-}
-
-Jangan tambahkan penjelasan, langsung beri JSON saja.
-";
-
+        $checkPrompt = <<<EOT
+        Apakah "{$request->title}" merupakan nama dari tanaman?
+        
+        Jika ya, jawab dalam format JSON valid seperti ini (tanpa penjelasan tambahan):
+        
+        {
+          "isPlant": true,
+          "searchKeywords": {
+            "video": "kata kunci untuk mencari video tentang tanaman ini",
+            "article": "kata kunci untuk mencari artikel",
+            "image": "nama tanaman dalam bahasa Inggris atau nama ilmiah"
+          },
+          "content": "Tuliskan konten edukatif singkat tentang tanaman '{$request->title}'.
+        
+        Konten harus mencakup:
+        - Definisi atau pengenalan tanaman tersebut.
+        - Kegunaan atau manfaat tanaman.
+        - Cara perawatan dasar tanaman tersebut.
+        - Panjang sekitar 2–3 paragraf.
+        
+        Catatan penting: Jangan awali dengan sapaan seperti 'Halo!', 'Oke, siap!', atau 'Mari kita mulai'. Langsung mulai dengan pembahasan inti.
+        Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum. Jangan tambahkan judul di awal konten, cukup tulis konten saja.",
+        
+        
+        Jika bukan tanaman, kembalikan:
+        
+        {
+          "isPlant": false
+        }
+        
+        Jangan beri penjelasan tambahan. Langsung balas hanya dengan JSON.
+        EOT;
+        
         $checkResponse = Http::post($url, [
             'contents' => [
                 'parts' => [
@@ -170,30 +181,9 @@ Jangan tambahkan penjelasan, langsung beri JSON saja.
         $videoKeyword = $jsonResult['searchKeywords']['video'] ?? $request->title;
         $articleKeyword = $jsonResult['searchKeywords']['article'] ?? $request->title;
         $imageKeyword = $jsonResult['searchKeywords']['image'] ?? $request->title;
+        $generateContent = $jsonResult['content'] ?? null;
 
 
-        $contentPrompt = "
-Tuliskan konten edukatif singkat tentang tanaman dengan judul: \"{$request->title}\".
-
-Konten harus mencakup:
-- Definisi atau pengenalan tanaman tersebut.
-- Kegunaan atau manfaat tanaman.
-- Cara perawatan dasar tanaman tersebut.
-- Panjang sekitar 2–3 paragraf.
-
-Catatan penting: Jangan awali dengan sapaan seperti 'Halo!', 'Oke, siap!', atau 'Mari kita mulai'. Langsung mulai dengan pembahasan inti.
-Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum. Jangan tambahkan judul diawal konten, cukup tulis konten saja.
-";
-
-        $response = Http::post($url, [
-            'contents' => [
-                'parts' => [
-                    ['text' => $contentPrompt]
-                ]
-            ]
-        ]);
-
-        $generateContent = $response['candidates'][0]['content']['parts'][0]['text'] ?? null;
 
         if (!$generateContent) {
             return response()->json([
@@ -215,11 +205,12 @@ Gunakan gaya bahasa informatif dan mudah dipahami oleh pembaca umum. Jangan tamb
             ]);
         }
 
+        sleep(3);
         $quizController = new quizController();
         $videoController = new videoController();
         $articleController = new articleController();
 
-        $quizzes = $quizController->generateQuiz($modul->id, $generateContent, $url);
+        $quizzes = $quizController->generateQuiz($modul->id, $generateContent);
         $articles = $articleController->generateArticles($articleKeyword, $modul->id);
         $videos = $videoController->generateVideos($videoKeyword, $modul->id);
 
