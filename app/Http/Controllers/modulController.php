@@ -205,7 +205,6 @@ class modulController extends Controller
             ]);
         }
 
-        sleep(3);
         $quizController = new quizController();
         $videoController = new videoController();
         $articleController = new articleController();

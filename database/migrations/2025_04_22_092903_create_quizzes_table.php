@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('quizzes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('modul_id')->constrained()->onDelete('cascade');
+            $table->enum('difficulty', ['easy', 'medium', 'hard']);
             $table->string('question');
             $table->string('option_a');
             $table->string('option_b');

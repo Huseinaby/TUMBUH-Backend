@@ -78,15 +78,27 @@ class quizController extends Controller
         Buatkan 10 soal pilihan ganda berdasarkan bacaan berikut:
        
         {$generateContent}
-       
+        
+        dengan distribusi soal sebagai berikut:
+        - 2 soal dengan tingkat kesulitan mudah
+        - 3 soal dengan tingkat kesulitan sedang
+        - 5 soal dengan tingkat kesulitan sulit
+
+        tingkat kesulitan:
+        - mudah: soal yang jawabannya bisa langsung ditemukan di teks
+        - sedang: soal yang membutuhkan penalaman dari bacaan
+        - sulit: soal analisis yang menerapkan konsep bacaan
+
+
         Jawab hanya dalam format JSON valid seperti ini:
        
         [
           {
+            "difficulty": "easy",
             "question": "Apa manfaat utama dari tanaman ini?",
             "option_a": "Untuk dekorasi",
             "option_b": "Sebagai sumber makanan",
-            "option_c": "Untuk obat-obatan",
+            "option_c": "Untuk obat-obatan",x
             "option_d": "Untuk penelitian",
             "correct_answer": "c"
           }
@@ -128,6 +140,7 @@ class quizController extends Controller
             foreach ($quizzes as $quizData) {
                 $quiz = Quiz::create([
                     'modul_id' => $modulId,
+                    'difficulty' => $quizData['difficulty'],
                     'question' => $quizData['question'],
                     'option_a' => $quizData['option_a'],
                     'option_b' => $quizData['option_b'],
