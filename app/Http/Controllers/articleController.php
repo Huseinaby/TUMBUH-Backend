@@ -67,11 +67,12 @@ class articleController extends Controller
     {
         $googleApiKey = env('GOOGLE_API_KEY');
         $googleCx = env('GOOGLE_CSE_ID');
+        
         $searchResponse = Http::get('https://www.googleapis.com/customsearch/v1', [
             'key' => $googleApiKey,
             'cx' => $googleCx,
             'q' => $articleKeyword,
-            'num' => 3,
+            'num' => 10,
         ]);
 
         $articles = $searchResponse->successful()
@@ -97,38 +98,45 @@ class articleController extends Controller
 
     public function generateMoreArticle(Request $request)
     {
+        $request->validate([
+            'start' => 'required|integer|min:11|max:41',
+        ]);
+
+        $modulId = $request->modulId;
+
         $googleApiKey = env('GOOGLE_API_KEY');
         $googleCx = env('GOOGLE_CSE_ID');
+
         $searchResponse = Http::get('https://www.googleapis.com/customsearch/v1', [
             'key' => $googleApiKey,
             'cx' => $googleCx,
             'q' => $request->articleKeyword,
             'num' => 10,
+            'start' => $request->start,
         ]);
 
-        if($searchResponse->successful() && isset($searchResponse['items'])){
-            $articles = collect($searchResponse['items'])
-            ->filter(fn($item) => isset($item['title'], $item['link'], $item['snippet']))
-            ->map(function ($item) {
-                return [
-                    'title' => $item['title'],
-                    'link' => $item['link'],
-                    'snippet' => $item['snippet'],
-                ];
-            });
-        }
-        else {
-            $articles = collect();
+        if(!$searchResponse->successful()) {
+            return response()->json([
+                'message' => 'Failed to fetch articles'
+            ], 500);
         }
 
-        foreach ($articles as $article) {
-            Article::create([
-                'modul_id' => $request->modulId,
-                'title' => $article['title'],
-                'link' => $article['link'],
-                'snippet' => $article['snippet'],
-            ]);
-        }
+        $articles = collect($searchResponse['items'] ?? [])->map(function ($item) use ($modulId) {
+            $data = [
+                'modul_id' => $modulId,
+                'title' => $item['title'] ?? null,
+                'link' => $item['link'] ?? null,
+                'snippet' => $item['snippet'] ?? null,
+            ];
+
+            if(!Article::where('title', $data['title'])->exists()) {
+                Article::create($data);
+            }
+
+            return $data;
+        });
+
+
         return response()->json([
             'message' => 'Artikel generated successfully',
             'data' => $articles

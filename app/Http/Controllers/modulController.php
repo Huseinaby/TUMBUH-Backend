@@ -14,9 +14,9 @@ class modulController extends Controller
 {
     public function index()
     {
-        $moduls = Modul::with(['modulImage']) 
-        ->withCount('quiz', 'article', 'video')
-        ->get();
+        $moduls = Modul::with(['modulImage'])
+            ->withCount('quiz', 'article', 'video')
+            ->get();
 
         return response()->json([
             'message' => 'semua modul',
@@ -117,6 +117,18 @@ class modulController extends Controller
             'title' => 'required|string|max:255',
         ]);
 
+        $modul = Modul::where('title', $request->title)
+            ->with(['modulImage', 'article', 'video', 'quiz'])
+            ->first();
+
+        if ($modul) {
+            return response()->json([
+                'message' => 'Modul sudah ada',
+                'data' => $modul
+            ]);
+        }
+
+
         $geminiKey = env('GEMINI_API_KEY');
 
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$geminiKey}";
@@ -130,9 +142,9 @@ class modulController extends Controller
           "isPlant": true,
           "category": "kategori tanaman antara : sayuran, buah, hias, herbal, rempah-rempah",
           "searchKeywords": {
-            "video": "kata kunci untuk mencari video tentang tanaman ini",
-            "article": "kata kunci untuk mencari artikel",
-            "image": "nama tanaman dalam bahasa Inggris atau nama ilmiah"
+            "video": "kata kunci untuk mencari video tentang tanaman ini dalam bahasa indonesia",
+            "article": "kata kunci untuk mencari artikel dalam bahasa indonesia",
+            "image": "nama tanaman dalam bahasa Inggris atau nama ilmiah dalam bahasa indonesia"
           },
           "content": "Tuliskan konten edukatif singkat tentang tanaman '{$request->title}'.
         
@@ -154,7 +166,7 @@ class modulController extends Controller
         
         Jangan beri penjelasan tambahan. Langsung balas hanya dengan JSON.
         EOT;
-        
+
         $checkResponse = Http::post($url, [
             'contents' => [
                 'parts' => [
@@ -214,15 +226,15 @@ class modulController extends Controller
         $videos = $videoController->generateVideos($videoKeyword, $modul->id);
 
         return response()->json([
+            'imageKeyword' => $imageKeyword,
+            'videoKeyword' => $videoKeyword,
+            'articleKeyword' => $articleKeyword,
             'content' => $modul,
             'category' => $category,
             'image' => $imageUrl,
-            'imageKeyword' => $imageKeyword,
             'articles' => $articles,
             'videos' => $videos,
             'quiz' => $quizzes,
-            'videoKeyword' => $videoKeyword,
-            'articleKeyword' => $articleKeyword,
         ]);
     }
 
