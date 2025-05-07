@@ -225,7 +225,7 @@ class modulController extends Controller
             'category' => $category,
         ]);
 
-        $imageUrl = $this->fetchImage($imageKeyword);
+        $imageUrl = $this->fetchGoogleImages($imageKeyword);
 
         foreach ($imageUrl as $url) {
             $modul->modulImage()->create([
@@ -293,45 +293,42 @@ class modulController extends Controller
         return null;
     }
 
-    public function fetchTrefleImage($imageKeyword)
-    {
-        $token = env('TREFLE_API_TOKEN');
+    public function fetchGoogleImages($imageKeyword){
+        $apikey = env('GOOGLE_API_KEY');
+        $cseId = env('GOOGLE_CSE_ID');
 
-        if (!$token) {
-            Log::warning('TREFLE_API_TOKEN belum diset');
+        if(!$apikey || !$cseId){
+            Log::warning('Google API key or CSE ID not set in .env file');
             return [];
         }
 
-        Log::info('Mencari gambar dari Trefle untuk Keyword:', ['imageKeyword' => $imageKeyword]);
-
         try {
-            $searchResponse = Http::withToken($token)->get('https://trefle.io/api/v1/plants/search', [
+            $response = Http::get('https://www.googleapis.com/customsearch/v1', [
+                'key' => $apikey,
+                'cx' => $cseId,
                 'q' => $imageKeyword,
+                'searchType' => 'image',
+                'num' => 5,
             ]);
 
-            if (!$searchResponse->successful()) {
-                Log::error('Gagal mengakses Trefle', [
-                    'status' => $searchResponse->status(),
-                    'body' => $searchResponse->body(),
+            if(!$response->successful()){
+                Log::error('Google API request failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
                 ]);
                 return [];
             }
 
-            $results = $searchResponse->json('data') ?? [];
+            $items = $response->json('items') ?? [];
 
-            // Ambil hanya hasil yang punya image_url
-            $filtered = collect($results)
-                ->filter(fn($item) => !empty($item['image_url']))
-                ->pluck('image_url')
-                ->take(5)
-                ->values()
-                ->all();
+            $images = collect($items)->pluck('link')->filter()->values()->all();
 
-            Log::info('Jumlah gambar ditemukan dari Trefle:', ['count' => count($filtered)]);
-
-            return $filtered;
+            return $images;
         } catch (\Exception $e) {
-            Log::error('Exception saat fetch image dari Trefle', ['error' => $e->getMessage()]);
+            Log::error('Error fetching images from Google API', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             return [];
         }
     }
