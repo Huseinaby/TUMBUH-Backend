@@ -56,9 +56,13 @@ class modulController extends Controller
             ], 404);
         }
 
+        $data = $modul->toArray();
+        $data['images'] = $data['modul_image'];
+        unset($data['modul_image']);
+
         return response()->json([
             'message' => 'Modul found',
-            'data' => $modul
+            'data' => $data,
         ]);
     }
 
@@ -252,7 +256,7 @@ class modulController extends Controller
             'content' => $generateContent,
             'category' => $category,
             'imageKeyword' => $imageKeyword,
-            'image' => $imageUrl,
+            'images' => $imageUrl,
             'article' => [
                 'articleKeyword' => $articleKeyword,
                 'start' => $start,
