@@ -142,7 +142,7 @@ class modulController extends Controller
           "isPlant": true,
           "category": "kategori tanaman antara : sayuran, buah, hias, herbal, rempah-rempah",
           "searchKeywords": {
-            "video": "kata kunci untuk mencari video tentang tanaman ini dalam bahasa indonesia",
+            "video": "kata kunci untuk mencari video tanaman ini dalam bahasa indonesia",
             "article": "kata kunci untuk mencari artikel dalam bahasa indonesia",
             "image": "nama tanaman dalam nama ilmiah"
           },
