@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
-use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -121,6 +120,12 @@ class AuthController extends Controller
                 ], 401);
             }
 
+            if(!isset($payload['email'], $payload['sub'], $payload['name'])) {
+                return response()->json([
+                    'message' => 'Payload dari Google tidak lengkap'
+                ], 422);
+            }
+
             $googleId = $payload['sub'];
             $email = $payload['email'];
             $name = $payload['name'];
@@ -160,7 +165,13 @@ class AuthController extends Controller
 
             return response()->json([
                 'message' => 'Login berhasil',
-                'user' => $user,
+                'user' => [
+                    'id' => $user->id,
+                    'username' => $user->username,
+                    'email' => $user->email,
+                    'photo' => $user->photo,
+                    'role' => $user->role,
+                ],
                 'token' => $token
             ], 200);
         } catch (\Exception $e) {
