@@ -9,7 +9,7 @@
         "google/apiclient": "^2.18",
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.0",
-        "laravel/socialite": "^5.18",
+        "laravel/socialite": "^5.20",
         "laravel/tinker": "^2.9",
         "resend/resend-php": "^0.16.0",
         "symfony/http-client": "^7.2",

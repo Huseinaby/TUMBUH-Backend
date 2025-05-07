@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ModulResource;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ class modulController extends Controller
 
         return response()->json([
             'message' => 'semua modul',
-            'data' => $moduls
+            'data' => ModulResource::collection($moduls)
         ]);
     }
 
@@ -58,7 +59,7 @@ class modulController extends Controller
 
         return response()->json([
             'message' => 'Modul found',
-            'data' => $modul,
+            'data' => ModulResource::make($modul),
         ]);
     }
 
