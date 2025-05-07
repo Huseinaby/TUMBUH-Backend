@@ -93,7 +93,10 @@ class articleController extends Controller
                 'snippet' => $article['snippet'],
             ]);
         }
-        return $articles;
+        return [
+            'articles' => $articles,
+            'start' => 11,
+        ];
     }
 
     public function generateMoreArticle(Request $request)
@@ -139,7 +142,8 @@ class articleController extends Controller
 
         return response()->json([
             'message' => 'Artikel generated successfully',
-            'data' => $articles
+            'articles' => $articles,
+            'start' => $request->start + 10,
         ]);
     }
 }

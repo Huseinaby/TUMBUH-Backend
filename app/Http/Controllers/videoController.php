@@ -19,7 +19,8 @@ class videoController extends Controller
         ]);
     }
 
-    public function show($id){
+    public function show($id)
+    {
         $video = Video::find($id);
 
         if (!$video) {
@@ -51,10 +52,11 @@ class videoController extends Controller
         ]);
     }
 
-    public function getByModul($modulId){
+    public function getByModul($modulId)
+    {
         $videos = Video::where('modul_id', $modulId)->get();
 
-        if($videos->isEmpty()) {
+        if ($videos->isEmpty()) {
             return response()->json([
                 'message' => 'No videos found for this module'
             ], 404);
@@ -74,9 +76,16 @@ class videoController extends Controller
             'part' => 'snippet',
             'q' => $videoKeyword,
             'type' => 'video',
-            'maxResults' => 3,
+            'maxResults' => 10,
             'key' => $youtubeApiKey,
         ]);
+
+        if (!$videoResponse->successful()) {
+            return response()->json([
+                'message' => 'Failed to fetch videos from YouTube API',
+                'error' => $videoResponse->body()
+            ], 500);
+        }
 
         $videoIds = collect($videoResponse['items'])->pluck('id.videoId')->implode(',');
 
@@ -89,7 +98,7 @@ class videoController extends Controller
         $videos = collect($detailVideo['items'])->map(function ($item) {
             return [
                 'title' => $item['snippet']['title'],
-                'desc ription' => $item['snippet']['description'],
+                'description' => $item['snippet']['description'],
                 'creator' => $item['snippet']['channelTitle'],
                 'duration' => $this->convertToTime($item['contentDetails']['duration']),
                 'thumbnail' => $item['snippet']['thumbnails']['high']['url'],
@@ -109,19 +118,43 @@ class videoController extends Controller
                 'thumbnail' => $video['thumbnail'],
             ]);
         }
-        return $videos;
+        return [
+            'message' => 'Videos fetched successfully',
+            'videos' => $videos,
+            'nextPageToken' => $videoResponse['nextPageToken'] ?? null,
+        ];
     }
 
-    public function generateMoreVideo(Request $request){
+    public function generateMoreVideo(Request $request)
+    {
+        $request->validate([
+            'videoKeyword' => 'required|string',
+            'modulId' => 'required|integer|exists:moduls,id',
+            'pageToken' => 'nullable|string',
+        ]);
+
         $youtubeApiKey = env('YOUTUBE_API_KEY');
 
-        $videoResponse = Http::get('https://www.googleapis.com/youtube/v3/search', [
+        $params = [
             'part' => 'snippet',
             'q' => $request->videoKeyword,
             'type' => 'video',
             'maxResults' => 10,
             'key' => $youtubeApiKey,
-        ]);
+        ];
+
+        if($request->filled('pageToken')) {
+            $params['pageToken'] = $request->pageToken;
+        }
+
+        $videoResponse = Http::get('https://www.googleapis.com/youtube/v3/search', $params);
+
+        if (!$videoResponse->successful()) {
+            return response()->json([
+                'message' => 'Failed to fetch videos from YouTube API',
+                'error' => $videoResponse->body()
+            ], 500);
+        }
 
         $videoIds = collect($videoResponse['items'])->pluck('id.videoId')->implode(',');
 
@@ -154,10 +187,15 @@ class videoController extends Controller
                 'thumbnail' => $video['thumbnail'],
             ]);
         }
-        return $videos;
+        return response()->json([
+            'message' => 'Videos fetched successfully',
+            'videos' => $videos,
+            'nextPageToken' => $videoResponse['nextPageToken'] ?? null,
+        ]);
     }
 
-    public function convertToTime($duration){
+    public function convertToTime($duration)
+    {
         $interval = new \DateInterval($duration);
         $minutes = ($interval->h * 60) + $interval->i;
         $seconds = $interval->s;

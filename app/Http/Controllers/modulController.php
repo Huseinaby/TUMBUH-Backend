@@ -222,18 +222,30 @@ class modulController extends Controller
         $articleController = new articleController();
 
         $quizzes = $quizController->generateQuiz($modul->id, $generateContent);
-        $articles = $articleController->generateArticles($articleKeyword, $modul->id);
-        $videos = $videoController->generateVideos($videoKeyword, $modul->id);
+
+        $articleResult = $articleController->generateArticles($articleKeyword, $modul->id);
+        $articles = $articleResult['articles'] ?? [];
+        $start = $articleResult['start'] ?? null;
+
+        $videoResult = $videoController->generateVideos($videoKeyword, $modul->id);
+        $videos = $videoResult['videos'] ?? [];
+        $nextPageToken = $videoResult['nextPageToken'] ?? null;
 
         return response()->json([
-            'imageKeyword' => $imageKeyword,
-            'videoKeyword' => $videoKeyword,
-            'articleKeyword' => $articleKeyword,
             'content' => $modul,
             'category' => $category,
+            'imageKeyword' => $imageKeyword,
             'image' => $imageUrl,
-            'articles' => $articles,
-            'videos' => $videos,
+            'article' => [
+                'articleKeyword' => $articleKeyword,
+                'start' => $start,
+                'articles' => $articles,
+            ],
+            'video' => [
+                'videoKeyword' => $videoKeyword,
+                'videoNextPageToken' => $nextPageToken,
+                'videos' => $videos,
+            ],
             'quiz' => $quizzes,
         ]);
     }
