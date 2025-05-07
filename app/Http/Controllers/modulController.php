@@ -142,7 +142,7 @@ class modulController extends Controller
           "searchKeywords": {
             "video": "kata kunci untuk mencari video tentang tanaman ini dalam bahasa indonesia",
             "article": "kata kunci untuk mencari artikel dalam bahasa indonesia",
-            "image": "nama tanaman dalam bahasa Inggris atau nama ilmiah dalam bahasa indonesia"
+            "image": "nama tanaman dalam nama ilmiah"
           },
           "content": "Tuliskan konten edukatif singkat tentang tanaman '{$request->title}'.
         
@@ -175,7 +175,7 @@ class modulController extends Controller
 
         $text = $checkResponse['candidates'][0]['content']['parts'][0]['text'] ?? '';
 
-        if(!$text){
+        if (!$text) {
             return response()->json([
                 'message' => 'Gagal mendapatkan response dari gemini',
                 'raw_response' => $checkResponse->json(),
@@ -188,7 +188,7 @@ class modulController extends Controller
 
         $jsonResult = json_decode($cleaned, true);
 
-        if(json_last_error() !== JSON_ERROR_NONE) {
+        if (json_last_error() !== JSON_ERROR_NONE) {
             return response()->json([
                 'message' => 'Gagal mengkonversi response ke JSON',
                 'raw_response' => $checkResponse->json(),
@@ -217,13 +217,13 @@ class modulController extends Controller
             ], 500);
         }
 
-        $imageUrl = $this->fetchImage($imageKeyword);
-
         $modul = Modul::create([
             'title' => $request->title,
             'content' => $generateContent,
             'category' => $category,
         ]);
+
+        $imageUrl = $this->fetchImage($imageKeyword);
 
         foreach ($imageUrl as $url) {
             $modul->modulImage()->create([
@@ -276,7 +276,7 @@ class modulController extends Controller
             'per_page' => 5,
         ]);
 
-        if($response->failed()) {
+        if ($response->failed()) {
             return response()->json([
                 'message' => 'Gagal mendapatkan gambar dari Unsplash',
                 'error' => $response->json(),
@@ -289,6 +289,49 @@ class modulController extends Controller
         }
 
         return null;
+    }
+
+    public function fetchTrefleImage($imageKeyword)
+    {
+        $token = env('TREFLE_API_TOKEN');
+
+        if (!$token) {
+            Log::warning('TREFLE_API_TOKEN belum diset');
+            return [];
+        }
+
+        Log::info('Mencari gambar dari Trefle untuk Keyword:', ['imageKeyword' => $imageKeyword]);
+
+        try {
+            $searchResponse = Http::withToken($token)->get('https://trefle.io/api/v1/plants/search', [
+                'q' => $imageKeyword,
+            ]);
+
+            if (!$searchResponse->successful()) {
+                Log::error('Gagal mengakses Trefle', [
+                    'status' => $searchResponse->status(),
+                    'body' => $searchResponse->body(),
+                ]);
+                return [];
+            }
+
+            $results = $searchResponse->json('data') ?? [];
+
+            // Ambil hanya hasil yang punya image_url
+            $filtered = collect($results)
+                ->filter(fn($item) => !empty($item['image_url']))
+                ->pluck('image_url')
+                ->take(5)
+                ->values()
+                ->all();
+
+            Log::info('Jumlah gambar ditemukan dari Trefle:', ['count' => count($filtered)]);
+
+            return $filtered;
+        } catch (\Exception $e) {
+            Log::error('Exception saat fetch image dari Trefle', ['error' => $e->getMessage()]);
+            return [];
+        }
     }
 }
 

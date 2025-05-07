@@ -126,9 +126,16 @@ class AuthController extends Controller
                 ], 422);
             }
 
-            $googleId = $payload['sub'];
-            $email = $payload['email'];
+
             $name = $payload['name'];
+            $parts = explode('-', $name);
+            if(count($parts) > 1) {
+                array_pop($parts);
+            } 
+            $username = implode(' ', $parts);
+
+            $googleId = $payload['sub'];
+            $email = $payload['email'];            
             $photo = $payload['picture'] ?? 'https://avatar.iran.liara.run/public';
 
             $user = User::where('gauth_id', $googleId)->first();
@@ -145,7 +152,7 @@ class AuthController extends Controller
                     ]);
                 } else {
                     $user = User::create([
-                        'username' => $name,
+                        'username' => $username,
                         'email' => $email,
                         'role' => 'user',
                         'photo' => $photo,
