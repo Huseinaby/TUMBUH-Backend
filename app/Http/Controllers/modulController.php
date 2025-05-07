@@ -47,7 +47,8 @@ class modulController extends Controller
 
     public function show($id)
     {
-        $modul = Modul::find($id);
+        $modul = Modul::with('modulImage')
+            ->find($id);
 
         if (!$modul) {
             return response()->json([
