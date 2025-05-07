@@ -105,9 +105,10 @@ class AuthController extends Controller
         try {
             $idToken = $request->input('id_token');
 
-            if (! $idToken) {
+            if (!$idToken) {
                 return response()->json([
-                    'message' => 'ID token tidak ditemukan'
+                    'message' => 'ID token tidak ditemukan',
+                    'idtoken' => $idToken
                 ], 400);
             }
 
@@ -116,7 +117,9 @@ class AuthController extends Controller
 
             if (!$payload) {
                 return response()->json([
-                    'message' => 'ID token tidak valid'
+                    'message' => 'ID token tidak valid',
+                    'idtoken' => $idToken,
+                    'payload' => $payload
                 ], 401);
             }
 
