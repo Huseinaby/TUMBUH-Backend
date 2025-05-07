@@ -109,7 +109,6 @@ class AuthController extends Controller
                 return response()->json([
                     'message' => 'ID token tidak ditemukan',
                     'idtoken' => $idToken,
-                    'request' => $request->all()
                 ], 400);
             }
 
