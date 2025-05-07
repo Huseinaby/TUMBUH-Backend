@@ -177,12 +177,28 @@ class modulController extends Controller
 
         $text = $checkResponse['candidates'][0]['content']['parts'][0]['text'] ?? '';
 
+        if(!$text){
+            return response()->json([
+                'message' => 'Gagal mendapatkan response dari gemini',
+                'raw_response' => $checkResponse->json(),
+                'status' => $checkResponse->status(),
+            ], 500);
+        }
+
         $cleaned = preg_replace('/```json|```|json|\n/', '', $text);
         $cleaned = trim($cleaned);
 
         $jsonResult = json_decode($cleaned, true);
 
-        if (!$jsonResult || !isset($jsonResult['isPlant']) || $jsonResult['isPlant'] !== true) {
+        if(json_last_error() !== JSON_ERROR_NONE) {
+            return response()->json([
+                'message' => 'Gagal mengkonversi response ke JSON',
+                'raw_response' => $checkResponse->json(),
+                'error' => json_last_error_msg()
+            ], 500);
+        }
+
+        if (!isset($jsonResult['isPlant']) || $jsonResult['isPlant'] !== true) {
             return response()->json([
                 'message' => 'Judul bukan nama tanaman, tidak bisa digenerate.',
                 'data' => $checkResponse['candidates'][0]['content']['parts'][0]['text'] ?? null
