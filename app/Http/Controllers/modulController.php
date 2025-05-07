@@ -90,7 +90,7 @@ class modulController extends Controller
 
         return response()->json([
             'message' => 'Modul updated successfully',
-            'data' => $modul
+            'data' => ModulResource::make($modul),
         ]);
     }
 
