@@ -187,9 +187,8 @@ class AuthController extends Controller
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Login gagal',
+                'message' => 'Login gagal ' . $e->getMessage() . $e->getTrace(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTrace(),
             ], 500);
         }
     }
