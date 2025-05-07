@@ -108,7 +108,8 @@ class AuthController extends Controller
             if (!$idToken) {
                 return response()->json([
                     'message' => 'ID token tidak ditemukan',
-                    'idtoken' => $idToken
+                    'idtoken' => $idToken,
+                    'request' => $request->all()
                 ], 400);
             }
 
@@ -187,7 +188,8 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Login gagal',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTrace(),
             ], 500);
         }
     }
