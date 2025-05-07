@@ -32,4 +32,12 @@ class modul extends Model
     {
         return $this->hasMany(ModulImage::class);
     }
+
+    protected $appends = ['images'];
+    protected $hidden = ['modul_image'];
+
+    public function getImagesAttribute()
+    {
+        return $this->modulImage;
+    }
 }

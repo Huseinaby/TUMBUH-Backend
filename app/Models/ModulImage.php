@@ -9,6 +9,8 @@ class ModulImage extends Model
     //
     protected $guarded = ['id'];
 
+
+
     public function modul()
     {
         return $this->belongsTo(modul::class);
