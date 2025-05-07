@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Google\Service\CloudTrace\Module;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use App\Models\modul;
-use App\Models\Quiz;
-use App\Models\Article;
-use App\Models\Video;
+
 
 class modulController extends Controller
 {
@@ -248,7 +246,9 @@ class modulController extends Controller
         $nextPageToken = $videoResult['nextPageToken'] ?? null;
 
         return response()->json([
-            'content' => $modul,
+            'title' => $request->title,
+            'id' => $modul->id,
+            'content' => $generateContent,
             'category' => $category,
             'imageKeyword' => $imageKeyword,
             'image' => $imageUrl,
@@ -275,6 +275,14 @@ class modulController extends Controller
             'client_id' => $accessKey,
             'per_page' => 5,
         ]);
+
+        if($response->failed()) {
+            return response()->json([
+                'message' => 'Gagal mendapatkan gambar dari Unsplash',
+                'error' => $response->json(),
+                'status' => $response->status(),
+            ], 500);
+        }
 
         if ($response->successful() && !empty($response['results'])) {
             return collect($response['results'])->pluck('urls.small')->all();
