@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('product_category_id')->nullable()->constrained()->onDelete('set null');
             $table->string('name');
             $table->text('description');
+            $table->string('location')->nullable();
             $table->integer('price');
             $table->integer('stock')->default(0);
             $table->string('location')->nullable();
