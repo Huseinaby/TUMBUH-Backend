@@ -48,5 +48,39 @@ class productController extends Controller
         ], 201);
     }
 
-    public function 
+    public function update(Request $request, $id){
+        $product  = Product::where('user_id', Auth::id())->findOrFail($id);
+
+        $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'description' => 'sometimes|string',
+            'location' => 'sometimes|string|max:255',
+            'price' => 'sometimes|integer',
+            'stock' => 'sometimes|integer',
+            'category_id' => 'sometimes|exists:product_categories,id',
+            'image' => 'sometimes|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $product->update($request->all());
+
+        return response()->json([
+            'message' => 'Product updated successfully',
+            'product' => $product,
+        ]);
+    }
+
+    public function destroy($id){
+        $product = Product::where('user_id', Auth::id())->findOrFail($id);
+        $product->delete();
+
+        return response()->json([
+            'message' => 'Product deleted successfully',
+        ]);
+    }
+
+    public function show($id){
+        $product = Product::with(['category', 'user'])->findOrFail($id);
+
+        return response()->json($product);
+    }
 }

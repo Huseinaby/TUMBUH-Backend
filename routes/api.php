@@ -3,6 +3,7 @@
 use App\Http\Controllers\articleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\modulController;
+use App\Http\Controllers\productController;
 use App\Http\Controllers\quizController;
 use App\Http\Controllers\videoController;
 use Illuminate\Http\Request;
@@ -54,6 +55,14 @@ Route::get('/quiz', [QuizController::class, 'index']);
 Route::get('/quiz/{id}', [QuizController::class, 'show']);
 Route::delete('/quiz/{id}', [quizController::class, 'destroy']);
 Route::get('/quiz/modul/{modulId}', [QuizController::class, 'getByModul']);
+
+//product
+Route::get('/product', [productController::class, 'index']);
+Route::get('/product/{id}', [productController::class, 'show']);
+Route::post('/product', [productController::class, 'store']);
+Route::put('/product/{id}', [productController::class, 'update']);
+Route::delete('/product/{id}', [productController::class, 'destroy']);
+
 
 //test generate quiz
 Route::post('/quiz/generate', [QuizController::class, 'generateQuiz']);
