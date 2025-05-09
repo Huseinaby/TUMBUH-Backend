@@ -15,10 +15,13 @@ class transaction extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function cartItem()
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
     }
-    
-    
 }

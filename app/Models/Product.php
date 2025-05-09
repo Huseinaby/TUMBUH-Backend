@@ -20,4 +20,14 @@ class Product extends Model
     {
         return $this->belongsTo(productCategories::class, 'product_category_id');
     }
+
+    public function cartItem()
+    {
+        return $this->hasMany(cartItem::class);
+    }
+
+    public function orderItem()
+    {
+        return $this->hasMany(orderItem::class);
+    }
 }
