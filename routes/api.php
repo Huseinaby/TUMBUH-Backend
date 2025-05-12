@@ -7,6 +7,7 @@ use App\Http\Controllers\checkoutController;
 use App\Http\Controllers\modulController;
 use App\Http\Controllers\productController;
 use App\Http\Controllers\quizController;
+use App\Http\Controllers\transactionController;
 use App\Http\Controllers\videoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -71,8 +72,10 @@ Route::post('/cart', [cartController::class, 'store']);
 Route::put('/cart/{id}', [cartController::class, 'update']);
 Route::delete('/cart/{id}', [cartController::class, 'destroy']);
 
-//checkout
-Route::post('/checkout', [checkoutController::class, 'store']);
+//transaction
+Route::post('/checkout', [transactionController::class, 'store']);
+Route::get('/transaction', [transactionController::class, 'index']);
+Route::get('/transaction/{id}', [transactionController::class, 'show']);
 
 
 //test generate quiz

@@ -2,15 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\cartItem;
-use App\Models\orderItem;
 use App\Models\transaction;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\cartItem;
+use App\Models\orderItem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
-class checkoutController extends Controller
+class transactionController extends Controller
 {
+    public function index(){
+        $transactions = transaction::with('user', 'orderItems.product')
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->get();
+
+            return response()->json([
+                'transactions' => $transactions,
+            ]);
+    }
+
     public function store(Request $request){
         $user = Auth::user();
 
@@ -64,5 +75,15 @@ class checkoutController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function show($id){
+        $transaction = Transaction::with('user', 'orderItems.product')
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
+
+            return response()->json([
+                'transaction' => $transaction,
+            ]);
     }
 }
