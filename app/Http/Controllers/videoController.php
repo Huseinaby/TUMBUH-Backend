@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Video;
 use Illuminate\Support\Facades\Http;
+use YoutubeDl\YoutubeDl;
+use YoutubeDl\Exception\YoutubeDlException;
+use YoutubeDl\Options;
+use Illuminate\Support\Facades\Log;
 
 class videoController extends Controller
 {
@@ -143,7 +147,7 @@ class videoController extends Controller
             'key' => $youtubeApiKey,
         ];
 
-        if($request->filled('pageToken')) {
+        if ($request->filled('pageToken')) {
             $params['pageToken'] = $request->pageToken;
         }
 
