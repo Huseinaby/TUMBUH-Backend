@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\articleController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\cartController;
 use App\Http\Controllers\modulController;
 use App\Http\Controllers\productController;
 use App\Http\Controllers\quizController;
@@ -62,6 +63,12 @@ Route::get('/product/{id}', [productController::class, 'show']);
 Route::post('/product', [productController::class, 'store']);
 Route::put('/product/{id}', [productController::class, 'update']);
 Route::delete('/product/{id}', [productController::class, 'destroy']);
+
+//cartItem
+Route::get('/cart', [cartController::class, 'index']);
+Route::post('/cart', [cartController::class, 'store']);
+Route::put('/cart/{id}', [cartController::class, 'update']);
+Route::delete('/cart/{id}', [cartController::class, 'destroy']);
 
 
 //test generate quiz
