@@ -3,6 +3,7 @@
 use App\Http\Controllers\articleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\cartController;
+use App\Http\Controllers\checkoutController;
 use App\Http\Controllers\modulController;
 use App\Http\Controllers\productController;
 use App\Http\Controllers\quizController;
@@ -69,6 +70,9 @@ Route::get('/cart', [cartController::class, 'index']);
 Route::post('/cart', [cartController::class, 'store']);
 Route::put('/cart/{id}', [cartController::class, 'update']);
 Route::delete('/cart/{id}', [cartController::class, 'destroy']);
+
+//checkout
+Route::post('/checkout', [checkoutController::class, 'store']);
 
 
 //test generate quiz
