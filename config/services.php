@@ -48,4 +48,8 @@ return [
         'key' => env('RESEND_API_KEY'),
         // 'domain' => env('RESEND_DOMAIN'),
     ],
+
+    'xendit' => [
+        'secrt' => env('XENDIT_SECRET_KEY'),
+    ]
 ];

@@ -8,6 +8,9 @@ use App\Models\cartItem;
 use App\Models\orderItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Xendit\Configuration;
+use Xendit\Invoice\InvoiceApi;
+use Xendit\Invoice\CreateInvoiceRequest;
 
 class transactionController extends Controller
 {
@@ -85,5 +88,44 @@ class transactionController extends Controller
             return response()->json([
                 'transaction' => $transaction,
             ]);
+    }
+
+    public function payWithXendit($transactionId){
+        $transaction = Transaction::with('user')->findOrFail($transactionId);
+
+        if($transaction->status !== 'pending'){
+            return response()->json([
+                'message' => 'Transaction already paid or cancelled',
+            ], 400);
+        }
+
+        Configuration::setXenditKey(config('services.xendit.secrt'));
+
+        $externalId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
+
+        $invoiceRequest = new CreateInvoiceRequest([
+            'external_id' => $externalId,
+            'amount' => $transaction->total_price,
+            'description' => 'Payment for transaction #' . $transaction->id,
+            'customer' => [
+                'email' => $transaction->user->email,
+            ],
+            'success_redirect_url' => url('/payment/success'),
+            'failure_redirect_url' => url('/payment/failure'),
+        ]);
+
+        $invoiceApi = new InvoiceApi();
+        $invoice = $invoiceApi->createInvoice($invoiceRequest);
+
+        $transaction->update([
+            'payment_method' => 'xendit',
+            'xendit_invoice_id' => $invoice['id'],
+            'invoice_url' => $invoice['invoice_url'],
+        ]);
+
+        return response()->json([
+            'message' => 'Invoice created successfully',
+            'invoice_url' => $invoice['invoice_url'],
+        ]);
     }
 }

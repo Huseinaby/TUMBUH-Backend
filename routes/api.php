@@ -76,6 +76,7 @@ Route::delete('/cart/{id}', [cartController::class, 'destroy']);
 Route::post('/checkout', [transactionController::class, 'store']);
 Route::get('/transaction', [transactionController::class, 'index']);
 Route::get('/transaction/{id}', [transactionController::class, 'show']);
+Route::post('/transaction/{id}/payment', [transactionController::class, 'payWithXendit']);
 
 
 //test generate quiz
