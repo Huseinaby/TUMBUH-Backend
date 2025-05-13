@@ -144,7 +144,7 @@ class modulController extends Controller
           "searchKeywords": {
             "video": "kata kunci untuk mencari video tanaman ini dalam bahasa indonesia",
             "article": "kata kunci untuk mencari artikel dalam bahasa indonesia",
-            "image": "nama tanaman dalam nama ilmiah"
+            "image": "nama tanaman dalam bahasa inggris"
           },
           "content": "Tuliskan konten edukatif singkat tentang tanaman '{$request->title}'.
         
@@ -207,7 +207,7 @@ class modulController extends Controller
 
         $videoKeyword = $jsonResult['searchKeywords']['video'] ?? $request->title;
         $articleKeyword = $jsonResult['searchKeywords']['article'] ?? $request->title;
-        $imageKeyword = $jsonResult['searchKeywords']['image'] ?? $request->title;
+        $imageKeyword = 'Image of ' . $jsonResult['searchKeywords']['image'] ?? $request->title;
         $category = $jsonResult['category'] ?? null;
         $generateContent = $jsonResult['content'] ?? null;
 
