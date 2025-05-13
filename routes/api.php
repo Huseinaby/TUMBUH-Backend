@@ -38,6 +38,7 @@ Route::get('/modul/{id}', [modulController::class, 'show']);
 Route::put('/modul/{id}', [modulController::class, 'update']);
 Route::delete('/modul/{id}', [modulController::class, 'destroy']);
 Route::post('/modul/generate', [modulController::class, 'generateContent']);
+Route::get('/modul/user/{userId}', [modulController::class, 'getModulByUser']);
 
 //article
 Route::get('/article', [articleController::class, 'index']);
