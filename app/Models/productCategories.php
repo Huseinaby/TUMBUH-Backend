@@ -4,13 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class productCategories extends Model
+class ProductCategories extends Model
 {
     //
     protected $guarded = ['id'];
 
     public function products()
     {
-        return $this->hasMany(Product::class, 'category_id');
+        return $this->hasMany(Product::class, 'product_category_id');
     }
 }

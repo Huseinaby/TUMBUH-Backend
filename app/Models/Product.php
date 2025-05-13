@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use app\Models\User;
-use app\Models\productCategories;
+use App\Models\User;
+use App\Models\ProductCategories;
 
 class Product extends Model
 {
@@ -18,7 +18,7 @@ class Product extends Model
 
     public function productCategories()
     {
-        return $this->belongsTo(productCategories::class, 'product_category_id');
+        return $this->belongsTo(ProductCategories::class);
     }
 
     public function cartItem()
