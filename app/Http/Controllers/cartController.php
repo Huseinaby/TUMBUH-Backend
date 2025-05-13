@@ -13,6 +13,12 @@ class cartController extends Controller
     {
         $cart = cartItem::with('product')->where('user_id', Auth::id())->get();
 
+        if($cart->isEmpty()) {
+            return response()->json([
+                'message' => 'Cart is empty',
+            ]);
+        }
+
         $total = $cart->sum(function ($item) {
             return $item->product->price * $item->quantity;
         });
@@ -64,7 +70,7 @@ class cartController extends Controller
         ]);
     }
 
-    public function destory($id){
+    public function destroy($id){
         $item = cartItem::where('user_id', Auth::id())->findOrFail($id);
         $item->delete();
 
