@@ -111,6 +111,19 @@ class modulController extends Controller
         ]);
     }
 
+    public function getModulByUser($userId)
+    {
+        $moduls = Modul::where('user_id', $userId)
+            ->with(['modulImage'])
+            ->withCount('quiz', 'article', 'video')
+            ->get();
+
+        return response()->json([
+            'message' => 'Modul by user',
+            'data' => ModulResource::collection($moduls)
+        ]);
+    }
+
     public function generateContent(Request $request)
     {
         $request->validate([

@@ -13,6 +13,11 @@ class modul extends Model
         'image' => 'array',
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function video()
     {
         return $this->hasMany(Video::class);
