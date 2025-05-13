@@ -11,7 +11,7 @@ class productController extends Controller
     public function index(Request $request)
     {
         $products = Product::with(['productCategories', 'user'])
-            ->when($request->category_id, fn ($q)  => $q->where('category_id', $request->category_id))
+            ->when($request->product_category_id, fn ($q)  => $q->where('product_category_id', $request->product_category_id))
             ->when($request->location, fn ($q)  => $q->where('location', 'like', "%{$request->location}%"))
             ->when($request->search, fn ($q)  => $q->where('name', 'like', "%{$request->search}%"))
             ->latest()
@@ -27,7 +27,7 @@ class productController extends Controller
            'location' => 'nullable|string|max:255',
            'price' => 'required|integer',
            'stock' => 'required|integer',
-           'category_id' => 'nullable|exists:product_categories,id',
+           'product_category_id' => 'nullable|exists:product_categories,id',
            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
@@ -38,7 +38,7 @@ class productController extends Controller
             'location' => $request->location,
             'price' => $request->price,
             'stock' => $request->stock,
-            'category_id' => $request->category_id,
+            'product_category_id' => $request->product_category_id,
             'image' => $request->file('image') ? $request->file('image')->store('products', 'public') : null,
         ]);
 
@@ -57,7 +57,7 @@ class productController extends Controller
             'location' => 'sometimes|string|max:255',
             'price' => 'sometimes|integer',
             'stock' => 'sometimes|integer',
-            'category_id' => 'sometimes|exists:product_categories,id',
+            'product_category_id' => 'sometimes|exists:product_categories,id',
             'image' => 'sometimes|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
