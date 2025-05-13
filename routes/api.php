@@ -77,6 +77,7 @@ Route::post('/checkout', [transactionController::class, 'store']);
 Route::get('/transaction', [transactionController::class, 'index']);
 Route::get('/transaction/{id}', [transactionController::class, 'show']);
 Route::post('/transaction/{id}/payment', [transactionController::class, 'payWithXendit']);
+Route::post('/transaction/webhook', [transactionController::class, 'handleWebhook']);
 
 
 //test generate quiz
