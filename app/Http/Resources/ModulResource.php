@@ -24,6 +24,7 @@ class ModulResource extends JsonResource
             'quiz_count' => $this->quiz->count(),
             'article_count' => $this->article->count(),
             'video_count' => $this->video->count(),
+            'user' => $this->user,
             'images' => $this->modulImage,
         ];
     }

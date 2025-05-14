@@ -7,14 +7,15 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use App\Models\modul;
+use Illuminate\Support\Facades\Auth;
 
 
 class modulController extends Controller
 {
     public function index()
     {
-        $moduls = Modul::with(['modulImage'])
-            ->withCount('quiz', 'article', 'video')
+        $moduls = Modul::with(['modulImage', 'user'])
+            ->withCount('quiz','article', 'video')
             ->get();
 
         return response()->json([
@@ -30,6 +31,8 @@ class modulController extends Controller
             'content' => 'required|string',
             'category' => 'required|string|max:255',
         ]);
+
+        $validator['user_id'] = Auth::user()->id;
 
         if ($validator->fails()) {
             return response()->json([
@@ -48,7 +51,7 @@ class modulController extends Controller
 
     public function show($id)
     {
-        $modul = Modul::with('modulImage')
+        $modul = Modul::with(['modulImage', 'user'])
             ->find($id);
 
         if (!$modul) {
@@ -131,7 +134,7 @@ class modulController extends Controller
         ]);
 
         $modul = Modul::where('title', $request->title)
-            ->with(['modulImage', 'article', 'video', 'quiz'])
+            ->with(['modulImage','user', 'article', 'video', 'quiz'])
             ->first();
 
         if ($modul) {
@@ -140,6 +143,8 @@ class modulController extends Controller
                 'data' => $modul
             ]);
         }
+
+        $userId = Auth::user()->id;
 
 
         $geminiKey = env('GEMINI_API_KEY');
@@ -234,6 +239,7 @@ class modulController extends Controller
 
         $modul = Modul::create([
             'title' => $request->title,
+            'user_id' => $userId,
             'content' => $generateContent,
             'category' => $category,
         ]);
@@ -263,6 +269,7 @@ class modulController extends Controller
         return response()->json([
             'title' => $request->title,
             'id' => $modul->id,
+            'user_id' => $userId,
             'content' => $generateContent,
             'category' => $category,
             'imageKeyword' => $imageKeyword,
