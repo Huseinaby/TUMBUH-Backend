@@ -45,6 +45,14 @@ class transactionController extends Controller
             return $item->product->price * $item->quantity;
         });
 
+        foreach($cartItems as $item) {
+            if ($item->product->stock < $item->quantity) {
+                return response()->json([
+                    'message' => 'Insufficient stock for product: ' . $item->product->name,
+                ], 400);
+            }
+        }
+
         DB::beginTransaction();
 
         try {
@@ -159,7 +167,11 @@ class transactionController extends Controller
                 'status' => 'paid',
                 'paid_at' => now(),
             ]);
-            Log::info('Webhook dari Xendit:', $request->all());
+
+            foreach($transaction->orderItems() as $orderItem) {
+                $orderItem->product->decrement('stock', $orderItem->quantity);
+            }
+
         } elseif ($status === 'expired') {
             $transaction->update([
                 'status' => 'expired',
