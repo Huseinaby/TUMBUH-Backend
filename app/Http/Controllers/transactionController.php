@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Xendit\Configuration;
 use Xendit\Invoice\InvoiceApi;
 use Xendit\Invoice\CreateInvoiceRequest;
+use Illuminate\Support\Facades\Log;
 
 class transactionController extends Controller
 {
@@ -60,7 +61,7 @@ class transactionController extends Controller
                     'product_id' => $item->product_id,
                     'quantity' => $item->quantity,
                     'price' => $item->product->price,
-                    'subtotal' => $item->product->price * $item->quantity,
+                    'subtotal' => $item->product->price * $item->quantity,  
                 ]);
             }
 
@@ -158,6 +159,7 @@ class transactionController extends Controller
                 'status' => 'paid',
                 'paid_at' => now(),
             ]);
+            Log::info('Webhook dari Xendit:', $request->all());
         } elseif ($status === 'expired') {
             $transaction->update([
                 'status' => 'expired',
