@@ -115,8 +115,8 @@ class transactionController extends Controller
             'customer' => [
                 'email' => $transaction->user->email,
             ],
-            'success_redirect_url' => url('/payment/success'),
-            'failure_redirect_url' => url('/payment/failure'),
+            'success_redirect_url' => url('/api/transaction/success'),
+            'failure_redirect_url' => url('/api/transaction/failed'),
         ]);
 
         $invoiceApi = new InvoiceApi();
@@ -168,5 +168,45 @@ class transactionController extends Controller
         return response()->json([
             'message' => 'Transaction status updated successfully',
         ], 200);
+    }
+
+    public function paymentSuccess(Request $request)
+    {
+        $invoiceId = $request->query('id');
+
+        $transaction = transaction::with('orderItems.product')
+        ->where('xendit_invoice_id', $invoiceId)
+        ->first();
+
+        if(!$transaction) {
+            return response()->json([
+                'message' => 'Transaction not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Payment successful',
+            'status' => $transaction->status,
+            'transaction' => $transaction,
+        ]);
+    }
+
+    public function paymentFailed(Request $request)
+    {
+        $invoiceId = $request->query('id');
+
+        $transaction = transaction::where('xendit_invoice_id', $invoiceId)->first();
+
+        if(!$transaction) {
+            return response()->json([
+                'message' => 'Transaction not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Payment failed',
+            'status' => $transaction->status,
+            'transaction' => $transaction,
+        ]);
     }
 }
