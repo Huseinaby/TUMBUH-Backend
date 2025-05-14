@@ -26,7 +26,7 @@ class transactionController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store()
     {
         $user = Auth::user();
 
@@ -51,7 +51,7 @@ class transactionController extends Controller
                 'user_id' => $user->id,
                 'total_price' => $total,
                 'status' => 'pending',
-                'payment_method' => $request->payment_method,
+                'payment_method' => 'xendit',
             ]);
 
             foreach ($cartItems as $item) {
