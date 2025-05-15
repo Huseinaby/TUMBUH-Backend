@@ -221,4 +221,28 @@ class transactionController extends Controller
             'transaction' => $transaction,
         ]);
     }
+
+    public function sellerIncome()
+    {
+        $user = Auth::user();
+
+        $total = orderItem::whereHas('product', function ($query) use ($user) {
+            $query->where('user_id', $user->id)
+            ->whereHas('transaction', function ($query) {
+                $query->where('status', 'paid');
+            });
+        })->sum('subtotal');
+
+        $count = orderItem::where('product', function ($query) use ($user) {
+            $query->where('user_id', $user->id)
+            ->whereHas('transaction', function ($query) {
+                $query->where('status', 'paid');
+            });
+        })->count();
+
+        return response()->json([
+            'total_income' => $total,
+            'total_transaction' => $count,
+        ]);
+    }
 }
