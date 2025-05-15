@@ -81,6 +81,7 @@ Route::post('/transaction/{id}/payment', [transactionController::class, 'payWith
 Route::post('/transaction/webhook', [transactionController::class, 'handleWebhook']);
 Route::get('/transaction/success', [transactionController::class, 'paymentSuccess']);
 Route::get('/transaction/failed', [transactionController::class, 'paymentFailed']);
+Route::get('/transaction/income', [transactionController::class, 'sellerIncome']);
 
 
 //test generate quiz
