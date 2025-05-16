@@ -51,7 +51,8 @@ class User extends Authenticatable
         ];
     }
 
-    public function modul(){
+    public function modul()
+    {
         return $this->hasMany(modul::class);
     }
 
@@ -68,5 +69,10 @@ class User extends Authenticatable
     public function cartItem()
     {
         return $this->hasMany(cartItem::class);
+    }
+
+    public function favoriteModul()
+    {
+        return $this->belongsToMany(modul::class, 'favorite_moduls')->withTimestamps();
     }
 }

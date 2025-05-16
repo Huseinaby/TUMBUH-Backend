@@ -83,6 +83,8 @@ Route::get('/transaction/success', [transactionController::class, 'paymentSucces
 Route::get('/transaction/failed', [transactionController::class, 'paymentFailed']);
 Route::get('/transaction/income', [transactionController::class, 'sellerIncome']);
 
+Route::post('/modul/{id}/favorite', [ModulController::class, 'favoriteUser']);
+Route::get('/smodul/favorite/list', [ModulController::class, 'getFavoriteModul']);
 
 //test generate quiz
 Route::post('/quiz/generate', [QuizController::class, 'generateQuiz']);

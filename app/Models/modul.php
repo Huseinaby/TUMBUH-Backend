@@ -45,4 +45,9 @@ class modul extends Model
     {
         return $this->modulImage;
     }
+
+    public function favoriteModul(){
+        return $this->belongsToMany(User::class, 'favorite_moduls')
+            ->withTimestamps();
+    }
 }

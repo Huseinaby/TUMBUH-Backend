@@ -10,7 +10,7 @@ use App\Models\modul;
 use Illuminate\Support\Facades\Auth;
 
 
-class modulController extends Controller
+class ModulController extends Controller
 {
     public function index()
     {
@@ -351,6 +351,35 @@ class modulController extends Controller
             ]);
             return [];
         }
+    }
+
+    public function favoriteUser(Request $request, $id){
+        $user = $request->user();
+        $modul = Modul::findOrFail($id);
+
+        if($user->favoriteModul()->where('modul_id', $id)->exists()) {
+            $user->favoriteModul()->detach($id);
+            return response()->json([
+                'status' => 'unfavorited',
+                'message' => 'Modul dihapus dari favorit.'
+            ]);
+        } else {
+            $user->favoriteModul()->attach($id);
+            return response()->json([
+                'status' => 'favorited',
+                'message' => 'Modul ditambahkan ke favorit.'
+            ]);
+        }
+    }
+
+    public function getFavoriteModul(Request $request)
+    {
+        $user = $request->user();
+        $favoriteModuls = $user->favoriteModul()->with('category')->latest()->get(); // contoh tambahan relasi kategori
+
+        return response()->json([
+            'data' => $favoriteModuls
+        ]);
     }
 }
 
