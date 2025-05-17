@@ -375,7 +375,7 @@ class ModulController extends Controller
     public function getFavoriteModul(Request $request)
     {
         $user = $request->user();
-        $favoriteModuls = $user->favoriteModul()->with('category')->latest()->get(); // contoh tambahan relasi kategori
+        $favoriteModuls = $user->favoriteModul()->get();
 
         return response()->json([
             'data' => $favoriteModuls
