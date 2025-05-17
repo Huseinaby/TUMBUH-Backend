@@ -25,6 +25,8 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i laravel-key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd ${{ secrets.EC2_PATH }}
+            git config --global --add safe.directory ${{ secrets.EC2_PATH }}
+            cd ${{ secrets.EC2_PATH }}
             git pull origin main
             composer install --no-dev --optimize-autoloader
             php artisan migrate --force
@@ -32,5 +34,7 @@ jobs:
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
+            sudo chown -R www-data:www-data storage bootstrap/cache
+            sudo chmod -R 775 storage bootstrap/cache
             sudo chown -R www-data:www-data storage bootstrap/cache
           EOF
