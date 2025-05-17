@@ -4,6 +4,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     // return view('welcome');
-    $name = 'Nakja';
+    $name = 'Nakja saja';
     return $name;
 });
