@@ -15,15 +15,15 @@ jobs:
 
       - name: Decode SSH Key
         run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" | base64 -d > laravel_key.pem
-          chmod 600 private_key.pem
+          echo "${{ secrets.EC2_SSH_KEY }}" | base64 -d > laravel-key.pem
+          chmod 600 laravel-key.pem
 
       - name: Test SSH Connection
-        run: ssh -v -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} exit
+        run: ssh -v -o StrictHostKeyChecking=no -i laravel-key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} exit
 
       - name: Deploy to EC2 via SSH
         run: |
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i laravel-key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd ${{ secrets.EC2_PATH }}
             git pull origin main
             composer install --no-dev --optimize-autoloader
