@@ -1,0 +1,32 @@
+name: Deply laravel
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+
+      - name: ssh key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" | base64 -d > private_key.pem
+          chmod 600 private_key.pem
+        
+      - name: deploy via ssh
+        run: |
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+              cd ${{ secrets.EC2_PATH }}
+              git pull origin main
+              composer install --no-dev --optimize-autoloader
+              php artisan migrate --force
+              php artisan config:clear
+              php artisan config:cache
+              php artisan route:cache
+              php artisan view:cache
+              sudo chown -R www-data:www-data storage bootstrap/cache
+            EOF
