@@ -9,6 +9,7 @@ use App\Http\Controllers\productController;
 use App\Http\Controllers\quizController;
 use App\Http\Controllers\transactionController;
 use App\Http\Controllers\videoController;
+use App\Http\Controllers\withdrawController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
@@ -40,6 +41,8 @@ Route::put('/modul/{id}', [modulController::class, 'update']);
 Route::delete('/modul/{id}', [modulController::class, 'destroy']);
 Route::post('/modul/generate', [modulController::class, 'generateContent']);
 Route::get('/modul/user/{userId}', [modulController::class, 'getModulByUser']);
+Route::post('/modul/{id}/favorite', [ModulController::class, 'favoriteUser']);
+Route::get('/modul/favorite/list', [ModulController::class, 'getFavoriteModul']);
 
 //article
 Route::get('/article', [articleController::class, 'index']);
@@ -84,8 +87,11 @@ Route::get('/transaction/success', [transactionController::class, 'paymentSucces
 Route::get('/transaction/failed', [transactionController::class, 'paymentFailed']);
 Route::get('/transaction/income', [transactionController::class, 'sellerIncome']);
 
-Route::post('/modul/{id}/favorite', [ModulController::class, 'favoriteUser']);
-Route::get('/modul/favorite/list', [ModulController::class, 'getFavoriteModul']);
+//withdraw
+Route::get('/withdraw', [withdrawController::class, 'listWithdraw']);
+Route::post('/wihdraw/request', [withdrawController::class, 'requestWithdraw']);
+Route::
+
 
 //test generate quiz
 Route::post('/quiz/generate', [QuizController::class, 'generateQuiz']);
