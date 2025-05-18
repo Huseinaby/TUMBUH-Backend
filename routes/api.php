@@ -90,7 +90,7 @@ Route::get('/transaction/income', [transactionController::class, 'sellerIncome']
 //withdraw
 Route::get('/withdraw', [withdrawController::class, 'listWithdraw']);
 Route::post('/wihdraw/request', [withdrawController::class, 'requestWithdraw']);
-Route::
+Route::post('/withdraw/{id}/handle', [withdrawController::class, 'handleWithdraw']);
 
 
 //test generate quiz
