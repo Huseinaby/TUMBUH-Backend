@@ -7,10 +7,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -91,13 +91,22 @@ class AuthController extends Controller
     {
         $token = $request->user()->currentAccessToken();
 
-        if($token) {
+        if ($token) {
             $token->delete();
         }
 
         return response()->json([
             'message' => 'User logged out successfully'
         ], 200);
+    }
+
+    public function redirectToProvider()
+    {
+        return response()->json([
+
+            'url' => Socialite::driver('google')->stateless()->redirect()->getTargetUrl()
+
+        ]);
     }
 
     public function handleProviderCallback(Request $request)
@@ -123,7 +132,7 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            if(!isset($payload['email'], $payload['sub'], $payload['name'])) {
+            if (!isset($payload['email'], $payload['sub'], $payload['name'])) {
                 return response()->json([
                     'message' => 'Payload dari Google tidak lengkap'
                 ], 422);
@@ -132,13 +141,13 @@ class AuthController extends Controller
 
             $name = $payload['name'];
             $parts = explode('-', $name);
-            if(count($parts) > 1) {
+            if (count($parts) > 1) {
                 array_pop($parts);
-            } 
+            }
             $username = implode(' ', $parts);
 
             $googleId = $payload['sub'];
-            $email = $payload['email'];            
+            $email = $payload['email'];
             $photo = $payload['picture'] ?? 'https://avatar.iran.liara.run/public';
 
             $user = User::where('gauth_id', $googleId)->first();

@@ -21,6 +21,7 @@ Route::get('/user', function (Request $request) {
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+Route::get('/oauth/google/redirect', [AuthController::class, 'redirectToProvider']);
 Route::post('/oauth/google/callback', [AuthController::class, 'handleProviderCallback']);
 Route::post('/verify-email', [AuthController::class, 'verifyEmail'])->name('verification.verify');
 Route::post('/resend-otp', [AuthController::class, 'resendOtp']);

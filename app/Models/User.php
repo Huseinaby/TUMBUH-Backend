@@ -75,4 +75,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(modul::class, 'favorite_moduls')->withTimestamps();
     }
+
+    public function withdrawRequests()
+    {
+        return $this->hasMany(WithdrawRequest::class);
+    }
 }
