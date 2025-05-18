@@ -1,0 +1,37 @@
+name: Deploy Laravel to EC2
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Decode SSH Key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" | base64 -d > laravel-key.pem
+          chmod 600 laravel-key.pem
+
+      - name: Test SSH Connection
+        run: ssh -v -o StrictHostKeyChecking=no -i laravel-key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} exit
+
+      - name: Deploy to EC2 via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no -i laravel-key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            cd ${{ secrets.EC2_PATH }}
+            git config --global --add safe.directory ${{ secrets.EC2_PATH }}
+            cd ${{ secrets.EC2_PATH }}
+            git pull origin master
+            composer install --no-dev --optimize-autoloader
+            php artisan migrate --force
+            php artisan config:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+          EOF
