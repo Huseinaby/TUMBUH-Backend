@@ -100,15 +100,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function redirectToProvider()
-    {
-        return response()->json([
-
-            'url' => Socialite::driver('google')->stateless()->redirect()->getTargetUrl()
-
-        ]);
-    }
-
     public function handleProviderCallback(Request $request)
     {
         try {
