@@ -172,7 +172,7 @@ class quizController extends Controller
 
         $result = [
             'userId' => (string) $userId,
-            'moudul' => [],
+            'modul' => [],
         ];
 
         foreach ($progressList as $modulId => $progressPerModul) {
