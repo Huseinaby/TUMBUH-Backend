@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\modul;
 use Illuminate\support\Facades\Http;
 use App\Models\Quiz;
+use App\Models\QuizProgress;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 
 class quizController extends Controller
 {
@@ -72,7 +76,7 @@ class quizController extends Controller
     {
         $geminiKey = env('GEMINI_API_KEY');
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$geminiKey}";
-        
+
         // Prompt yang lebih ketat
         $quizPrompt = <<<EOT
         Buatkan 10 soal pilihan ganda berdasarkan bacaan berikut:
@@ -104,7 +108,7 @@ class quizController extends Controller
           }
         ]
         EOT;
-       
+
         // Kirim permintaan ke Gemini API
         $quizResponse = Http::post($url, [
             'contents' => [
@@ -113,28 +117,28 @@ class quizController extends Controller
                 ]
             ]
         ]);
-        
+
         try {
             // Ekstrak teks dari respons
             $text = $quizResponse['candidates'][0]['content']['parts'][0]['text'] ?? '';
-            
+
             // Bersihkan teks dari markdown code blocks dan whitespace
             $cleaned = preg_replace('/```json|```|json|\n/', '', $text);
             $cleaned = trim($cleaned);
-            
+
             // Decode JSON
             $quizzes = json_decode($cleaned, true);
-            
+
             if (!$quizzes || !is_array($quizzes)) {
                 // Log untuk debugging
                 Log::error('Failed to parse quiz JSON', [
                     'text' => $text,
                     'cleaned' => $cleaned
                 ]);
-                
+
                 return [];
             }
-            
+
             // Simpan quiz ke database
             $savedQuizzes = [];
             foreach ($quizzes as $quizData) {
@@ -148,16 +152,90 @@ class quizController extends Controller
                     'option_d' => $quizData['option_d'],
                     'correct_answer' => $quizData['correct_answer'],
                 ]);
-                
+
                 $savedQuizzes[] = $quiz;
             }
-            
+
             return $savedQuizzes;
-            
+
         } catch (\Exception $e) {
             Log::error('Error generating quiz: ' . $e->getMessage());
             return [];
         }
     }
 
+    public function getProgress($userId)
+    {
+        $progressList = QuizProgress::where('user_id', $userId)
+            ->get()
+            ->groupBy('modul_id');
+
+        $result = [
+            'userId' => (string) $userId,
+            'moudul' => [],
+        ];
+
+        foreach ($progressList as $modulId => $progressPerModul) {
+            $levels = [];
+
+            foreach (['easy', 'medium', 'hard'] as $level) {
+                $record = $progressPerModul->firstWhere('level', $level);
+                $levels[$level] = $record
+                    ? [
+                        'isLocked' => (bool) $record->isLocked,
+                        'isCompleted' => (bool) $record->isCompleted
+                    ]
+                    : [
+                        'isLocked' => true,
+                        'isCompleted' => false
+                    ];
+            }
+
+            $result['modul'][] = [
+                'modulId' => (string) $modulId,
+                'levels' => $levels
+            ];
+        }
+
+        return response()->json([
+            'userId' => (string) $userId,
+            'modules' => $result['modul']
+        ]);
+    }
+
+    public function updateProgress(Request $request)
+    {
+        $validator = validator($request->all(), [
+            'user_id' => 'required|exists:users,id',
+            'modul_id' => 'required|exists:moduls,id',
+            'level' => 'required|in:easy,medium,hard',
+            'isLocked' => 'required|boolean',
+            'isCompleted' => 'required|boolean',
+        ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        
+
+        $progress = QuizProgress::updateOrCreate(
+            [
+                'user_id' => $request->user_id,
+                'modul_id' => $request->modul_id,
+                'level' => $request->level,
+            ],
+            [
+                'isLocked' => $request->isLocked,
+                'isCompleted' => $request->isCompleted,
+            ]
+        );
+
+        return response()->json([
+            'message' => 'Quiz progress updated successfully',
+            'data' => $progress
+        ]);
+    }
 }

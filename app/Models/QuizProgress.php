@@ -12,7 +12,7 @@ class QuizProgress extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function quiz(){
-        return $this->belongsTo(Quiz::class, 'quizzes_id');
+    public function modul(){
+        return $this->belongsTo(modul::class);
     }
 }

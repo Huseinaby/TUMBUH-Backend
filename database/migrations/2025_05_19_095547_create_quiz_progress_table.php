@@ -14,10 +14,14 @@ return new class extends Migration
         Schema::create('quiz_progress', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('quiz_id')->constrained()->onDelete('cascade');
+            $table->foreignId('modul_id')->constrained()->onDelete('cascade');
+
+            $table->enum('level', ['easy', 'medium', 'hard']);
+            $table->boolean('isLocked')->default(true);
             $table->boolean('isCompleted')->default(false);
-            $table->timestamp('completed_at')->nullable();
             $table->timestamps();
+
+            $table->unique(['user_id', 'modul_id'], 'user_quiz_unique');
         });
     }
 

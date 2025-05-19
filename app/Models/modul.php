@@ -50,4 +50,8 @@ class modul extends Model
         return $this->belongsToMany(User::class, 'favorite_moduls')
             ->withTimestamps();
     }
+    public function quizProgress()
+    {
+        return $this->hasMany(QuizProgress::class);
+    }
 }

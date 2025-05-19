@@ -62,6 +62,9 @@ Route::get('/quiz', [QuizController::class, 'index']);
 Route::get('/quiz/{id}', [QuizController::class, 'show']);
 Route::delete('/quiz/{id}', [quizController::class, 'destroy']);
 Route::get('/quiz/modul/{modulId}', [QuizController::class, 'getByModul']);
+Route::post('/quiz/progress', [QuizController::class, 'updateProgress']);
+Route::get('/quiz/progress/{userId}', [QuizController::class, 'getProgress']);
+
 
 //product
 Route::get('/product', [productController::class, 'index']);
@@ -90,6 +93,7 @@ Route::get('/transaction/income', [transactionController::class, 'sellerIncome']
 Route::get('/withdraw', [withdrawController::class, 'listWithdraw']);
 Route::post('/wihdraw/request', [withdrawController::class, 'requestWithdraw']);
 Route::post('/withdraw/{id}/handle', [withdrawController::class, 'handleWithdraw']);
+
 
 
 //test generate quiz
