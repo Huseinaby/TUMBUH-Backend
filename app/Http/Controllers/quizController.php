@@ -6,6 +6,7 @@ use App\Models\modul;
 use Illuminate\support\Facades\Http;
 use App\Models\Quiz;
 use App\Models\QuizProgress;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
@@ -232,6 +233,11 @@ class quizController extends Controller
                 'isCompleted' => $request->isCompleted,
             ]
         );
+
+        if($request->level === 'hard' && $request->isCompleted) {
+            $user = User::find($request->user_id);
+            $user->increment('coins', 10);
+        }
 
         return response()->json([
             'message' => 'Quiz progress updated successfully',

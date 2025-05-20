@@ -21,7 +21,7 @@ return new class extends Migration
             $table->boolean('isCompleted')->default(false);
             $table->timestamps();
 
-            $table->unique(['user_id', 'modul_id'], 'user_quiz_unique');
+            $table->unique(['user_id', 'modul_id', 'level'], 'user_quiz_unique');
         });
     }
 
