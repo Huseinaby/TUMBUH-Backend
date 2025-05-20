@@ -17,7 +17,7 @@ class productController extends Controller
             ->when($request->search, fn ($q)  => $q->where('name', 'like', "%{$request->search}%"))
             ->latest()->get();
         
-        return ProductResource::collection($products);
+        return ProductResource::collection($products)->resolve();
     }
 
     public function store(Request $request){
@@ -81,6 +81,6 @@ class productController extends Controller
     public function show($id){
         $product = Product::with(['productCategories', 'user'])->findOrFail($id);
 
-        return response()->json($product);
+        return ProductResource::make($product)->resolve();
     }
 }
