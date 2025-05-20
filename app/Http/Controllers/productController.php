@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ProductResource;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
@@ -10,14 +11,13 @@ class productController extends Controller
 {
     public function index(Request $request)
     {
-        $products = Product::with(['productCategories', 'user'])
+        $products = Product::with(['productCategories', 'user', 'province'])
             ->when($request->product_category_id, fn ($q)  => $q->where('product_category_id', $request->product_category_id))
             ->when($request->location, fn ($q)  => $q->where('location', 'like', "%{$request->location}%"))
             ->when($request->search, fn ($q)  => $q->where('name', 'like', "%{$request->search}%"))
-            ->latest()
-            ->paginate(10);
+            ->latest()->get();
         
-        return response()->json($products);
+        return ProductResource::collection($products);
     }
 
     public function store(Request $request){
