@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Product;
 use App\Models\productCategories;
+use App\Models\Province;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -45,9 +46,29 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
+        $productProvince = [
+            'Jawa Barat',
+            'Jawa Tengah',
+            'Jawa Timur',
+            'Bali',
+            'NTB',
+            'NTT',
+            'Sumatera Utara',
+            'Sumatera Selatan',
+            'Kalimantan Barat',
+            'Kalimantan Timur',
+        ];
+
+        foreach ($productProvince as $province) {
+            Province::create([
+                'name' => $province,
+            ]);
+        }
+
         $products = [
             [
                 'user_id' => 1,
+                'province_id' => 1,
                 'product_category_id' => 1,
                 'name' => 'Wijaya Kusuma',
                 'description' => 'Tanaman Wijaya Kusuma',
@@ -56,6 +77,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'user_id' => 2,
+                'province_id' => 8,
                 'product_category_id' => 6,
                 'name' => 'Cangkul',
                 'description' => 'Cangkul untuk berkebun',
