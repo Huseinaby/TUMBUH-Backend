@@ -28,6 +28,7 @@ class productController extends Controller
            'price' => 'required|integer',
            'stock' => 'required|integer',
            'product_category_id' => 'nullable|exists:product_categories,id',
+           'province_id' => 'nullable|exists:provinces,id',
            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
@@ -39,6 +40,7 @@ class productController extends Controller
             'price' => $request->price,
             'stock' => $request->stock,
             'product_category_id' => $request->product_category_id,
+            'province_id' => $request->province_id,
             'image' => $request->file('image') ? $request->file('image')->store('products', 'public') : null,
         ]);
 
