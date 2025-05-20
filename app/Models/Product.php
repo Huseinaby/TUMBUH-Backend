@@ -30,4 +30,9 @@ class Product extends Model
     {
         return $this->hasMany(orderItem::class);
     }
+
+    public function province()
+    {
+        return $this->belongsTo(Province::class);
+    }
 }
