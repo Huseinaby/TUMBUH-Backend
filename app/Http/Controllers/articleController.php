@@ -63,16 +63,24 @@ class articleController extends Controller
         ]);
     }
 
-    public function generateArticles($articleKeyword, $modulId)
+    public function generateArticles($title,$modulId)
     {
         $googleApiKey = env('GOOGLE_API_KEY');
         $googleCx = env('GOOGLE_CSE_ID');
+
+        $articleKeyword = [
+            'perngertian dan manfaat' . $title,
+            'cara menanaman' . $title,
+            'cara merawat' . $title,
+            'cara menghasilkan keuntungan dari' . $title,
+            'manfaat' . $title
+        ];
         
         $searchResponse = Http::get('https://www.googleapis.com/customsearch/v1', [
             'key' => $googleApiKey,
             'cx' => $googleCx,
             'q' => $articleKeyword,
-            'num' => 10,
+            'num' => 3,
         ]);
 
         $articles = $searchResponse->successful()

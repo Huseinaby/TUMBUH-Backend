@@ -159,11 +159,7 @@ class ModulController extends Controller
         {
           "isPlant": true,
           "category": "kategori tanaman antara : sayuran, buah, hias, herbal, rempah-rempah",
-          "searchKeywords": {
-            "video": "kata kunci untuk mencari video tanaman ini dalam bahasa indonesia",
-            "article": "kata kunci untuk mencari artikel dalam bahasa indonesia",
-            "image": "nama tanaman dalam bahasa inggris"
-          },
+          "image": "nama tanaman dalam bahasa inggris",
           "content": "Tuliskan konten edukatif singkat tentang tanaman '{$request->title}'.
         
         Konten harus mencakup:
@@ -223,13 +219,9 @@ class ModulController extends Controller
             ], 422);
         }
 
-        $videoKeyword = $jsonResult['searchKeywords']['video'] ?? $request->title;
-        $articleKeyword = $jsonResult['searchKeywords']['article'] ?? $request->title;
-        $imageKeyword = 'Image of ' . $jsonResult['searchKeywords']['image'] ?? $request->title;
+        $imageKeyword = 'Image of ' . $jsonResult['image'];
         $category = $jsonResult['category'] ?? null;
         $generateContent = $jsonResult['content'] ?? null;
-
-
 
         if (!$generateContent) {
             return response()->json([
@@ -256,15 +248,13 @@ class ModulController extends Controller
         $videoController = new videoController();
         $articleController = new articleController();
 
-        $quizzes = $quizController->generateQuiz($modul->id, $generateContent);
+        // $quizzes = $quizController->generateQuiz($modul->id, $generateContent);
 
-        $articleResult = $articleController->generateArticles($articleKeyword, $modul->id);
+        $articleResult = $articleController->generateArticles( $request->title, $modul->id);
         $articles = $articleResult['articles'] ?? [];
         $start = $articleResult['start'] ?? null;
 
-        $videoResult = $videoController->generateVideos($videoKeyword, $modul->id);
-        $videos = $videoResult['videos'] ?? [];
-        $nextPageToken = $videoResult['nextPageToken'] ?? null;
+        $videoResult = $videoController->generateVideos( $request->title,$modul->id);
 
         return response()->json([
             'title' => $request->title,
@@ -275,16 +265,11 @@ class ModulController extends Controller
             'imageKeyword' => $imageKeyword,
             'images' => $imageUrl,
             'article' => [
-                'articleKeyword' => $articleKeyword,
                 'start' => $start,
                 'articles' => $articles,
             ],
-            'video' => [
-                'videoKeyword' => $videoKeyword,
-                'videoNextPageToken' => $nextPageToken,
-                'videos' => $videos,
-            ],
-            'quiz' => $quizzes,
+                'videos' => $videoResult,
+            // 'quiz' => $quizzes,
         ]);
     }
 
