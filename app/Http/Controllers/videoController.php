@@ -76,10 +76,10 @@ class videoController extends Controller
     {
         $youtubeApiKey = env('YOUTUBE_API_KEY');
         $videoKeywords = [
-            'pengertian ',
-            'menanam ',
-            ' merawat ',
-            'menghasilkan keuntungan ',
+            'pengertian',
+            'menanam',
+            'merawat',
+            'ide bisnis',
         ];
 
         $result = [];
@@ -87,7 +87,7 @@ class videoController extends Controller
         foreach ($videoKeywords as $keyword) {
             $videoResponse = Http::get('https://www.googleapis.com/youtube/v3/search', [
                 'part' => 'snippet',
-                'q' => $keyword . ' tanaman ' . $title,
+                'q' => $keyword . ' dari tanaman ' . $title,
                 'type' => 'video',
                 'maxResults' => 5,
                 'key' => $youtubeApiKey,
@@ -165,7 +165,6 @@ class videoController extends Controller
         }
 
         $videoResponse = Http::get('https://www.googleapis.com/youtube/v3/search', $params);
-        dd($videoResponse);
 
         if (!$videoResponse->successful()) {
             return response()->json([

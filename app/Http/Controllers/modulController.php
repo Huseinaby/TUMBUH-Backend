@@ -251,8 +251,6 @@ class ModulController extends Controller
         // $quizzes = $quizController->generateQuiz($modul->id, $generateContent);
 
         $articleResult = $articleController->generateArticles( $request->title, $modul->id);
-        $articles = $articleResult['articles'] ?? [];
-        $start = $articleResult['start'] ?? null;
 
         $videoResult = $videoController->generateVideos( $request->title,$modul->id);
 
@@ -264,11 +262,8 @@ class ModulController extends Controller
             'category' => $category,
             'imageKeyword' => $imageKeyword,
             'images' => $imageUrl,
-            'article' => [
-                'start' => $start,
-                'articles' => $articles,
-            ],
-                'videos' => $videoResult,
+            'article' => $articleResult,
+            'videos' => $videoResult,
             // 'quiz' => $quizzes,
         ]);
     }
