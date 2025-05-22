@@ -6,6 +6,7 @@ use App\Http\Resources\ProductResource;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class productController extends Controller
 {
@@ -50,7 +51,7 @@ class productController extends Controller
 
     public function update(Request $request, $id){
         $product  = Product::where('user_id', Auth::id())->findOrFail($id);
-
+        
         $request->validate([
             'name' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
@@ -60,7 +61,24 @@ class productController extends Controller
             'image' => 'sometimes|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $product->update($request->all());
+        $data = $request->only([
+            'name',
+            'description',
+            'price',
+            'stock',
+            'product_category_id',
+            'province_id',
+        ]);
+
+        if($request->hasFile('image')){
+            if($product->image){
+                Storage::disk('public')->delete($product->image);
+            }
+
+            $data['image'] = $request->file('image')->store('products', 'public');
+        }
+        
+        $product->update($data);
 
         return response()->json([
             'message' => 'Product updated successfully',
@@ -70,6 +88,11 @@ class productController extends Controller
 
     public function destroy($id){
         $product = Product::where('user_id', Auth::id())->findOrFail($id);
+
+        if($product->image){
+            Storage::disk('public')->delete($product->image);
+        }
+
         $product->delete();
 
         return response()->json([
