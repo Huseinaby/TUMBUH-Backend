@@ -65,7 +65,6 @@ Route::get('/quiz/modul/{modulId}', [QuizController::class, 'getByModul']);
 Route::post('/quiz/progress', [QuizController::class, 'updateProgress']);
 Route::get('/quiz/progress/{userId}', [QuizController::class, 'getProgress']);
 
-
 //product
 Route::get('/product', [productController::class, 'index']);
 Route::get('/product/{id}', [productController::class, 'show']);

@@ -134,7 +134,7 @@ class ModulController extends Controller
         ]);
 
         $modul = Modul::where('title', $request->title)
-            ->with(['modulImage','user', 'article', 'video', 'quiz'])
+            ->with(['user', 'article', 'video', 'quiz'])
             ->first();
 
         if ($modul) {
@@ -248,11 +248,11 @@ class ModulController extends Controller
         $videoController = new videoController();
         $articleController = new articleController();
 
-        // $quizzes = $quizController->generateQuiz($modul->id, $generateContent);
-
         $articleResult = $articleController->generateArticles( $request->title, $modul->id);
 
         $videoResult = $videoController->generateVideos( $request->title,$modul->id);
+
+        $quizzes = $quizController->generateQuiz($modul->id, $articleResult);
 
         return response()->json([
             'title' => $request->title,
@@ -264,7 +264,7 @@ class ModulController extends Controller
             'images' => $imageUrl,
             'article' => $articleResult,
             'videos' => $videoResult,
-            // 'quiz' => $quizzes,
+            'quiz' => $quizzes,
         ]);
     }
 
@@ -361,5 +361,6 @@ class ModulController extends Controller
             'data' => $favoriteModuls
         ]);
     }
+    
 }
 

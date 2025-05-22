@@ -73,27 +73,40 @@ class quizController extends Controller
         ]);
     }
 
-    public function generateQuiz($modulId, $generateContent)
+    public function generateQuiz($modulId, $articles)
     {
+
         $geminiKey = env('GEMINI_API_KEY');
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$geminiKey}";
 
-        // Prompt yang lebih ketat
+        $links = $this->decodeArticles($articles);
+
+        $linkTexts = "";
+        foreach($links as $kategori => $daftarLink){
+            $linkTexts .= strtoupper($kategori) . ":\n";
+            foreach ($daftarLink as $link){
+                $linkTexts .= "- {$link} \n";
+            }
+            $linkTexts .= "\n";
+        }
+        
         $quizPrompt = <<<EOT
         Buatkan 10 soal pilihan ganda berdasarkan bacaan berikut:
-       
-        {$generateContent}
         
-        dengan distribusi soal sebagai berikut:
-        - 2 soal dengan tingkat kesulitan mudah
-        - 3 soal dengan tingkat kesulitan sedang
-        - 5 soal dengan tingkat kesulitan sulit
+        {$linkTexts}
+        
+        Gunakan isi dari artikel-artikel di atas untuk membuat 10 soal pilihan ganda sebagai berikut:
 
-        tingkat kesulitan:
-        - mudah: soal yang jawabannya bisa langsung ditemukan di teks
-        - sedang: soal yang membutuhkan penalaman dari bacaan
-        - sulit: soal analisis yang menerapkan konsep bacaan
-
+        - 10 soal dari kategori Pengertian (basic)
+        - 10 soal dari kategori Menanam (easy)
+        - 10 soal dari kategori Merawat (medium)
+        - 10 soal dari kategori Menghasilkan Keuntungan (hard)
+        
+        Tingkat kesulitan soal:
+        - basic: berdasarkan pengertian langsung dari bacaan
+        - easy: berdasarkan instruksi praktis menanam
+        - medium: membutuhkan pemahaman dalam perawatan
+        - hard: berdasarkan analisis ide bisnis atau keuntungan        
 
         Jawab hanya dalam format JSON valid seperti ini:
        
@@ -103,7 +116,7 @@ class quizController extends Controller
             "question": "Apa manfaat utama dari tanaman ini?",
             "option_a": "Untuk dekorasi",
             "option_b": "Sebagai sumber makanan",
-            "option_c": "Untuk obat-obatan",x
+            "option_c": "Untuk obat-obatan",
             "option_d": "Untuk penelitian",
             "correct_answer": "c"
           }
@@ -120,15 +133,30 @@ class quizController extends Controller
         ]);
 
         try {
-            // Ekstrak teks dari respons
+    
             $text = $quizResponse['candidates'][0]['content']['parts'][0]['text'] ?? '';
 
-            // Bersihkan teks dari markdown code blocks dan whitespace
-            $cleaned = preg_replace('/```json|```|json|\n/', '', $text);
-            $cleaned = trim($cleaned);
-
+            // Bersihkan triple backtick dan label ```json dari awal dan akhir teks
+            $cleaned = trim($text);
+            
+            // Hapus pembuka ```json di awal dan penutup ``` di akhir
+            if (str_starts_with($cleaned, '```json')) {
+                $cleaned = preg_replace('/^```json\s*/', '', $cleaned);
+                $cleaned = preg_replace('/\s*```$/', '', $cleaned);
+            }
+            
             // Decode JSON
             $quizzes = json_decode($cleaned, true);
+            
+            // Debug jika gagal
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error('Gagal parse JSON dari Gemini', [
+                    'error' => json_last_error_msg(),
+                    'original_text' => $text,
+                    'cleaned_text' => $cleaned,
+                ]);
+                return [];
+            }
 
             if (!$quizzes || !is_array($quizzes)) {
                 // Log untuk debugging
@@ -143,18 +171,24 @@ class quizController extends Controller
             // Simpan quiz ke database
             $savedQuizzes = [];
             foreach ($quizzes as $quizData) {
-                $quiz = Quiz::create([
-                    'modul_id' => $modulId,
-                    'difficulty' => $quizData['difficulty'],
-                    'question' => $quizData['question'],
-                    'option_a' => $quizData['option_a'],
-                    'option_b' => $quizData['option_b'],
-                    'option_c' => $quizData['option_c'],
-                    'option_d' => $quizData['option_d'],
-                    'correct_answer' => $quizData['correct_answer'],
-                ]);
-
-                $savedQuizzes[] = $quiz;
+                try {
+                    $quiz = Quiz::create([
+                        'modul_id' => $modulId,
+                        'difficulty' => $quizData['difficulty'],
+                        'question' => $quizData['question'],
+                        'option_a' => $quizData['option_a'],
+                        'option_b' => $quizData['option_b'],
+                        'option_c' => $quizData['option_c'],
+                        'option_d' => $quizData['option_d'],
+                        'correct_answer' => $quizData['correct_answer'],
+                    ]);
+                    $savedQuizzes[] = $quiz;
+                } catch (\Exception $e) {
+                    return response()->json([
+                        'message' => 'Error saving quiz',
+                        'error' => $e->getMessage()
+                    ], 500);
+                }
             }
 
             return $savedQuizzes;
@@ -163,6 +197,25 @@ class quizController extends Controller
             Log::error('Error generating quiz: ' . $e->getMessage());
             return [];
         }
+    }
+    
+    public function decodeArticles($articles)
+    {
+        $result = [];
+
+        foreach($articles as $kategoriNama => $kategoriData) {
+            if(!isset($kategoriData['articles'])) {
+                continue;
+            }
+
+            foreach($kategoriData['articles'] as $article){
+                if(isset($article['link'])){
+                    $result[$kategoriNama][] = $article['link'];
+                }
+            }
+        }
+
+        return $result;
     }
 
     public function getProgress($userId)
@@ -214,13 +267,13 @@ class quizController extends Controller
             'isCompleted' => 'required|boolean',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation error',
                 'errors' => $validator->errors()
             ], 422);
         }
-        
+
 
         $progress = QuizProgress::updateOrCreate(
             [
@@ -234,7 +287,7 @@ class quizController extends Controller
             ]
         );
 
-        if($request->level === 'hard' && $request->isCompleted) {
+        if ($request->level === 'hard' && $request->isCompleted) {
             $user = User::find($request->user_id);
             $user->increment('coins', 10);
         }

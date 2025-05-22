@@ -141,7 +141,8 @@ class articleController extends Controller
 
         if (!$searchResponse->successful()) {
             return response()->json([
-                'message' => 'Failed to fetch articles'
+                'message' => 'Failed to fetch articles',
+            'error' => $searchResponse->body()
             ], 500);
         }
 
