@@ -10,7 +10,7 @@ class VideoResource extends ResourceCollection
     {
         return $this->collection->groupBy('category')->map(function ($videos, $category) {
             return [
-                'articles' => $videos->map(function ($video) {
+                'videos' => $videos->map(function ($video) {
                     return [
                         'id' => $video->id,
                         'modul_id' => $video->modul_id,
