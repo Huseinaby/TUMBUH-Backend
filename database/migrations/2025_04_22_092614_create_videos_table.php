@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('link');
             $table->string('thumbnail')->nullable();
             $table->string('keyword')->nullable();
+            $table->string('nextPageToken')->nullable();
             $table->timestamps();
         });
     }

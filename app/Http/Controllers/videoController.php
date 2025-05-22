@@ -147,7 +147,7 @@ class videoController extends Controller
         $request->validate([
             'videoKeyword' => 'required|string',
             'modulId' => 'required|integer|exists:moduls,id',
-            'pageToken' => 'nullable|string',
+            'nextPageToken' => 'nullable|string',
         ]);
 
         $youtubeApiKey = env('YOUTUBE_API_KEY');
@@ -160,8 +160,8 @@ class videoController extends Controller
             'key' => $youtubeApiKey,
         ];
 
-        if ($request->filled('pageToken')) {
-            $params['pageToken'] = $request->pageToken;
+        if ($request->filled('nextPageToken')) {
+            $params['nextPageToken'] = $request->nextPageToken;
         }
 
         $videoResponse = Http::get('https://www.googleapis.com/youtube/v3/search', $params);
