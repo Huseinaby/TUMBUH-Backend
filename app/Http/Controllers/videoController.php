@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\VideoResource;
 use Illuminate\Http\Request;
 use App\Models\Video;
 use Illuminate\Support\Facades\Http;
@@ -19,7 +20,7 @@ class videoController extends Controller
 
         return response()->json([
             'message' => 'semua video',
-            'data' => $videos
+            'data' => new VideoResource($videos),
         ]);
     }
 

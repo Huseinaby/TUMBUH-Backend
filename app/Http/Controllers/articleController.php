@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ArticleResource;
 use Illuminate\Http\Request;
 use App\Models\Article;
 use Illuminate\Support\Facades\Http;
@@ -14,7 +15,7 @@ class articleController extends Controller
 
         return response()->json([
             'message' => 'semua artikel',
-            'data' => $articles
+            'data' => new ArticleResource($articles),
         ]);
     }
 
