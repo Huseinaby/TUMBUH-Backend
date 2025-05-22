@@ -126,7 +126,9 @@ class articleController extends Controller
     public function generateMoreArticle(Request $request)
     {
         $request->validate([
-            'start' => 'required|integer|min:11|max:41',
+            'modulId' => 'required|integer|exists:moduls,id',
+            'start' => 'required|integer',
+            'keyword' => 'required|string',
         ]);
 
         $modulId = $request->modulId;
@@ -156,20 +158,18 @@ class articleController extends Controller
                 'link' => $item['link'] ?? null,
                 'snippet' => $item['snippet'] ?? null,
             ];
-
-            if (!Article::where('title', $data['title'])->exists()) {
-                Article::create([
-                    'modul_id' => $modulId,
-                    'title' => $data['title'],
-                    'link' => $data['link'],
-                    'snippet' => $data['snippet'],
-                    'keyword' => $request->keyword,
-                    'start' => $request->start + 3,
-                ]);
-            }
-
-            return $data;
         });
+
+        foreach($articles as $article) {
+            Article::create([
+                'modul_id' => $modulId,
+                'title' => $article['title'],
+                'link' => $article['link'],
+                'snippet' => $article['snippet'],
+                'keyword' => $request->keyword,
+                'start' => $request->start + 3,
+            ]);
+        }
 
 
         return response()->json([
