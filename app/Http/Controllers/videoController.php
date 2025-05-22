@@ -146,7 +146,7 @@ class videoController extends Controller
     public function generateMoreVideo(Request $request)
     {
         $request->validate([
-            'videoKeyword' => 'required|string',
+            'Keyword' => 'required|string',
             'modulId' => 'required|integer|exists:moduls,id',
             'nextPageToken' => 'nullable|string',
         ]);
@@ -155,7 +155,7 @@ class videoController extends Controller
 
         $params = [
             'part' => 'snippet',
-            'q' => $request->videoKeyword,
+            'q' => $request->Keyword,
             'type' => 'video',
             'maxResults' => 10,
             'key' => $youtubeApiKey,
@@ -203,7 +203,7 @@ class videoController extends Controller
                 'duration' => $video['duration'],
                 'link' => $video['url'],
                 'thumbnail' => $video['thumbnail'],
-                'keyword' => $request->videoKeyword,
+                'keyword' => $request->keyword,
                 'nextPageToken' => $videoResponse['nextPageToken'] ?? null,
             ]);
         }
