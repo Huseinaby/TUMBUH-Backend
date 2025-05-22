@@ -114,7 +114,7 @@ class articleController extends Controller
 
             $result[$keyword] = [
                 'articles' => $articles,
-                'start' => 11,
+                'start' => 4,
                 'articleKeyword' => $keyword . ' tanaman ' . $title,
             ];
         }
@@ -136,7 +136,7 @@ class articleController extends Controller
             'key' => $googleApiKey,
             'cx' => $googleCx,
             'q' => $request->articleKeyword,
-            'num' => 10,
+            'num' => 3,
             'start' => $request->start,
         ]);
 
@@ -166,7 +166,7 @@ class articleController extends Controller
         return response()->json([
             'message' => 'Artikel generated successfully',
             'articles' => $articles,
-            'start' => $request->start + 10,
+            'start' => $request->start + 3,
         ]);
     }
 }
