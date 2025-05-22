@@ -115,6 +115,7 @@ class articleController extends Controller
             $result[$keyword] = [
                 'articles' => $articles,
                 'start' => 11,
+                'articleKeyword' => $keyword . ' tanaman ' . $title,
             ];
         }
         return $result;
