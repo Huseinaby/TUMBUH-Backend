@@ -6,10 +6,6 @@ use App\Http\Resources\VideoResource;
 use Illuminate\Http\Request;
 use App\Models\Video;
 use Illuminate\Support\Facades\Http;
-use YoutubeDl\YoutubeDl;
-use YoutubeDl\Exception\YoutubeDlException;
-use YoutubeDl\Options;
-use Illuminate\Support\Facades\Log;
 
 class videoController extends Controller
 {

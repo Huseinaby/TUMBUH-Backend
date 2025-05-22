@@ -13,8 +13,8 @@ class productController extends Controller
     {
         $products = Product::with(['productCategories', 'user', 'province'])
             ->when($request->product_category_id, fn ($q)  => $q->where('product_category_id', $request->product_category_id))
-            ->when($request->location, fn ($q)  => $q->where('location', 'like', "%{$request->location}%"))
             ->when($request->search, fn ($q)  => $q->where('name', 'like', "%{$request->search}%"))
+            ->when($request->province_id, fn ($q)  => $q->where('province_id', $request->province_id))
             ->latest()->get();
         
         return ProductResource::collection($products)->resolve();
@@ -24,7 +24,6 @@ class productController extends Controller
         $request->validate([
            'name' => 'required|string|max:255',
            'description' => 'required|string',
-           'location' => 'nullable|string|max:255',
            'price' => 'required|integer',
            'stock' => 'required|integer',
            'product_category_id' => 'nullable|exists:product_categories,id',
@@ -36,7 +35,6 @@ class productController extends Controller
             'user_id' => Auth::id(),
             'name' => $request->name,
             'description' => $request->description,
-            'location' => $request->location,
             'price' => $request->price,
             'stock' => $request->stock,
             'product_category_id' => $request->product_category_id,
@@ -56,7 +54,6 @@ class productController extends Controller
         $request->validate([
             'name' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
-            'location' => 'sometimes|string|max:255',
             'price' => 'sometimes|integer',
             'stock' => 'sometimes|integer',
             'product_category_id' => 'sometimes|exists:product_categories,id',
