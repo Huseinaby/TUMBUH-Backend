@@ -109,6 +109,7 @@ class articleController extends Controller
                     'title' => $article['title'],
                     'link' => $article['link'],
                     'snippet' => $article['snippet'],
+                    'category' => $keyword,
                     'keyword' => $keyword . ' tanaman ' . $title,
                     'start' => 4,
                 ]);
@@ -160,12 +161,16 @@ class articleController extends Controller
             ];
         });
 
+        $categories = explode(' ', $request->keyword);
+        $category = implode(' ', array_slice($categories, 0, -2));
+
         foreach($articles as $article) {
             Article::create([
                 'modul_id' => $modulId,
                 'title' => $article['title'],
                 'link' => $article['link'],
                 'snippet' => $article['snippet'],
+                'category' => $category,
                 'keyword' => $request->keyword,
                 'start' => $request->start + 3,
             ]);

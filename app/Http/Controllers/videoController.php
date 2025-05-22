@@ -127,6 +127,7 @@ class videoController extends Controller
                     'duration' => $video['duration'],
                     'link' => $video['url'],
                     'thumbnail' => $video['thumbnail'],            
+                    'category' => $keyword,
                     'keyword' => $keyword . ' tanaman ' . $title,
                     'nextPageToken' => $videoResponse['nextPageToken'] ?? null,
                 ]);
@@ -194,6 +195,9 @@ class videoController extends Controller
             ];
         });
 
+        $categories = explode(' ', $request->keyword);
+        $category = implode(' ', array_slice($categories, 0, -2));
+
         foreach ($videos as $video) {
             Video::create([
                 'modul_id' => $request->modulId,
@@ -203,6 +207,7 @@ class videoController extends Controller
                 'duration' => $video['duration'],
                 'link' => $video['url'],
                 'thumbnail' => $video['thumbnail'],
+                'category' => $category,
                 'keyword' => $request->keyword,
                 'nextPageToken' => $videoResponse['nextPageToken'] ?? null,
             ]);

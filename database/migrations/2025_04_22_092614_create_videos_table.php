@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('duration');
             $table->string('link');
             $table->string('thumbnail')->nullable();
+            $table->string('category');
             $table->string('keyword')->nullable();
             $table->string('nextPageToken')->nullable();
             $table->timestamps();
