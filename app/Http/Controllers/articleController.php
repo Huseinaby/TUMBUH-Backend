@@ -109,13 +109,15 @@ class articleController extends Controller
                     'title' => $article['title'],
                     'link' => $article['link'],
                     'snippet' => $article['snippet'],
+                    'keyword' => $keyword . ' tanaman ' . $title,
+                    'start' => 4,
                 ]);
             }
 
             $result[$keyword] = [
                 'articles' => $articles,
                 'start' => 4,
-                'articleKeyword' => $keyword . ' tanaman ' . $title,
+                'Keyword' => $keyword . ' tanaman ' . $title,
             ];
         }
         return $result;
@@ -135,7 +137,7 @@ class articleController extends Controller
         $searchResponse = Http::get('https://www.googleapis.com/customsearch/v1', [
             'key' => $googleApiKey,
             'cx' => $googleCx,
-            'q' => $request->articleKeyword,
+            'q' => $request->keyword,
             'num' => 3,
             'start' => $request->start,
         ]);
@@ -148,7 +150,7 @@ class articleController extends Controller
         }
 
         $articles = collect($searchResponse['items'] ?? [])->map(function ($item) use ($modulId) {
-            $data = [
+            return [
                 'modul_id' => $modulId,
                 'title' => $item['title'] ?? null,
                 'link' => $item['link'] ?? null,
@@ -156,7 +158,14 @@ class articleController extends Controller
             ];
 
             if (!Article::where('title', $data['title'])->exists()) {
-                Article::create($data);
+                Article::create([
+                    'modul_id' => $modulId,
+                    'title' => $data['title'],
+                    'link' => $data['link'],
+                    'snippet' => $data['snippet'],
+                    'keyword' => $request->keyword,
+                    'start' => $request->start + 3,
+                ]);
             }
 
             return $data;

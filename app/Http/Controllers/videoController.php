@@ -128,6 +128,7 @@ class videoController extends Controller
                     'link' => $video['url'],
                     'thumbnail' => $video['thumbnail'],            
                     'keyword' => $keyword . ' tanaman ' . $title,
+                    'nextPageToken' => $videoResponse['nextPageToken'] ?? null,
                 ]);
             }
 
@@ -202,6 +203,8 @@ class videoController extends Controller
                 'duration' => $video['duration'],
                 'link' => $video['url'],
                 'thumbnail' => $video['thumbnail'],
+                'keyword' => $request->videoKeyword,
+                'nextPageToken' => $videoResponse['nextPageToken'] ?? null,
             ]);
         }
         return response()->json([
