@@ -21,14 +21,14 @@ class ProductResource extends JsonResource
             'price' => $this->price,
             'stock' => $this->stock,
             'image' => $this->image,
-            'category' => [
+            'category' => $this->productCategories ? [
                 'id' => $this->productCategories->id,
                 'name' => $this->productCategories->name,
-            ],
-            'location' => [
+            ] : null,
+            'province' => $this->province ? [
                 'id' => $this->province->id,
                 'name' => $this->province->name,
-            ],
+            ] : null,
             'user' => [
                 'id' => $this->user->id,
                 'name' => $this->user->name,

@@ -71,6 +71,7 @@ Route::get('/product/{id}', [productController::class, 'show']);
 Route::post('/product', [productController::class, 'store']);
 Route::put('/product/{id}', [productController::class, 'update']);
 Route::delete('/product/{id}', [productController::class, 'destroy']);
+Route::get('/product/user/{userId}', [productController::class, 'getProductByUser']);   
 
 //cartItem
 Route::get('/cart', [cartController::class, 'index']);

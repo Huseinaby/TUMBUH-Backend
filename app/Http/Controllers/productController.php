@@ -105,4 +105,13 @@ class productController extends Controller
 
         return ProductResource::make($product)->resolve();
     }
+
+    public function getProductByUser($userId){
+        $products = Product::with(['productCategories', 'user'])
+            ->where('user_id', $userId)
+            ->latest()
+            ->get();
+
+        return ProductResource::collection($products)->resolve();
+    }
 }
