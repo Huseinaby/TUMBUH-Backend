@@ -74,7 +74,7 @@ class articleController extends Controller
         $googleCx = env('GOOGLE_CSE_ID');
 
         $articleKeywords = [
-            'perngertian',
+            'pengertian',
             'menanaman',
             'merawat',
             'ide bisnis',
