@@ -132,6 +132,7 @@ class articleController extends Controller
             'start' => 'required|integer',
             'keyword' => 'required|string',
         ]);
+        
 
         $modulId = $request->modulId;
 
