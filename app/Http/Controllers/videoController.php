@@ -160,7 +160,7 @@ class videoController extends Controller
         ];
 
         if ($request->filled('nextPageToken')) {
-            $params['nextPageToken'] = $request->nextPageToken;
+            $params['pageToken'] = $request->nextPageToken;
         }
 
         $videoResponse = Http::get('https://www.googleapis.com/youtube/v3/search', $params);
@@ -171,6 +171,7 @@ class videoController extends Controller
                 'error' => $videoResponse->body()
             ], 500);
         }
+
 
         $videoIds = collect($videoResponse['items'])->pluck('id.videoId')->implode(',');
 
