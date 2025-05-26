@@ -157,11 +157,8 @@ class videoController extends Controller
             'type' => 'video',
             'maxResults' => 5,
             'key' => $youtubeApiKey,
+            'pageToken' => $request->nextPageToken,
         ];
-
-        if ($request->filled('nextPageToken')) {
-            $params['pageToken'] = $request->nextPageToken;
-        }
 
         $videoResponse = Http::get('https://www.googleapis.com/youtube/v3/search', $params);
 

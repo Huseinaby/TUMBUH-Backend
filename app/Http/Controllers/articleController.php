@@ -87,7 +87,7 @@ class articleController extends Controller
                 'key' => $googleApiKey,
                 'cx' => $googleCx,
                 'q' => $keyword . ' tanaman ' . $title,
-                'num' => 3,
+                'num' => 4,
             ]);
 
             if (!$searchResponse->successful()) {
