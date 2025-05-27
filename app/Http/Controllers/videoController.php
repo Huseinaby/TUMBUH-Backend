@@ -86,7 +86,7 @@ class videoController extends Controller
                 'part' => 'snippet',
                 'q' => $keyword . ' dari tanaman ' . $title,
                 'type' => 'video',
-                'maxResults' => 5,
+                'maxResults' => 4,
                 'key' => $youtubeApiKey,
             ]);
 
