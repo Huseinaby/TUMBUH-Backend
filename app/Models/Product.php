@@ -36,7 +36,8 @@ class Product extends Model
         return $this->belongsTo(Province::class);
     }
 
-    public function images(){
+    public function images()
+    {
         return $this->hasMany(ProductImage::class);
     }
 }

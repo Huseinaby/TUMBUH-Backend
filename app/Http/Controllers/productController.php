@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\ProductResource;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\ProductImage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -29,7 +30,8 @@ class productController extends Controller
            'stock' => 'required|integer',
            'product_category_id' => 'nullable|exists:product_categories,id',
            'province_id' => 'nullable|exists:provinces,id',
-           'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+           'image' => 'nullable|array',
+           'image.' => 'image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $product = Product::create([
@@ -40,12 +42,22 @@ class productController extends Controller
             'stock' => $request->stock,
             'product_category_id' => $request->product_category_id,
             'province_id' => $request->province_id,
-            'image' => $request->file('image') ? $request->file('image')->store('products', 'public') : null,
         ]);
+
+        if($request->hasFile('image')) {
+            foreach($request->file('image') as $imageFile) {
+                $path = $imageFile->store('products', 'public');
+
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image_path' => $path,
+                ]);
+            }
+        }
 
         return response()->json([
             'message' => 'Product created successfully',
-            'product' => $product,
+            'product' => $product->load('images'),
         ], 201);
     }
 
