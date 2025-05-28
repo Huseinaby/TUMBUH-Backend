@@ -36,6 +36,12 @@ class ProductResource extends JsonResource
                 'role' => $this->user->role,
                 'photo' => $this->user->photo,
             ],
+            'images' => $this->images->map(function ($image) {
+                return [
+                    'id' => $image->id,
+                    'image_path' => asset('storage/' . $image->image_path),
+                ];
+            }),
         ];
     }
 }

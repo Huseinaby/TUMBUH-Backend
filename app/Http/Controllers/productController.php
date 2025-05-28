@@ -13,7 +13,7 @@ class productController extends Controller
 {
     public function index(Request $request)
     {
-        $products = Product::with(['productCategories', 'user', 'province'])
+        $products = Product::with(['productCategories', 'user', 'images', 'province' ])
             ->when($request->product_category_id, fn ($q)  => $q->where('product_category_id', $request->product_category_id))
             ->when($request->search, fn ($q)  => $q->where('name', 'like', "%{$request->search}%"))
             ->when($request->province_id, fn ($q)  => $q->where('province_id', $request->province_id))
