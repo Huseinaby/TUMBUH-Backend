@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CartGroupResource;
 use Illuminate\Http\Request;
 use App\Models\cartItem;
 use App\Models\Product;
@@ -19,12 +20,19 @@ class cartController extends Controller
             ]);
         }
 
-        $total = $cart->sum(function ($item) {
-            return $item->product->price * $item->quantity;
+        $grouped = $cart->groupBy(fn ($item) => $item->product->user_id)->map(function ($items, $sellerId){
+            return (object)[
+                'seller' => $items->first()->product->user,
+                'items' => $items
+            ];
+        });
+
+        $total = $grouped->sum(function ($group) {
+            return collect($group->items)->sum(fn ($item) => $item->product->price * $item->quantity);
         });
 
         return response()->json([
-            'cart' => $cart,
+            'cart' => CartGroupResource::collection($grouped->values()),
             'total' => $total,
         ]);
     }
