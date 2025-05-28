@@ -105,8 +105,9 @@ class productController extends Controller
     public function destroy($id){
         $product = Product::where('user_id', Auth::id())->findOrFail($id);
 
-        if($product->image){
-            Storage::disk('public')->delete($product->image);
+        foreach($product->images as $image) {
+            Storage::disk('public')->delete($image->image_path);
+            $image->delete();
         }
 
         $product->delete();
