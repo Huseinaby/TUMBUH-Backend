@@ -70,7 +70,8 @@ class productController extends Controller
             'price' => 'sometimes|integer',
             'stock' => 'sometimes|integer',
             'product_category_id' => 'sometimes|exists:product_categories,id',
-            'image' => 'sometimes|image|mimes:jpeg,png,jpg|max:2048',
+            'image' => 'nullable|array',
+            'image.' => 'image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $data = $request->only([
@@ -81,20 +82,23 @@ class productController extends Controller
             'product_category_id',
             'province_id',
         ]);
-
-        if($request->hasFile('image')){
-            if($product->image){
-                Storage::disk('public')->delete($product->image);
-            }
-
-            $data['image'] = $request->file('image')->store('products', 'public');
-        }
         
         $product->update($data);
 
+        if($request->hasFile('image')) {
+            foreach($request->file('image') as $imageFile) {
+                $path = $imageFile->store('products', 'public');
+
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image_path' => $path,
+                ]);
+            }
+        }
+
         return response()->json([
             'message' => 'Product updated successfully',
-            'product' => $product,
+            'product' => $product->fresh()->load('images'),
         ]);
     }
 
