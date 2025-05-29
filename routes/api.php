@@ -84,7 +84,7 @@ Route::delete('/cart/{id}', [cartController::class, 'destroy']);
 Route::get('/checkout', [transactionController::class, 'store']);
 Route::get('/transaction', [transactionController::class, 'index']);
 Route::get('/transaction/{id}', [transactionController::class, 'show']);
-Route::post('/transaction/{id}/payment', [transactionController::class, 'payWithXendit']);
+Route::post('/transaction/{id}/payment', [transactionController::class, 'payWithMidtrans']);
 Route::post('/transaction/webhook', [transactionController::class, 'handleWebhook']);
 Route::get('/transaction/success', [transactionController::class, 'paymentSuccess']);
 Route::get('/transaction/failed', [transactionController::class, 'paymentFailed']);
