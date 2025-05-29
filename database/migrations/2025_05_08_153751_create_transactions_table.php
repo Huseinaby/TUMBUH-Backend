@@ -17,9 +17,9 @@ return new class extends Migration
             $table->integer('total_price');
             $table->enum('status', ['pending', 'paid', 'cancelled', 'expired'])->default('pending');
             $table->string('payment_method')->nullable();
-            $table->string('xendit_invoice_id')->nullable();
             $table->text('notes')->nullable();
             $table->text('invoice_url')->nullable();
+            $table->string('midtrans_order_id')->nullable();
             $table->timestamp('expired_at')->nullable();
             $table->timestamp('paid_at')->nullable();
             $table->timestamps();

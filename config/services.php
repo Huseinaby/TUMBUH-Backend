@@ -51,5 +51,13 @@ return [
 
     'xendit' => [
         'secrt' => env('XENDIT_SECRET_KEY'),
-    ]
+    ],
+
+    'midtrans' => [
+        'server_key' => env('MIDTRANS_SERVER_KEY'),
+        'client_key' => env('MIDTRANS_CLIENT_KEY'),
+        'is_production' => env('MIDTRANS_IS_PRODUCTION', false),
+        'sanitized' => true,
+        'enable_3ds' => true,
+    ],
 ];

@@ -11,10 +11,20 @@ use Illuminate\Support\Facades\Auth;
 use Xendit\Configuration;
 use Xendit\Invoice\InvoiceApi;
 use Xendit\Invoice\CreateInvoiceRequest;
-use Illuminate\Support\Facades\Log;
+use Midtrans\Config;
+use Midtrans\Snap;
 
 class transactionController extends Controller
 {
+
+    public function __construct()
+    {
+        Config::$serverKey = config('services.midtrans.server_key');
+        Config::$isProduction = config('services.midtrans.is_production');
+        Config::$isSanitized = config('services.midtrans.sanitized');
+        Config::$is3ds = config('services.midtrans.enable_3ds');
+    }
+
     public function index()
     {
         $transactions = transaction::with('user', 'orderItems.product')
@@ -45,7 +55,7 @@ class transactionController extends Controller
             return $item->product->price * $item->quantity;
         });
 
-        foreach($cartItems as $item) {
+        foreach ($cartItems as $item) {
             if ($item->product->stock < $item->quantity) {
                 return response()->json([
                     'message' => 'Insufficient stock for product: ' . $item->product->name,
@@ -69,7 +79,7 @@ class transactionController extends Controller
                     'product_id' => $item->product_id,
                     'quantity' => $item->quantity,
                     'price' => $item->product->price,
-                    'subtotal' => $item->product->price * $item->quantity,  
+                    'subtotal' => $item->product->price * $item->quantity,
                 ]);
             }
 
@@ -102,7 +112,7 @@ class transactionController extends Controller
         ]);
     }
 
-    public function payWithXendit($transactionId)
+    public function payWithMidtrans($transactionId)
     {
         $transaction = Transaction::with('user')->findOrFail($transactionId);
 
@@ -112,74 +122,71 @@ class transactionController extends Controller
             ], 400);
         }
 
-        Configuration::setXenditKey(config('services.xendit.secrt'));
+        $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
 
-        $externalId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
-
-        $invoiceRequest = new CreateInvoiceRequest([
-            'external_id' => $externalId,
-            'amount' => $transaction->total_price,
-            'description' => 'Payment for transaction #' . $transaction->id,
-            'customer' => [
+        $params = [
+            'transaction_details' => [
+                'order_id'  => $orderId,
+                'gross_amount' => $transaction->total_price,
+            ],
+            'customer_details' => [
+                'first_name' => $transaction->user->name,
                 'email' => $transaction->user->email,
             ],
-            'success_redirect_url' => url('/api/transaction/success'),
-            'failure_redirect_url' => url('/api/transaction/failed'),
-        ]);
+            'callbacks' => [
+                'finish' => url('/api/transaction/success'),
+                'unfinish' => url('/api/transaction/failed'),
+                'error' => url('/api/transaction/failed'),
+            ],
+        ];
 
-        $invoiceApi = new InvoiceApi();
-        $invoice = $invoiceApi->createInvoice($invoiceRequest);
+        $snapUrl = Snap::createTransaction($params)->redirect_url;
 
         $transaction->update([
-            'payment_method' => 'xendit',
-            'xendit_invoice_id' => $invoice['id'],
-            'invoice_url' => $invoice['invoice_url'],
+            'payment_method' => 'midtrans',
+            'invoice_url' => $snapUrl,
+            'midtrans_order_id' => $orderId,
         ]);
 
         return response()->json([
-            'message' => 'Invoice created successfully',
-            'invoice_url' => $invoice['invoice_url'],
+            'message' => 'Snap URL generated successfully',
+            'invoice_url' => $snapUrl,
         ]);
     }
 
     public function handleWebHook(Request $request)
     {
-        $payload = $request->all();
+        $serverKey = config('services.midtrans.server_key');
 
-        if (!isset($payload['id']) || !isset($payload['status'])) {
-            return response()->json([
-                'message' => 'Invalid payload',
-            ], 400);
+        $signature = hash(
+            'sha512',
+            $request->order_id .
+            $request->status_code .
+            $request->gross_amount .
+            $serverKey
+        );
+
+        if($signature !== $request->signature_key) {
+            return response()->json(['message' => 'invalid signature'], 403);
         }
 
-        $transaction = transaction::where('xendit_invoice_id', $payload['id'])->first();
+        $orderId = explode('-', $request->order_id)[1] ?? null;
+        $transaction = transaction::find($orderId);
 
-        if (!$transaction) {
-            return response()->json([
-                'message' => 'Transaction not found',
-            ], 404);
+        if(!$transaction){
+            return response()->json(['message' => 'Transaction not foudn'], 404);
         }
 
-        $status = strtolower($payload['status']);
-
-        if ($status === 'paid') {
+        if($request->transaction_status === 'settlement') {
             $transaction->update([
                 'status' => 'paid',
                 'paid_at' => now(),
             ]);
-
-            foreach($transaction->orderItems() as $orderItem) {
-                $orderItem->product->decrement('stock', $orderItem->quantity);
-            }
-
-        } elseif ($status === 'expired') {
-            $transaction->update([
-                'status' => 'expired',
-            ]);
+        } elseif ($request->transaction_status === 'expire') {
+            $transaction->update(['status' => 'expired']);
         }
-        return response()->json([
-            'message' => 'Transaction status updated successfully',
-        ], 200);
+
+        return response()->json(['message' => 'Transaction status updated'], 200);
     }
 
     public function paymentSuccess(Request $request)
@@ -187,10 +194,10 @@ class transactionController extends Controller
         $invoiceId = $request->query('id');
 
         $transaction = transaction::with('orderItems.product')
-        ->where('xendit_invoice_id', $invoiceId)
-        ->first();
+            ->where('midtrans_order_id', $invoiceId)
+            ->first();
 
-        if(!$transaction) {
+        if (!$transaction) {
             return response()->json([
                 'message' => 'Transaction not found',
             ], 404);
@@ -207,9 +214,9 @@ class transactionController extends Controller
     {
         $invoiceId = $request->query('id');
 
-        $transaction = transaction::where('xendit_invoice_id', $invoiceId)->first();
+        $transaction = transaction::where('midtrans_order_id', $invoiceId)->first();
 
-        if(!$transaction) {
+        if (!$transaction) {
             return response()->json([
                 'message' => 'Transaction not found',
             ], 404);
@@ -228,16 +235,16 @@ class transactionController extends Controller
 
         $total = orderItem::whereHas('product', function ($query) use ($user) {
             $query->where('user_id', $user->id)
-            ->whereHas('transaction', function ($query) {
-                $query->where('status', 'paid');
-            });
+                ->whereHas('transaction', function ($query) {
+                    $query->where('status', 'paid');
+                });
         })->sum('subtotal');
 
         $count = orderItem::where('product', function ($query) use ($user) {
             $query->where('user_id', $user->id)
-            ->whereHas('transaction', function ($query) {
-                $query->where('status', 'paid');
-            });
+                ->whereHas('transaction', function ($query) {
+                    $query->where('status', 'paid');
+                });
         })->count();
 
         return response()->json([
