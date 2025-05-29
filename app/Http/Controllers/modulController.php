@@ -159,7 +159,7 @@ class ModulController extends Controller
         {
           "isPlant": true,
           "category": "tentukan satu kategori tanaman antara : sayuran, buah-buahan, hias, herbal, rempah, pangan, industri, obat, perkebunan, perdu/alang",
-          "image": "nama tanaman dalam bahasa inggris",
+          "image": "nama tanaman",
           "content": "Tuliskan konten edukatif singkat tentang tanaman '{$request->title}'.
         
         Konten harus mencakup:

@@ -262,7 +262,7 @@ class quizController extends Controller
         $validator = validator($request->all(), [
             'user_id' => 'required|exists:users,id',
             'modul_id' => 'required|exists:moduls,id',
-            'level' => 'required|in:easy,medium,hard',
+            'level' => 'required|in:basic,easy,medium,hard',
             'isLocked' => 'required|boolean',
             'isCompleted' => 'required|boolean',
         ]);

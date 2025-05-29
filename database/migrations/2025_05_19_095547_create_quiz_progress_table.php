@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('modul_id')->constrained()->onDelete('cascade');
 
-            $table->enum('level', ['easy', 'medium', 'hard']);
+            $table->enum('level', ['basic', 'easy', 'medium', 'hard']);
             $table->boolean('isLocked')->default(true);
             $table->boolean('isCompleted')->default(false);
             $table->timestamps();
