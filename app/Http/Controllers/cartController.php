@@ -12,7 +12,7 @@ class cartController extends Controller
 {
     public function index()
     {
-        $cart = cartItem::with('product')->where('user_id', Auth::id())->get();
+        $cart = cartItem::with(['product.user', 'product.images'])->where('user_id', Auth::id())->get();
 
         if($cart->isEmpty()) {
             return response()->json([

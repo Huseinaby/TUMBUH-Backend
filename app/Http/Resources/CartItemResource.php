@@ -24,7 +24,9 @@ class CartItemResource extends JsonResource
                 'name' => $this->product->name,
                 'price' => $this->product->price,
                 'stock' => $this->product->stock,
-                'image' => $this->product->image ? asset('storage/' . $this->product->image) : null,
+                'image' => $this->product->images->first()
+                    ? asset('storage/' . $this->product->images->first()->image_path)
+                    : null,
             ]
 
         ];

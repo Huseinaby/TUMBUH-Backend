@@ -17,7 +17,7 @@ class CartGroupResource extends JsonResource
         return [
             'seller' => [
                 'id' => $this->seller->id,
-                'name' => $this->seller->name,
+                'name' => $this->seller->username,
             ],
             'items' => CartItemResource::collection($this->items),
         ];
