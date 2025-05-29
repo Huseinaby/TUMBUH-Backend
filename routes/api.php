@@ -72,7 +72,7 @@ Route::post('/product', [productController::class, 'store']);
 Route::put('/product/{id}', [productController::class, 'update']);
 Route::delete('/product/{id}', [productController::class, 'destroy']);
 Route::get('/product/user/{userId}', [productController::class, 'getProductByUser']);   
-Route::detele('/product/image/{id}', [productController::class, 'destroyImage']);
+Route::delete('/product/image/{id}', [productController::class, 'destroyImage']);
 
 //cartItem
 Route::get('/cart', [cartController::class, 'index']);
