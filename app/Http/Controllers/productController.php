@@ -13,25 +13,26 @@ class productController extends Controller
 {
     public function index(Request $request)
     {
-        $products = Product::with(['productCategories', 'user', 'images', 'province' ])
-            ->when($request->product_category_id, fn ($q)  => $q->where('product_category_id', $request->product_category_id))
-            ->when($request->search, fn ($q)  => $q->where('name', 'like', "%{$request->search}%"))
-            ->when($request->province_id, fn ($q)  => $q->where('province_id', $request->province_id))
+        $products = Product::with(['productCategories', 'user', 'images', 'province'])
+            ->when($request->product_category_id, fn($q) => $q->where('product_category_id', $request->product_category_id))
+            ->when($request->search, fn($q) => $q->where('name', 'like', "%{$request->search}%"))
+            ->when($request->province_id, fn($q) => $q->where('province_id', $request->province_id))
             ->latest()->get();
-        
+
         return ProductResource::collection($products)->resolve();
     }
 
-    public function store(Request $request){
+    public function store(Request $request)
+    {
         $request->validate([
-           'name' => 'required|string|max:255',
-           'description' => 'required|string',
-           'price' => 'required|integer',
-           'stock' => 'required|integer',
-           'product_category_id' => 'nullable|exists:product_categories,id',
-           'province_id' => 'nullable|exists:provinces,id',
-           'image' => 'nullable|array',
-           'image.' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'required|integer',
+            'stock' => 'required|integer',
+            'product_category_id' => 'nullable|exists:product_categories,id',
+            'province_id' => 'nullable|exists:provinces,id',
+            'image' => 'nullable|array',
+            'image.' => 'image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $product = Product::create([
@@ -44,8 +45,8 @@ class productController extends Controller
             'province_id' => $request->province_id,
         ]);
 
-        if($request->hasFile('image')) {
-            foreach($request->file('image') as $imageFile) {
+        if ($request->hasFile('image')) {
+            foreach ($request->file('image') as $imageFile) {
                 $path = $imageFile->store('products', 'public');
 
                 ProductImage::create([
@@ -61,9 +62,10 @@ class productController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, $id){
-        $product  = Product::where('user_id', Auth::id())->findOrFail($id);
-        
+    public function update(Request $request, $id)
+    {
+        $product = Product::where('user_id', Auth::id())->findOrFail($id);
+
         $request->validate([
             'name' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
@@ -82,11 +84,11 @@ class productController extends Controller
             'product_category_id',
             'province_id',
         ]);
-        
+
         $product->update($data);
 
-        if($request->hasFile('image')) {
-            foreach($request->file('image') as $imageFile) {
+        if ($request->hasFile('image')) {
+            foreach ($request->file('image') as $imageFile) {
                 $path = $imageFile->store('products', 'public');
 
                 ProductImage::create([
@@ -102,10 +104,24 @@ class productController extends Controller
         ]);
     }
 
-    public function destroy($id){
+    public function destroyImage($id){
+        $image = ProductImage::findOrFail($id);
+
+        if($image->product->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        Storage::disk('public')->delete($image->image_path);
+        $image->delete();
+
+        return response()->json(['message' => 'Image deleted successfully']);
+    }
+
+    public function destroy($id)
+    {
         $product = Product::where('user_id', Auth::id())->findOrFail($id);
 
-        foreach($product->images as $image) {
+        foreach ($product->images as $image) {
             Storage::disk('public')->delete($image->image_path);
             $image->delete();
         }
@@ -117,13 +133,15 @@ class productController extends Controller
         ]);
     }
 
-    public function show($id){
+    public function show($id)
+    {
         $product = Product::with(['productCategories', 'user'])->findOrFail($id);
 
         return ProductResource::make($product)->resolve();
     }
 
-    public function getProductByUser($userId){
+    public function getProductByUser($userId)
+    {
         $products = Product::with(['productCategories', 'user'])
             ->where('user_id', $userId)
             ->latest()
