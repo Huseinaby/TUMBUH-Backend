@@ -21,6 +21,7 @@ class User extends Authenticatable
         'username',
         'email',
         'role',
+        'storeName',
         'password',
         'email_verified_at',
         'gauth_id',

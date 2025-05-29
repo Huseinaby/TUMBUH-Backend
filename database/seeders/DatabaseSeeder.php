@@ -21,13 +21,13 @@ class DatabaseSeeder extends Seeder
             'username' => 'penjual1',
             'email' => 'penjual@tumbuh.app',
             'role' => 'seller',
+            'storeName' => 'Toko Bagus',
             'password' => bcrypt('password'),
         ]);
 
         User::create([
             'username' => 'penjual2',
             'email' => 'penjual1@tumbuh.app',
-            'role' => 'seller',
             'password' => bcrypt('password'),
         ]);
 

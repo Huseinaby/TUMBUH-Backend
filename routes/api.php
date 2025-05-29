@@ -8,6 +8,7 @@ use App\Http\Controllers\modulController;
 use App\Http\Controllers\productController;
 use App\Http\Controllers\quizController;
 use App\Http\Controllers\transactionController;
+use App\Http\Controllers\userController;
 use App\Http\Controllers\videoController;
 use App\Http\Controllers\withdrawController;
 use Illuminate\Http\Request;
@@ -30,7 +31,6 @@ Route::get('/reset-password/{token}', function (Request $request, $token) {
     return redirect()->away("tumbuh://resetPassword?token={$token}&email=" . urlencode($request->email));
 })->name('password.reset');
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
-
 
 //Modul
 Route::get('/modul', [modulController::class, 'index']);
@@ -95,6 +95,8 @@ Route::get('/withdraw', [withdrawController::class, 'listWithdraw']);
 Route::post('/wihdraw/request', [withdrawController::class, 'requestWithdraw']);
 Route::post('/withdraw/{id}/handle', [withdrawController::class, 'handleWithdraw']);
 
+//user
+Route::post('/user/become-seller', [userController::class, 'becomeSeller']);
 
 
 //test generate quiz
