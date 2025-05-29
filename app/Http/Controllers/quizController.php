@@ -232,7 +232,7 @@ class quizController extends Controller
         foreach ($progressList as $modulId => $progressPerModul) {
             $levels = [];
 
-            foreach (['easy', 'medium', 'hard'] as $level) {
+            foreach ([ 'basic', 'easy', 'medium', 'hard'] as $level) {
                 $record = $progressPerModul->firstWhere('level', $level);
                 $levels[$level] = $record
                     ? [
