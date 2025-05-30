@@ -81,7 +81,7 @@ Route::put('/cart/{id}', [cartController::class, 'update']);
 Route::delete('/cart/{id}', [cartController::class, 'destroy']);
 
 //transaction
-Route::get('/checkout', [transactionController::class, 'store']);
+Route::post('/checkout', [transactionController::class, 'store']);
 Route::get('/transaction', [transactionController::class, 'index']);
 Route::get('/transaction/{id}', [transactionController::class, 'show']);
 Route::post('/transaction/{id}/payment', [transactionController::class, 'payWithMidtrans']);

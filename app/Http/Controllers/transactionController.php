@@ -37,68 +37,144 @@ class transactionController extends Controller
         ]);
     }
 
-    public function store()
+    public function store(Request $request)
     {
         $user = Auth::user();
+        $cartIds = $request->input('cart_ids');
 
-        $cartItems = cartItem::with('product')
-            ->where('user_id', $user->id)
-            ->get();
-
-        if ($cartItems->isEmpty()) {
+        if(!$cartIds || !is_array($cartIds)) {
             return response()->json([
-                'message' => 'Cart is empty'
+                'message' => 'Invalid cart IDs provided',
+            ], 400);
+        }
+
+        $cartData = $this->getCartGroupedBySeller($cartIds);
+
+        if(empty($cartData)) {
+            return response()->json([
+                'message' => 'No valid cart items found for the provided IDs',
             ], 404);
         }
 
-        $total = $cartItems->sum(function ($item) {
-            return $item->product->price * $item->quantity;
-        });
-
-        foreach ($cartItems as $item) {
-            if ($item->product->stock < $item->quantity) {
-                return response()->json([
-                    'message' => 'Insufficient stock for product: ' . $item->product->name,
-                ], 400);
-            }
-        }
+        $transactions = [];
 
         DB::beginTransaction();
 
         try {
-            $transaction = Transaction::create([
-                'user_id' => $user->id,
-                'total_price' => $total,
-                'status' => 'pending',
-                'payment_method' => 'xendit',
-            ]);
+            foreach($cartData as $sellercart) {
+                $sellerId = $sellercart['seller']['id'];
+                $items = $sellercart['items'];
+                $total = collect($items)->sum('subTotal');
 
-            foreach ($cartItems as $item) {
-                orderItem::create([
-                    'transaction_id' => $transaction->id,
-                    'product_id' => $item->product_id,
-                    'quantity' => $item->quantity,
-                    'price' => $item->product->price,
-                    'subtotal' => $item->product->price * $item->quantity,
+                $transaction = Transaction::create([
+                    'user_id' => $user->id,
+                    'seller_id' => $sellerId,
+                    'total_price' => $total,
+                    'status' => 'pending',
+                    'payment_method' => 'midtrans',
                 ]);
-            }
 
-            cartItem::where('user_id', $user->id)->delete();
+                foreach($items as $item) {
+                    orderItem::create([
+                        'transaction_id' => $transaction->id,
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                        'price' => $item['product']['price'],
+                        'subtotal' => $item['subTotal'],
+                    ]);
+                }
+
+                $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
+
+                $params = [
+                    'transaction_details' => [
+                        'order_id' => $orderId,
+                        'gross_amount' => $total,
+                    ],
+                    'customer_details' => [
+                        'first_name' => $user->name,
+                        'email' => $user->email,
+                    ],
+                    'item_details' => array_map(function ($item) {
+                        return [
+                            'id' => $item['product_id'],
+                            'price' => $item['product']['price'],
+                            'quantity' => $item['quantity'],
+                            'name' => $item['product']['name'],
+                        ];
+                    }, $items),
+                ];
+
+                $snapUrl = Snap::createTransaction($params)->redirect_url;
+
+                $transaction->update([
+                    'invoice_url' => $snapUrl,
+                    'midtrans_order_id' => $orderId,
+                ]);
+
+                foreach($items as $item) {
+                    cartItem::where('id', $item['cart_id'])->delete();
+                }
+
+                $transactions[] = [
+                    'transaction_id' => $transaction->id,
+                    'seller' => $sellercart['seller'],
+                    'total_price' => $total,
+                    'snap_url' => $snapUrl,
+                ];
+            }
 
             DB::commit();
 
             return response()->json([
-                'message' => 'Transaction created successfully',
-                'transaction' => $transaction,
-            ]);
+                'message' => 'Transactions created successfully',
+                'transactions' => $transactions,
+            ], 201);
+            
+
         } catch (\Exception $e) {
             DB::rollBack();
-
             return response()->json([
                 'message' => 'Transaction failed',
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function getCartGroupedBySeller(array $cartIds)
+    {
+        $cartItems = cartItem::with(['product.user'])
+            ->whereIn('id', $cartIds)
+            ->get();
+
+        $grouped = $cartItems->groupBy(fn($item) => $item->product->user_id);
+
+        $result = [];
+
+        foreach($grouped as $sellerId => $items) {
+            $result[] =[
+                'seller' => [
+                    'id' => $sellerId,
+                    'storeName' => $items->first()->product->user->storeName ?? $items->first()->product->user->username,
+                ],
+                'items' => $items->map(function ($item) {
+                    return [
+                        'cart_id' => $item->id,
+                        'product_id' => $item->product->id,
+                        'quantity' => $item->quantity,
+                        'subTotal' => $item->product->price * $item->quantity,
+                        'product' => [
+                            'name' => $item->product->name,
+                            'price' => $item->product->price,
+                            'stock' => $item->product->stock,
+                            'image' => $item->price->image_path ?? null,
+                        ]
+                        ];
+                })->toArray()
+            ];
+        }
+
+        return $result;
     }
 
     public function show($id)
@@ -126,7 +202,7 @@ class transactionController extends Controller
 
         $params = [
             'transaction_details' => [
-                'order_id'  => $orderId,
+                'order_id' => $orderId,
                 'gross_amount' => $transaction->total_price,
             ],
             'customer_details' => [
@@ -157,7 +233,6 @@ class transactionController extends Controller
     public function handleWebHook(Request $request)
     {
         $serverKey = config('services.midtrans.server_key');
-
         $signature = hash(
             'sha512',
             $request->order_id .
@@ -166,18 +241,18 @@ class transactionController extends Controller
             $serverKey
         );
 
-        if($signature !== $request->signature_key) {
+        if ($signature !== $request->signature_key) {
             return response()->json(['message' => 'invalid signature'], 403);
         }
 
         $orderId = explode('-', $request->order_id)[1] ?? null;
         $transaction = transaction::find($orderId);
 
-        if(!$transaction){
-            return response()->json(['message' => 'Transaction not foudn'], 404);
+        if (!$transaction) {
+            return response()->json(['message' => 'Transaction not found'], 404);
         }
 
-        if($request->transaction_status === 'settlement') {
+        if ($request->transaction_status === 'settlement') {
             $transaction->update([
                 'status' => 'paid',
                 'paid_at' => now(),
