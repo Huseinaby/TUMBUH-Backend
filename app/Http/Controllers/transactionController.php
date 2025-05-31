@@ -8,6 +8,7 @@ use App\Models\cartItem;
 use App\Models\orderItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Xendit\Configuration;
 use Xendit\Invoice\InvoiceApi;
 use Xendit\Invoice\CreateInvoiceRequest;
@@ -42,7 +43,7 @@ class transactionController extends Controller
         $user = Auth::user();
         $cartIds = $request->input('cart_ids');
 
-        if(!$cartIds || !is_array($cartIds)) {
+        if (!$cartIds || !is_array($cartIds)) {
             return response()->json([
                 'message' => 'Invalid cart IDs provided',
             ], 400);
@@ -50,7 +51,7 @@ class transactionController extends Controller
 
         $cartData = $this->getCartGroupedBySeller($cartIds);
 
-        if(empty($cartData)) {
+        if (empty($cartData)) {
             return response()->json([
                 'message' => 'No valid cart items found for the provided IDs',
             ], 404);
@@ -61,7 +62,7 @@ class transactionController extends Controller
         DB::beginTransaction();
 
         try {
-            foreach($cartData as $sellercart) {
+            foreach ($cartData as $sellercart) {
                 $sellerId = $sellercart['seller']['id'];
                 $items = $sellercart['items'];
                 $total = collect($items)->sum('subTotal');
@@ -74,7 +75,7 @@ class transactionController extends Controller
                     'payment_method' => 'midtrans',
                 ]);
 
-                foreach($items as $item) {
+                foreach ($items as $item) {
                     orderItem::create([
                         'transaction_id' => $transaction->id,
                         'product_id' => $item['product_id'],
@@ -112,7 +113,7 @@ class transactionController extends Controller
                     'midtrans_order_id' => $orderId,
                 ]);
 
-                foreach($items as $item) {
+                foreach ($items as $item) {
                     cartItem::where('id', $item['cart_id'])->delete();
                 }
 
@@ -130,7 +131,7 @@ class transactionController extends Controller
                 'message' => 'Transactions created successfully',
                 'transactions' => $transactions,
             ], 201);
-            
+
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -151,8 +152,8 @@ class transactionController extends Controller
 
         $result = [];
 
-        foreach($grouped as $sellerId => $items) {
-            $result[] =[
+        foreach ($grouped as $sellerId => $items) {
+            $result[] = [
                 'seller' => [
                     'id' => $sellerId,
                     'storeName' => $items->first()->product->user->storeName ?? $items->first()->product->user->username,
@@ -169,7 +170,7 @@ class transactionController extends Controller
                             'stock' => $item->product->stock,
                             'image' => $item->price->image_path ?? null,
                         ]
-                        ];
+                    ];
                 })->toArray()
             ];
         }
@@ -233,6 +234,7 @@ class transactionController extends Controller
     public function handleWebHook(Request $request)
     {
         $serverKey = config('services.midtrans.server_key');
+
         $signature = hash(
             'sha512',
             $request->order_id .
@@ -240,6 +242,16 @@ class transactionController extends Controller
             $request->gross_amount .
             $serverKey
         );
+
+        Log::info('Webhook Signature Debug', [
+            'computed_signature' => $signature,
+            'received_signature' => $request->signature_key,
+            'order_id' => $request->order_id,
+            'status_code' => $request->status_code,
+            'gross_amount' => $request->gross_amount,
+        ]);
+
+
 
         if ($signature !== $request->signature_key) {
             return response()->json(['message' => 'invalid signature'], 403);
@@ -252,13 +264,23 @@ class transactionController extends Controller
             return response()->json(['message' => 'Transaction not found'], 404);
         }
 
-        if ($request->transaction_status === 'settlement') {
+        if (in_array($request->status, ['paid', 'expired', 'cancelled'])) {
+            return response()->json(['message' => 'Transaction already processed'], 200);
+        }
+
+        $status = $request->transaction_status;
+
+        if ($status === 'settlement') {
             $transaction->update([
                 'status' => 'paid',
                 'paid_at' => now(),
             ]);
-        } elseif ($request->transaction_status === 'expire') {
+        } elseif ($status === 'expire') {
             $transaction->update(['status' => 'expired']);
+        } elseif (in_array($status, ['cancel', 'deny'])) {
+            $transaction->update(['status' => 'cancelled']);
+        } else {
+            return response()->json(['message' => 'Unhandled transaction status'], 400);
         }
 
         return response()->json(['message' => 'Transaction status updated'], 200);
