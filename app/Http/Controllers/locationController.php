@@ -30,8 +30,8 @@ class locationController extends Controller
         if ($response->successful()) {
             foreach ($response['value'] as $item) {
                 Province::Create([
-                    'id' => $item['id'],
-                    'name' => $item['name']
+                    'name' => $item['name'],
+                    'code' => $item['id'],
                 ]);
             }
 
@@ -50,9 +50,9 @@ class locationController extends Controller
 
     public function getKabupaten(Request $request)
     {
-        $provinceId = $request->input('province_id');
+        $provinceCode = $request->input('code');
 
-        $kabupaten = kabupaten::where('province_id', $provinceId)->get();
+        $kabupaten = kabupaten::where('code', $provinceCode)->get();
 
         if ($kabupaten->isNotEmpty()) {
             return response()->json([
@@ -61,7 +61,7 @@ class locationController extends Controller
             ], 200);
         }
 
-        if (!$provinceId) {
+        if (!$provinceCode) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Province ID is required.',
@@ -70,24 +70,19 @@ class locationController extends Controller
 
         $response = Http::get('https://api.binderbyte.com/wilayah/kabupaten', [
             'api_key' => env('BINDERBYTE_API_KEY'),
-            'id_provinsi' => $provinceId,
+            'id_provinsi' => $provinceCode,
         ]);
         
 
         if ($response->successful()) {
             foreach ($response['value'] as $item) {
-                $id = str_replace('.', '', $item['id']);
-                kabupaten::updateOrCreate(
-                    ['id' => $id],
-                    [
-                        'name' => $item['name'],
-                        'province_id' => $provinceId,
-                    ]
-                );
+                kabupaten::updateOrCreate([
+
+                ]);
             }
         }
 
-        $kabupatens = kabupaten::where('province_id', $provinceId)->get();
+        $kabupatens = kabupaten::where('code', $provinceCode)->get();
 
         return response()->json([
             'status' => 'success',

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('kabupatens', function (Blueprint $table) {
             $table->id();
+            $table->string('code')->unique();
             $table->string('name');
             $table->foreignId('province_id')->references('id')->on('provinces');
             $table->timestamps();

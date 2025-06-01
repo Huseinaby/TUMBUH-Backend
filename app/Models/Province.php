@@ -9,6 +9,7 @@ class Province extends Model
     protected $fillable = [
         'id',
         'name',
+        'code',
     ];
 
     public $incrementing = false;

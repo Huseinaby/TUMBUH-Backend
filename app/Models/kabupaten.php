@@ -10,6 +10,7 @@ class kabupaten extends Model
         'id',
         'name',
         'province_id',
+        'code',
     ];
 
     public $incrementing = false;

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('kecamatans', function (Blueprint $table) {
             $table->id();
+            $table->string('code')->unique();
             $table->string('name');
             $table->foreignId('kabupaten_id')->references('id')->on('kabupatens');
             $table->timestamps();
