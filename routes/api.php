@@ -102,6 +102,9 @@ Route::post('/user/seller', [sellerController::class, 'register']);
 Route::get('/origin/seller', [sellerController::class, 'getOriginSeller']);
 Route::post('/seller/status', [sellerController::class, 'verifySeller']);
 
+//location
+Route::get('/location/province', [\App\Http\Controllers\locationController::class, 'getProvince']);
+Route::get('/location/province/sync', [\App\Http\Controllers\locationController::class, 'syncProvince']);
 
 //shipping
 Route::get('/shipping/destination', [ShippingController::class, 'searchDestination']);
