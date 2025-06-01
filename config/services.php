@@ -60,4 +60,9 @@ return [
         'sanitized' => true,
         'enable_3ds' => true,
     ],
+
+    'rajaongkir' => [
+        'base_url' => env('RAJAONGKIR_BASE_URL', 'https://api.rajaongkir.com/starter'),
+        'api_key' => env('RAJAONGKIR_API_KEY'),
+    ],
 ];

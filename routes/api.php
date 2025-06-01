@@ -7,6 +7,7 @@ use App\Http\Controllers\checkoutController;
 use App\Http\Controllers\modulController;
 use App\Http\Controllers\productController;
 use App\Http\Controllers\quizController;
+use App\Http\Controllers\ShippingController;
 use App\Http\Controllers\transactionController;
 use App\Http\Controllers\userController;
 use App\Http\Controllers\videoController;
@@ -98,6 +99,10 @@ Route::post('/withdraw/{id}/handle', [withdrawController::class, 'handleWithdraw
 //user
 Route::post('/user/become-seller', [userController::class, 'becomeSeller']);
 
+
+//shipping
+Route::get('/shipping/destination', [ShippingController::class, 'searchDestination']);
+Route::post('/shipping/cost', [ShippingController::class, 'cost']);
 
 //test generate quiz
 Route::post('/quiz/generate', [QuizController::class, 'generateQuiz']);

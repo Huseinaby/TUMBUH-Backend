@@ -19,7 +19,6 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('photo')->nullable();
-            $table->string('storeName')->nullable();
             $table->integer('coins')->default(0);
             $table->string('gauth_id')->nullable();
             $table->string('gauth_type')->nullable();

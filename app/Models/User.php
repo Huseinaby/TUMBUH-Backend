@@ -86,4 +86,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(QuizProgress::class);
     }
+
+    public function sellerDetail()
+    {
+        return $this->hasOne(SellerDetail::class);
+    }
 }
