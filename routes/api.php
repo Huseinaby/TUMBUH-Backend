@@ -7,6 +7,7 @@ use App\Http\Controllers\checkoutController;
 use App\Http\Controllers\modulController;
 use App\Http\Controllers\productController;
 use App\Http\Controllers\quizController;
+use App\Http\Controllers\sellerController;
 use App\Http\Controllers\ShippingController;
 use App\Http\Controllers\transactionController;
 use App\Http\Controllers\userController;
@@ -97,7 +98,8 @@ Route::post('/wihdraw/request', [withdrawController::class, 'requestWithdraw']);
 Route::post('/withdraw/{id}/handle', [withdrawController::class, 'handleWithdraw']);
 
 //user
-Route::post('/user/become-seller', [userController::class, 'becomeSeller']);
+Route::post('/user/seller', [sellerController::class, 'create']);
+Route::get('/origin/seller', [sellerController::class, 'getOriginSeller']);
 
 
 //shipping

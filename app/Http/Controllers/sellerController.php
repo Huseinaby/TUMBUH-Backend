@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SellerDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class sellerController extends Controller
 {
@@ -53,5 +54,20 @@ class sellerController extends Controller
             'message' => 'Seller registration successful. Your account is pending approval.',
             'user' => $user,
         ]);
+    }
+
+    public function getOriginSeller(Request $request) {
+        $search = $request->input('search', '');
+        $baseUrl = config('services.rajaongkir.base_url', 'https://rajaongkir.komerce.id/api/v1');
+
+        $response = Http::withHeaders([
+            'key' => config('services.rajaongkir.api_key'),
+        ])->get("{$baseUrl}/destination/domestic-destination", [
+            'search' => $search,
+            'limit' => 10,
+            'offset' => 0,
+        ]);
+        
+        return response()->json($response->json());
     }
 }
