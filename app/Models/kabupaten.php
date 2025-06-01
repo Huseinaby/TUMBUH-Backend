@@ -13,4 +13,9 @@ class kabupaten extends Model
     ];
 
     public $incrementing = false;
+
+    public function province()
+    {
+        return $this->belongsTo(Province::class, 'province_id', 'id');
+    }
 }

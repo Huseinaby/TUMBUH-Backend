@@ -72,12 +72,12 @@ class locationController extends Controller
             'id_provinsi' => $provinceId,
         ]);
 
-        dd($response->json());
 
         if ($response->successful()) {
             foreach ($response['value'] as $item) {
+                $id = str_replace('.', '', $item['id']);
                 kabupaten::updateOrCreate(
-                    ['id' => $item['id']],
+                    ['id' => $id],
                     [
                         'name' => $item['name'],
                         'province_id' => $provinceId,
