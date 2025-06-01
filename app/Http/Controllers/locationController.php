@@ -29,9 +29,8 @@ class locationController extends Controller
         if ($response->successful()) {
             foreach ($response['value'] as $item) {
                 Province::updateOrCreate(
-                    [
-                        'name' => $item['name'],
-                    ]
+                    ['id' => $item['id'],],
+                    ['name' => $item['name'],]
                 );
             }
 
