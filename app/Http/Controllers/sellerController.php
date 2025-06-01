@@ -84,4 +84,28 @@ class sellerController extends Controller
         
         return response()->json($response->json());
     }
+
+    public function verifySeller(Request $request) {
+        $user = Auth::user();
+
+        if(!$user || $user->role != 'admin') {
+            return response()->json([
+                'message' => 'Unauthorized. Only admin can verify sellers.',
+            ], 401);
+        }
+
+        $request->validate([
+            'seller_id' => 'required|exists:seller_details,id',
+            'status' => 'required|in:approved,rejected',
+        ]);
+
+        $sellerDetail = SellerDetail::find($request->input('seller_id'));
+        $sellerDetail->status = $request->input('status');
+        $sellerDetail->save();
+
+        return response()->json([
+            'message' => 'Seller verification status updated successfully.',
+            'seller_detail' => $sellerDetail,
+        ]);
+    }
 }

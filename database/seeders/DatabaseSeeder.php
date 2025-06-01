@@ -25,8 +25,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::create([
-            'username' => 'penjual2',
-            'email' => 'penjual1@tumbuh.app',
+            'username' => 'Abu Husein',
+            'email' => 'husein@tumbuh-app.my.id',
+            'role' => 'admin',
+            'email_verified_at' => now(),
             'password' => bcrypt('password'),
         ]);
 
