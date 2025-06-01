@@ -4,6 +4,7 @@ use App\Http\Controllers\articleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\cartController;
 use App\Http\Controllers\checkoutController;
+use App\Http\Controllers\locationController;
 use App\Http\Controllers\modulController;
 use App\Http\Controllers\productController;
 use App\Http\Controllers\quizController;
@@ -103,8 +104,9 @@ Route::get('/origin/seller', [sellerController::class, 'getOriginSeller']);
 Route::post('/seller/status', [sellerController::class, 'verifySeller']);
 
 //location
-Route::get('/location/province', [\App\Http\Controllers\locationController::class, 'getProvince']);
-Route::get('/location/province/sync', [\App\Http\Controllers\locationController::class, 'syncProvince']);
+Route::get('/location/province', [locationController::class, 'getProvince']);
+Route::get('/location/province/sync', [locationController::class, 'syncProvince']);
+Route::post('/location/kabupaten', [locationController::class, 'getKabupaten']);
 
 //shipping
 Route::get('/shipping/destination', [ShippingController::class, 'searchDestination']);

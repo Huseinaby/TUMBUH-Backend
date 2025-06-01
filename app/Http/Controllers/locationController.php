@@ -28,17 +28,19 @@ class locationController extends Controller
 
         if ($response->successful()) {
             foreach ($response['value'] as $item) {
-                Province::updateOrCreate(
-                    ['id' => $item['id'],],
-                    ['name' => $item['name'],]
-                );
+                Province::Create([
+                        'id' => $item['id'],
+                        'name' => $item['name']
+                    ]);
             }
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Provinces synchronized successfully.',
+                'data' => Province::all(),
             ], 200);
         }
+
         return response()->json([
             'status' => 'error',
             'message' => 'Failed to synchronize provinces.',
@@ -67,8 +69,10 @@ class locationController extends Controller
 
         $response = Http::get('https://api.binderbyte.com/wilayah/kabupaten', [
             'api_key' => env('BINDERBYTE_API_KEY'),
-            'province_id' => $provinceId,
+            'id_provinsi' => $provinceId,
         ]);
+
+        dd($response->json());
 
         if ($response->successful()) {
             foreach ($response['value'] as $item) {
