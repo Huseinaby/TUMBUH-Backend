@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\kabupaten;
+use App\Models\kecamatan;
 use App\Models\Province;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -29,9 +30,9 @@ class locationController extends Controller
         if ($response->successful()) {
             foreach ($response['value'] as $item) {
                 Province::Create([
-                        'id' => $item['id'],
-                        'name' => $item['name']
-                    ]);
+                    'id' => $item['id'],
+                    'name' => $item['name']
+                ]);
             }
 
             return response()->json([
@@ -71,7 +72,7 @@ class locationController extends Controller
             'api_key' => env('BINDERBYTE_API_KEY'),
             'id_provinsi' => $provinceId,
         ]);
-
+        
 
         if ($response->successful()) {
             foreach ($response['value'] as $item) {
@@ -92,5 +93,53 @@ class locationController extends Controller
             'status' => 'success',
             'data' => $kabupatens,
         ], 200);
+    }
+
+    public function getKecamatan(Request $request)
+    {
+        $kabupaten_id = $request->input('kabupaten_id');
+
+
+        $kecamatan = kecamatan::where('kabupaten_id', $kabupaten_id)->get();
+
+        if ($kecamatan->isNotEmpty()) {
+            return response()->json([
+                'status' => 'success',
+                'data' => $kecamatan,
+            ], 200);
+        }
+
+        $response = Http::get('https://api.binderbyte.com/wilayah/kecamatan', [
+            'api_key' => env('BINDERBYTE_API_KEY'),
+            'id_kabupaten' => $kabupaten_id,
+        ]);
+
+        dd($request->all(), $response->json());
+
+        if ($response->successful()) {
+            foreach ($response['value'] as $item) {
+                $id = str_replace('.', '', $item['id']);
+                kecamatan::updateOrCreate(
+                    ['id' => $id],
+                    [
+                        'name' => $item['name'],
+                        'id_kabupaten' => $kabupaten_id,
+                    ]
+                );
+            }
+
+
+            $kecamatan = kecamatan::where('kabupaten_id', $kabupaten_id)->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $kecamatan,
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to retrieve kecamatan data.',
+        ], 500);
     }
 }

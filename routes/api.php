@@ -107,6 +107,7 @@ Route::post('/seller/status', [sellerController::class, 'verifySeller']);
 Route::get('/location/province', [locationController::class, 'getProvince']);
 Route::get('/location/province/sync', [locationController::class, 'syncProvince']);
 Route::post('/location/kabupaten', [locationController::class, 'getKabupaten']);
+Route::post('/location/kecamatan', [locationController::class, 'getKecamatan']);
 
 //shipping
 Route::get('/shipping/destination', [ShippingController::class, 'searchDestination']);
