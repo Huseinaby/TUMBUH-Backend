@@ -98,7 +98,7 @@ Route::post('/wihdraw/request', [withdrawController::class, 'requestWithdraw']);
 Route::post('/withdraw/{id}/handle', [withdrawController::class, 'handleWithdraw']);
 
 //user
-Route::post('/user/seller', [sellerController::class, 'create']);
+Route::post('/user/seller', [sellerController::class, 'register']);
 Route::get('/origin/seller', [sellerController::class, 'getOriginSeller']);
 
 

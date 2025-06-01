@@ -11,11 +11,24 @@ class sellerController extends Controller
 {
     public function register(Request $request) {
         $user = Auth::user();
+
+        if(!$user) {
+            return response()->json([
+                'message' => 'Unauthorized. Please log in first.',
+            ], 401);
+        }
         
         if($user->role == 'seller') {
             return response()->json([
                 'message' => 'You are already a seller.',
                 'user' => $user,
+            ], 400);
+        }
+
+        if(SellerDetail::where('user_id', $user->id)->exists()) {
+            return response()->json([
+                'message' => 'You have already registered as a seller.',
+                'seller_detail' => SellerDetail::where('user_id', $user->id)->first(),
             ], 400);
         }
 
@@ -53,6 +66,7 @@ class sellerController extends Controller
         return response()->json([
             'message' => 'Seller registration successful. Your account is pending approval.',
             'user' => $user,
+            'seller_detail' => SellerDetail::where('user_id', $user->id)->first(),
         ]);
     }
 

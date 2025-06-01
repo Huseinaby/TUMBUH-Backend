@@ -21,7 +21,6 @@ class DatabaseSeeder extends Seeder
             'username' => 'penjual1',
             'email' => 'penjual@tumbuh.app',
             'role' => 'seller',
-            'storeName' => 'Toko Bagus',
             'password' => bcrypt('password'),
         ]);
 

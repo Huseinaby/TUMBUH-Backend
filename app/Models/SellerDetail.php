@@ -15,6 +15,7 @@ class SellerDetail extends Model
         'store_name',
         'store_description',
         'store_address',
+        'origin_id',
         'store_phone',
         'store_logo',
         'store_banner',
