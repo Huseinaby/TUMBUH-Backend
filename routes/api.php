@@ -85,6 +85,7 @@ Route::put('/cart/{id}', [cartController::class, 'update']);
 Route::delete('/cart/{id}', [cartController::class, 'destroy']);
 
 //transaction
+Route::post('/checkout/summary', [transactionController::class, 'checkoutSummary']);
 Route::post('/checkout', [transactionController::class, 'store']);
 Route::get('/transaction', [transactionController::class, 'index']);
 Route::get('/transaction/{id}', [transactionController::class, 'show']);

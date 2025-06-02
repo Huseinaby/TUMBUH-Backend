@@ -89,7 +89,11 @@ class User extends Authenticatable
 
     public function sellerDetail()
     {
-        return $this->hasMany(SellerDetail::class);
+        return $this->hasOne(SellerDetail::class);
     }
     
+    public function userAddress()
+    {
+        return $this->hasMany(UserAddress::class);
+    }
 }

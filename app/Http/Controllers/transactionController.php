@@ -6,6 +6,8 @@ use App\Models\transaction;
 use Illuminate\Http\Request;
 use App\Models\cartItem;
 use App\Models\orderItem;
+use App\Models\UserAddress;
+use App\Services\RajaOngkirService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -36,6 +38,67 @@ class transactionController extends Controller
         return response()->json([
             'transactions' => $transactions,
         ]);
+    }
+
+    public function checkoutSummary(Request $request)
+    {
+        $user = Auth::user();
+        $cartIds = $request->input('cart_ids');
+
+
+        if (!$cartIds || !is_array($cartIds)) {
+            return response()->json([
+                'message' => 'Invalid cart IDs provided',
+            ], 400);
+        }
+
+        $cartData = $this->getCartGroupedBySeller($cartIds);
+
+        if (empty($cartData)) {
+            return response()->json([
+                'message' => 'No valid cart items found for the provided IDs',
+            ], 404);
+        }
+
+        $addresses = UserAddress::with(['province', 'kabupaten', 'kecamatan'])
+            ->where('user_id', $user->id)
+            ->where('is_default', true)
+            ->get()
+            ->map(function ($address) {
+                return [
+                    'id' => $address->id,
+                    'full_name' => $address->nama_lengkap,
+                    'full_address' => $address->alamat_lengkap,
+                    'phone' => $address->nomor_telepon,
+                    'province' => $address->province ? $address->province->name : null,
+                    'city' => $address->kabupaten ? $address->kabupaten->name : null,
+                    'district' => $address->kecamatan ? $address->kecamatan->name : null,
+                    'postal_code' => $address->kode_pos,
+                    'origin_id' => $address->origin_id,
+                    'is_default' => $address->is_default,
+                ];
+            });
+
+
+        $shippingCosts = $this->getCost(
+            app(RajaOngkirService::class),
+            $cartData[0]['seller']['origin_id'],
+            $addresses[0]['origin_id'],
+            '1000',
+            'sap'
+        );
+
+        return response()->json([
+            'cart_data' => $cartData,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->username,
+                'email' => $user->email,
+            ],
+            'addresses' => $addresses,
+            'shipping_costs' => $shippingCosts,
+        ]);
+
     }
 
     public function store(Request $request)
@@ -142,9 +205,23 @@ class transactionController extends Controller
         }
     }
 
+    public function getCost(RajaOngkirService $rajaOngkirService, $origin, $destination, $weight, $courier)
+    {
+        $cost = $rajaOngkirService->calculateDomesticCost($origin, $destination, $weight, $courier);
+
+        if (isset($cost['error'])) {
+            return response()->json([
+                'message' => 'Error calculating cost',
+                'error' => $cost['error'],
+            ], 400);
+        }
+
+        return $cost;
+    }
+
     public function getCartGroupedBySeller(array $cartIds)
     {
-        $cartItems = cartItem::with(['product.user'])
+        $cartItems = cartItem::with(['product.user.sellerDetail', 'product.user.userAddress'])
             ->whereIn('id', $cartIds)
             ->get();
 
@@ -156,7 +233,8 @@ class transactionController extends Controller
             $result[] = [
                 'seller' => [
                     'id' => $sellerId,
-                    'storeName' => $items->first()->product->user->storeName ?? $items->first()->product->user->username,
+                    'storeName' => $items->first()->product->user->sellerDetail->store_name ?? $items->first()->product->user->username,
+                    'origin_id' => $items->first()->product->user->userAddress->firstWhere('is_default', true)?->origin_id ?? null,
                 ],
                 'items' => $items->map(function ($item) {
                     return [
