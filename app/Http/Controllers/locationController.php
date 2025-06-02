@@ -30,6 +30,7 @@ class locationController extends Controller
         if ($response->successful()) {
             foreach ($response['value'] as $item) {
                 Province::Create([
+                    'id' => $item['id'],
                     'name' => $item['name'],
                     'code' => $item['id'],
                 ]);
@@ -50,39 +51,42 @@ class locationController extends Controller
 
     public function getKabupaten(Request $request)
     {
-        $provinceCode = $request->input('code');
+        $province_code = $request->input('province_code');
 
-        $kabupaten = kabupaten::where('code', $provinceCode)->get();
+        $kabupaten = kabupaten::where('province_id', $province_code)->get();
 
         if ($kabupaten->isNotEmpty()) {
             return response()->json([
-                'status' => 'success',
+                'status' => 'Kabupaten already exists',
                 'data' => $kabupaten,
             ], 200);
         }
 
-        if (!$provinceCode) {
+        if (!$province_code) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Province ID is required.',
+                'message' => 'Province Code is required.',
             ], 400);
         }
 
         $response = Http::get('https://api.binderbyte.com/wilayah/kabupaten', [
             'api_key' => env('BINDERBYTE_API_KEY'),
-            'id_provinsi' => $provinceCode,
+            'id_provinsi' => $province_code,
         ]);
-        
 
         if ($response->successful()) {
             foreach ($response['value'] as $item) {
                 kabupaten::updateOrCreate([
-
+                    'id' => str_replace('.', '', $item['id']),
+                ], [
+                    'name' => $item['name'],
+                    'province_id' => $province_code,
+                    'code' => $item['id'],
                 ]);
             }
         }
 
-        $kabupatens = kabupaten::where('code', $provinceCode)->get();
+        $kabupatens = kabupaten::where('province_id', $province_code)->get();
 
         return response()->json([
             'status' => 'success',
@@ -92,24 +96,23 @@ class locationController extends Controller
 
     public function getKecamatan(Request $request)
     {
-        $kabupaten_id = $request->input('kabupaten_id');
+        $kabupatenId = $request->input('kabupaten_code');
 
+        $kabupaten_code = str_replace('.', '', $kabupatenId);
 
-        $kecamatan = kecamatan::where('kabupaten_id', $kabupaten_id)->get();
+        $kecamatan = kecamatan::where('kabupaten_id', $kabupaten_code)->get();
 
         if ($kecamatan->isNotEmpty()) {
             return response()->json([
-                'status' => 'success',
+                'status' => 'kecamatan already exists',
                 'data' => $kecamatan,
             ], 200);
         }
 
         $response = Http::get('https://api.binderbyte.com/wilayah/kecamatan', [
             'api_key' => env('BINDERBYTE_API_KEY'),
-            'id_kabupaten' => $kabupaten_id,
+            'id_kabupaten' => $kabupatenId,
         ]);
-
-        dd($request->all(), $response->json());
 
         if ($response->successful()) {
             foreach ($response['value'] as $item) {
@@ -118,13 +121,14 @@ class locationController extends Controller
                     ['id' => $id],
                     [
                         'name' => $item['name'],
-                        'id_kabupaten' => $kabupaten_id,
+                        'kabupaten_id' => $kabupaten_code,
+                        'code' => $item['id']
                     ]
                 );
             }
 
 
-            $kecamatan = kecamatan::where('kabupaten_id', $kabupaten_id)->get();
+            $kecamatan = kecamatan::where('kabupaten_id', $kabupaten_code)->get();
 
             return response()->json([
                 'status' => 'success',
@@ -135,6 +139,39 @@ class locationController extends Controller
         return response()->json([
             'status' => 'error',
             'message' => 'Failed to retrieve kecamatan data.',
+        ], 500);
+    }
+
+    public function getOriginByKecamatan()
+    {
+        $keyword = request()->input('search', '');
+        $baseUrl = config('services.rajaongkir.base_url', 'https://rajaongkir.komerce.id/api/v1');
+ 
+        if (!$keyword) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Search keyword is required.',
+            ], 400);
+        }
+
+        $response = Http::withHeaders([
+            'key' => config('services.rajaongkir.api_key'),
+        ])->get("{$baseUrl}/destination/domestic-destination", [
+            'search' => $keyword,
+            'limit' => 10,
+            'offset' => 0,
+        ]);
+
+        if($response->successful()){
+            return response()->json([
+                'status' => 'success',
+                'data' => $response->json()['data'],
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to retrieve origin data.',
         ], 500);
     }
 }
