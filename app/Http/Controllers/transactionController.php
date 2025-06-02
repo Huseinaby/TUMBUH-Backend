@@ -189,48 +189,6 @@ class transactionController extends Controller
         ]);
     }
 
-    public function payWithMidtrans($transactionId)
-    {
-        $transaction = Transaction::with('user')->findOrFail($transactionId);
-
-        if ($transaction->status !== 'pending') {
-            return response()->json([
-                'message' => 'Transaction already paid or cancelled',
-            ], 400);
-        }
-
-        $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
-
-        $params = [
-            'transaction_details' => [
-                'order_id' => $orderId,
-                'gross_amount' => $transaction->total_price,
-            ],
-            'customer_details' => [
-                'first_name' => $transaction->user->name,
-                'email' => $transaction->user->email,
-            ],
-            'callbacks' => [
-                'finish' => url('/api/transaction/success'),
-                'unfinish' => url('/api/transaction/failed'),
-                'error' => url('/api/transaction/failed'),
-            ],
-        ];
-
-        $snapUrl = Snap::createTransaction($params)->redirect_url;
-
-        $transaction->update([
-            'payment_method' => 'midtrans',
-            'invoice_url' => $snapUrl,
-            'midtrans_order_id' => $orderId,
-        ]);
-
-        return response()->json([
-            'message' => 'Snap URL generated successfully',
-            'invoice_url' => $snapUrl,
-        ]);
-    }
-
     public function handleWebHook(Request $request)
     {
         $serverKey = config('services.midtrans.server_key');
