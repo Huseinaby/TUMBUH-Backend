@@ -159,28 +159,28 @@ class transactionController extends Controller
                 $params = [
                     'transaction_details' => [
                         'order_id' => $orderId,
-                        'gross_amount' => $total,
+                        'gross_amount' => $finalPrice,
                     ],
                     'customer_details' => [
                         'first_name' => $user->name,
                         'email' => $user->email,
                     ],
-                    'item_details' => array_map(function ($item) {
-                        return [
-                            'id' => $item['product_id'],
-                            'price' => $item['product']['price'],
-                            'quantity' => $item['quantity'],
-                            'name' => $item['product']['name'],
-                        ];
-                    }, $items),
-                    [
-                        [
+                    'item_details' => array_merge(
+                        array_map(function ($item) {
+                            return [
+                                'id' => $item['product_id'],
+                                'price' => $item['product']['price'],
+                                'quantity' => $item['quantity'],
+                                'name' => $item['product']['name'],
+                            ];
+                        }, $items),
+                        [[
                             'id' => 'shipping_' . $sellerId,
                             'price' => $shippingCost,
                             'quantity' => 1,
-                            'name' => 'ongkir',
-                        ]
-                    ]
+                            'name' => 'Ongkir'
+                        ]]
+                    ),                    
                 ];
 
                 $snapUrl = Snap::createTransaction($params)->redirect_url;
@@ -319,6 +319,10 @@ class transactionController extends Controller
         }
 
         $status = $request->transaction_status;
+
+        if(in_array($transaction->status, ['paid', 'expired', 'cancelled'])) {
+            return response()->json(['message' => 'Transaction already processed'], 200);
+        }
 
         if ($status === 'settlement') {
             $transaction->update([
