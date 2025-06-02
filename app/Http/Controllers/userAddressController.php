@@ -9,6 +9,19 @@ use Illuminate\Support\Facades\Auth;
 
 class userAddressController extends Controller
 {
+
+    public function getAddress(){
+        $user = Auth::user();
+        $alamat = UserAddress::where('user_id', $user->id)
+            ->with(['province', 'kabupaten', 'kecamatan'])
+            ->get();
+
+        return response()->json([
+            'message' => 'User addresses retrieved successfully',
+            'data' => $alamat,
+        ], 200);
+    }
+
     public function store(Request $request){
         $request->validate([
             'nama_lengkap' => 'required|string|max:255',
