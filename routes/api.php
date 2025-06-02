@@ -11,6 +11,7 @@ use App\Http\Controllers\quizController;
 use App\Http\Controllers\sellerController;
 use App\Http\Controllers\ShippingController;
 use App\Http\Controllers\transactionController;
+use App\Http\Controllers\userAddressController;
 use App\Http\Controllers\userController;
 use App\Http\Controllers\videoController;
 use App\Http\Controllers\withdrawController;
@@ -109,6 +110,10 @@ Route::get('/location/province/sync', [locationController::class, 'syncProvince'
 Route::post('/location/kabupaten', [locationController::class, 'getKabupaten']);
 Route::post('/location/kecamatan', [locationController::class, 'getKecamatan']);
 Route::get('/location/origin-id', [locationController::class, 'getOriginByKecamatan']);
+
+//adress
+Route::get('/address', [userAddressController::class, 'getAddress']);
+Route::post('/address', [userAddressController::class, 'store']);
 
 //shipping
 Route::get('/shipping/destination', [ShippingController::class, 'searchDestination']);

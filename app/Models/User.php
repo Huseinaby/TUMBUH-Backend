@@ -89,6 +89,7 @@ class User extends Authenticatable
 
     public function sellerDetail()
     {
-        return $this->hasOne(SellerDetail::class);
+        return $this->hasMany(SellerDetail::class);
     }
+    
 }
