@@ -19,6 +19,8 @@ return new class extends Migration
             $table->enum('status', ['pending', 'paid', 'cancelled', 'expired'])->default('pending');
             $table->string('payment_method')->nullable();
             $table->text('notes')->nullable();
+            $table->string('shipping_service')->nullable();
+            $table->integer('shipping_cost')->default(0);
             $table->text('invoice_url')->nullable();
             $table->string('midtrans_order_id')->nullable();
             $table->timestamp('expired_at')->nullable();

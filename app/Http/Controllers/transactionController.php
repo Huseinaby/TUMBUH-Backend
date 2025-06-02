@@ -105,6 +105,7 @@ class transactionController extends Controller
     {
         $user = Auth::user();
         $cartIds = $request->input('cart_ids');
+        $shippingCost = collect($request->input('shipping_costs', []))->keyBy('seller_id');
 
         if (!$cartIds || !is_array($cartIds)) {
             return response()->json([
@@ -130,10 +131,14 @@ class transactionController extends Controller
                 $items = $sellercart['items'];
                 $total = collect($items)->sum('subTotal');
 
+                $shippingCost = $shippingCost[$sellerId]['cost'] ?? 0;
+
+                $finalPrice = $total + $shippingCost;
+
                 $transaction = Transaction::create([
                     'user_id' => $user->id,
                     'seller_id' => $sellerId,
-                    'total_price' => $total,
+                    'total_price' => $finalPrice,
                     'status' => 'pending',
                     'payment_method' => 'midtrans',
                 ]);
@@ -145,6 +150,7 @@ class transactionController extends Controller
                         'quantity' => $item['quantity'],
                         'price' => $item['product']['price'],
                         'subtotal' => $item['subTotal'],
+                        'shipping_cost' => $shippingCost,
                     ]);
                 }
 
@@ -167,6 +173,14 @@ class transactionController extends Controller
                             'name' => $item['product']['name'],
                         ];
                     }, $items),
+                    [
+                        [
+                            'id' => 'shipping_' . $sellerId,
+                            'price' => $shippingCost,
+                            'quantity' => 1,
+                            'name' => 'ongkir',
+                        ]
+                    ]
                 ];
 
                 $snapUrl = Snap::createTransaction($params)->redirect_url;
