@@ -95,6 +95,9 @@ Route::get('/transaction/failed', [transactionController::class, 'paymentFailed'
 Route::get('/transaction/income', [transactionController::class, 'sellerIncome']);
 Route::post('/transaction/{id}/resi', [transactionController::class, 'inputResi']);
 Route::get('/transaction/{id}/track', [transactionController::class, 'cekResi']);
+Route::get('/transaction/{id}/confirm-recieved', [transactionController::class, 'confirmRecieved']);
+Route::get('/transaction/{id}/confirm', [transactionController::class, 'confirmTransaction']);
+Route::post('/transaction/{id}/cancel', [transactionController::class, 'cancelTransaction']);
 
 //withdraw
 Route::get('/withdraw', [withdrawController::class, 'listWithdraw']);

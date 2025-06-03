@@ -509,7 +509,7 @@ class transactionController extends Controller
         return 'pending';
     }
 
-    public function confirmRecieved(Request $request, $id)
+    public function confirmRecieved($id)
     {
         $transaction = transaction::where('id', $id)
             ->where('user_id', Auth::id())
@@ -529,6 +529,33 @@ class transactionController extends Controller
 
         return response()->json([
             'message' => 'Transaction confirmed received successfully',
+            'transaction' => $transaction,
+        ]);
+    }
+
+    public function cancelTransaction(Request $request, $id)
+    {
+        $request->validate([
+            'notes' => 'required|string|max:255',
+        ]);
+
+        $transaction = transaction::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        if ($transaction->status !== 'pending') {
+            return response()->json([
+                'message' => 'Transaction cannot be cancelled',
+            ], 400);
+        }
+
+        $transaction->update([
+            'status' => 'cancelled',
+            'notes' => $request->notes,
+        ]);
+
+        return response()->json([
+            'message' => 'Transaction cancelled successfully',
             'transaction' => $transaction,
         ]);
     }

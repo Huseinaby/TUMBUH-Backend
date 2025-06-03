@@ -26,7 +26,7 @@ return new class extends Migration
             $table->timestamp('expired_at')->nullable();
             $table->timestamp('paid_at')->nullable();
             $table->string('resi_number')->nullable();
-            $table->enum('shipping_status', ['pending', 'shipped', 'delivered', 'cancelled'])->default('pending');
+            $table->enum('shipping_status', ['pending', 'onProcess', 'shipped', 'delivered', 'cancelled'])->default('pending');
             $table->timestamps();
         });
     }
