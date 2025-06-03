@@ -508,4 +508,28 @@ class transactionController extends Controller
 
         return 'pending';
     }
+
+    public function confirmRecieved(Request $request, $id)
+    {
+        $transaction = transaction::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->where('shipping_status', 'delivered')
+            ->firstOrFail();
+
+
+        if ($transaction->confirmed_received_at) {
+            return response()->json([
+                'message' => 'Transaction already confirmed received',
+            ], 400);
+        }
+
+        $transaction->update([
+            'confirmed_received_at' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Transaction confirmed received successfully',
+            'transaction' => $transaction,
+        ]);
+    }
 }
