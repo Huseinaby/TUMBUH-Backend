@@ -84,8 +84,8 @@ class transactionController extends Controller
             app(RajaOngkirService::class),
             $cartData[0]['seller']['origin_id'],
             $addresses[0]['origin_id'],
-            '1000',
-            'sap'
+            $cartData[0]['items'][0]['total_weight'],
+            $request->input('courier')
         );
 
         return response()->json([

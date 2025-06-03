@@ -42,6 +42,7 @@ class productController extends Controller
             'description' => $request->description,
             'price' => $request->price,
             'stock' => $request->stock,
+            'weight' => $request->weight,
             'product_category_id' => $request->product_category_id,
             'province_id' => $request->province_id,
         ]);
@@ -83,6 +84,7 @@ class productController extends Controller
             'description',
             'price',
             'stock',
+            'weight',
             'product_category_id',
             'province_id',
         ]);
