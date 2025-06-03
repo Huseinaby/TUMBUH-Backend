@@ -105,7 +105,7 @@ class transactionController extends Controller
     {
         $user = Auth::user();
         $cartIds = $request->input('cart_ids');
-        $shippingCost = collect($request->input('shipping_costs', []))->keyBy('seller_id');
+        $shippingCostMap = collect($request->input('shipping_costs', []))->keyBy('seller_id');
 
         if (!$cartIds || !is_array($cartIds)) {
             return response()->json([
@@ -131,13 +131,16 @@ class transactionController extends Controller
                 $items = $sellercart['items'];
                 $total = collect($items)->sum('subTotal');
 
-                $shippingCost = $shippingCost[$sellerId]['cost'] ?? 0;
+                $shippingCostValue = $shippingCostMap[$sellerId]['cost'] ?? 0;
+                $shippingService = $shippingCostMap[$sellerId]['service'] ?? 'unknown';
 
-                $finalPrice = $total + $shippingCost;
+                $finalPrice = $total + $shippingCostValue;
 
                 $transaction = Transaction::create([
                     'user_id' => $user->id,
                     'seller_id' => $sellerId,
+                    'shipping_cost' => $shippingCostValue,
+                    'shipping_service' => $shippingService,
                     'total_price' => $finalPrice,
                     'status' => 'pending',
                     'payment_method' => 'midtrans',
@@ -150,7 +153,6 @@ class transactionController extends Controller
                         'quantity' => $item['quantity'],
                         'price' => $item['product']['price'],
                         'subtotal' => $item['subTotal'],
-                        'shipping_cost' => $shippingCost,
                     ]);
                 }
 
@@ -159,6 +161,9 @@ class transactionController extends Controller
                 $params = [
                     'transaction_details' => [
                         'order_id' => $orderId,
+                        'subtotal' => $total,
+                        'shipping_cost' => $shippingCostValue,
+                        'shipping_service' => $shippingService,
                         'gross_amount' => $finalPrice,
                     ],
                     'customer_details' => [
@@ -176,7 +181,7 @@ class transactionController extends Controller
                         }, $items),
                         [[
                             'id' => 'shipping_' . $sellerId,
-                            'price' => $shippingCost,
+                            'price' => $shippingCostValue,
                             'quantity' => 1,
                             'name' => 'Ongkir'
                         ]]
