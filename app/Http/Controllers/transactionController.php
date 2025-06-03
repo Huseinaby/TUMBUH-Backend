@@ -619,5 +619,9 @@ class transactionController extends Controller
             'rating' => $request->rating,
             'comment' => $request->comment,
         ]);
+
+        return response()->json([
+            'message' => 'Review submitted successfully',
+        ], 201);
     }
 }
