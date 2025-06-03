@@ -559,4 +559,25 @@ class transactionController extends Controller
             'transaction' => $transaction,
         ]);
     }
+
+    public function confirmTransaction($id){
+        $transaction = transaction::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        if ($transaction->status !== 'pending') {
+            return response()->json([
+                'message' => 'Transaction cannot be confirmed',
+            ], 400);
+        }
+
+        $transaction->update([
+            'status' => 'onProcess',
+        ]);
+
+        return response()->json([
+            'message' => 'Transaction confirmed successfully',
+            'transaction' => $transaction,
+        ]);
+    }
 }
