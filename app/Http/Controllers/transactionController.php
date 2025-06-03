@@ -256,11 +256,12 @@ class transactionController extends Controller
                         'product_id' => $item->product->id,
                         'quantity' => $item->quantity,
                         'subTotal' => $item->product->price * $item->quantity,
+                        'total_weight' => $item->product->weight * $item->quantity,
                         'product' => [
                             'name' => $item->product->name,
                             'price' => $item->product->price,
                             'stock' => $item->product->stock,
-                            'image' => $item->price->image_path ?? null,
+                            'weight' => $item->product->weight,
                         ]
                     ];
                 })->toArray()
@@ -322,7 +323,7 @@ class transactionController extends Controller
 
         if(in_array($transaction->status, ['paid', 'expired', 'cancelled'])) {
             return response()->json(['message' => 'Transaction already processed'], 200);
-        }
+    }
 
         if ($status === 'settlement') {
             $transaction->update([
