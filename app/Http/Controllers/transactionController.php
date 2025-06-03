@@ -184,13 +184,15 @@ class transactionController extends Controller
                                 'name' => $item['product']['name'],
                             ];
                         }, $items),
-                        [[
-                            'id' => 'shipping_' . $sellerId,
-                            'price' => $shippingCostValue,
-                            'quantity' => 1,
-                            'name' => 'Ongkir'
-                        ]]
-                    ),                    
+                        [
+                            [
+                                'id' => 'shipping_' . $sellerId,
+                                'price' => $shippingCostValue,
+                                'quantity' => 1,
+                                'name' => 'Ongkir'
+                            ]
+                        ]
+                    ),
                 ];
 
                 $snapUrl = Snap::createTransaction($params)->redirect_url;
@@ -331,9 +333,9 @@ class transactionController extends Controller
 
         $status = $request->transaction_status;
 
-        if(in_array($transaction->status, ['paid', 'expired', 'cancelled'])) {
+        if (in_array($transaction->status, ['paid', 'expired', 'cancelled'])) {
             return response()->json(['message' => 'Transaction already processed'], 200);
-    }
+        }
 
         if ($status === 'settlement') {
             $transaction->update([
@@ -391,7 +393,8 @@ class transactionController extends Controller
         ]);
     }
 
-    public function inputResi(Request $request, $id){
+    public function inputResi(Request $request, $id)
+    {
         $request->validate([
             'resi_number' => 'required|string|max:255',
         ]);
@@ -400,13 +403,13 @@ class transactionController extends Controller
             ->where('seller_id', Auth::id())
             ->firstOrFail();
 
-        if(!$transaction) {
+        if (!$transaction) {
             return response()->json([
                 'message' => 'Transaction not found or you are not authorized to update this transaction',
             ], 404);
         }
 
-        if($transaction->resi_number) {
+        if ($transaction->resi_number) {
             return response()->json([
                 'message' => 'Resi number already exists for this transaction',
             ], 400);
@@ -416,12 +419,18 @@ class transactionController extends Controller
             'resi_number' => $request->input('resi_number'),
             'shipping_status' => 'shipped',
         ]);
+
+        return response()->json([
+            'message' => 'Resi number updated successfully',
+            'transaction' => $transaction,
+        ]);
     }
-    
-    public function cekResi($transactionId){
+
+    public function cekResi($transactionId)
+    {
         $transaction = transaction::findOrFail($transactionId);
 
-        if(!$transaction->resi_number || !$transaction->shipping_service) {
+        if (!$transaction->resi_number || !$transaction->shipping_service) {
             return response()->json([
                 'message' => 'Resi number or shipping service not available',
             ], 404);
@@ -429,12 +438,23 @@ class transactionController extends Controller
 
         $trackingInfo = $this->binderByteService->track($transaction->shipping_service, $transaction->resi_number);
 
-        if(!$trackingInfo || $trackingInfo['status'] !== 200) {
+        if (!$trackingInfo || $trackingInfo['status'] !== 200) {
             return response()->json([
                 'message' => 'Failed to retrieve tracking information',
                 'error' => $trackingInfo['message'] ?? 'Unknown error',
             ], 500);
         }
+
+        $summary = $trackingInfo['data']['summary'] ?? null;
+        $history = $trackingInfo['data']['history'] ?? [];
+
+        $latestDesc = $history[0]['desc'] ?? '';
+
+        $statusMapped = $this->mapBinderByteStatus($summary['status'], $latestDesc);
+
+        $transaction->update([
+            'shipping_status' => $statusMapped,
+        ]);
 
         return response()->json([
             'resi_number' => $transaction->resi_number,
@@ -465,5 +485,27 @@ class transactionController extends Controller
             'total_income' => $total,
             'total_transaction' => $count,
         ]);
+    }
+
+    public function mapBinderByteStatus($summaryStatus, $latestHistoryDesc)
+    {
+        $status = strtolower($$summaryStatus);
+        $desc = strtolower($latestHistoryDesc);
+
+        if (str_contains($desc, 'diterima') || $status === 'delivered') {
+            return 'delivered';
+        }
+        if (str_contains($desc, 'dikirim') || $status === 'on transit') {
+            return 'shipped';
+        }
+        if (str_contains($desc, 'dijemput') || $status === 'picked up') {
+            return 'shipped';
+        }
+
+        if (str_contains($desc, 'gagal')) {
+            return 'cancelled';
+        }
+
+        return 'pending';
     }
 }
