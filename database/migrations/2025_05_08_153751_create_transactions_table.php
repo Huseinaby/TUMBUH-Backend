@@ -25,6 +25,8 @@ return new class extends Migration
             $table->string('midtrans_order_id')->nullable();
             $table->timestamp('expired_at')->nullable();
             $table->timestamp('paid_at')->nullable();
+            $table->string('resi_number')->nullable();
+            $table->enum('shipping_status', ['pending', 'shipped', 'delivered', 'cancelled'])->default('pending');
             $table->timestamps();
         });
     }
