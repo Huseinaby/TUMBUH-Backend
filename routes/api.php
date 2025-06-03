@@ -93,6 +93,7 @@ Route::post('/transaction/webhook', [transactionController::class, 'handleWebhoo
 Route::get('/transaction/success', [transactionController::class, 'paymentSuccess']);
 Route::get('/transaction/failed', [transactionController::class, 'paymentFailed']);
 Route::get('/transaction/income', [transactionController::class, 'sellerIncome']);
+Route::get('/transaction/{id}/track', [transactionController::class, 'cekResi']);
 
 //withdraw
 Route::get('/withdraw', [withdrawController::class, 'listWithdraw']);

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\cartItem;
 use App\Models\orderItem;
 use App\Models\UserAddress;
+use App\Services\BinderByteService;
 use App\Services\RajaOngkirService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -20,12 +21,16 @@ use Midtrans\Snap;
 class transactionController extends Controller
 {
 
-    public function __construct()
+    protected $binderByteService;
+
+    public function __construct(BinderByteService $binderByteService)
     {
         Config::$serverKey = config('services.midtrans.server_key');
         Config::$isProduction = config('services.midtrans.is_production');
         Config::$isSanitized = config('services.midtrans.sanitized');
         Config::$is3ds = config('services.midtrans.enable_3ds');
+
+        $this->binderByteService = $binderByteService;
     }
 
     public function index()
@@ -383,6 +388,31 @@ class transactionController extends Controller
             'message' => 'Payment failed',
             'status' => $transaction->status,
             'transaction' => $transaction,
+        ]);
+    }
+    
+    public function cekResi($transactionId){
+        $transaction = transaction::findOrFail($transactionId);
+
+        if(!$transaction->resi_number || !$transaction->shipping_service) {
+            return response()->json([
+                'message' => 'Resi number or shipping service not available',
+            ], 404);
+        }
+
+        $trackingInfo = $this->binderByteService->track($transaction->shipping_service, $transaction->resi_number);
+
+        if(!$trackingInfo || $trackingInfo['status'] !== 200) {
+            return response()->json([
+                'message' => 'Failed to retrieve tracking information',
+                'error' => $trackingInfo['message'] ?? 'Unknown error',
+            ], 500);
+        }
+
+        return response()->json([
+            'resi_number' => $transaction->resi_number,
+            'shipping_service' => $transaction->shipping_service,
+            'tracking_info' => $trackingInfo,
         ]);
     }
 
