@@ -390,6 +390,33 @@ class transactionController extends Controller
             'transaction' => $transaction,
         ]);
     }
+
+    public function inputResi(Request $request, $id){
+        $request->validate([
+            'resi_number' => 'required|string|max:255',
+        ]);
+
+        $transaction = transaction::where('id', $id)
+            ->where('seller_id', Auth::id())
+            ->firstOrFail();
+
+        if(!$transaction) {
+            return response()->json([
+                'message' => 'Transaction not found or you are not authorized to update this transaction',
+            ], 404);
+        }
+
+        if($transaction->resi_number) {
+            return response()->json([
+                'message' => 'Resi number already exists for this transaction',
+            ], 400);
+        }
+
+        $transaction->update([
+            'resi_number' => $request->input('resi_number'),
+            'shipping_status' => 'shipped',
+        ]);
+    }
     
     public function cekResi($transactionId){
         $transaction = transaction::findOrFail($transactionId);
