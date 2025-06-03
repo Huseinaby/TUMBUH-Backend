@@ -582,46 +582,5 @@ class transactionController extends Controller
         ]);
     }
 
-    public function storeReview(Request $request){
-        $request->validate([
-            'transaction_id' => 'required|exists:transactions,id',
-            'product_id' => 'required|exists:order_items,product_id',
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string|max:500',
-        ]);
-
-        $trasaction = transaction::where('id', $request->transaction_id)
-            ->where('user_id', Auth::id())
-            ->whereNotNull('confirmed_received_at')
-            ->firstOrFail();
-
-        if(!$trasaction){
-            return response()->json([
-                'message' => 'Transaction not found or you are not authorized to review this transaction or transaction not confirmed received',
-            ], 404);
-        }
-
-        $alreadyReviewed = Review::where('transaction_id', $trasaction->id)
-            ->where('product_id', $request->product_id)
-            ->where('user_id', Auth::id())
-            ->exists();
-
-        if ($alreadyReviewed) {
-            return response()->json([
-                'message' => 'You have already reviewed this product',
-            ], 400);
-        }
-
-        Review::create([
-            'transaction_id' => $trasaction->id,
-            'product_id' => $request->product_id,
-            'user_id' => Auth::id(),
-            'rating' => $request->rating,
-            'comment' => $request->comment,
-        ]);
-
-        return response()->json([
-            'message' => 'Review submitted successfully',
-        ], 201);
-    }
+    
 }

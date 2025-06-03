@@ -8,6 +8,7 @@ use App\Http\Controllers\locationController;
 use App\Http\Controllers\modulController;
 use App\Http\Controllers\productController;
 use App\Http\Controllers\quizController;
+use App\Http\Controllers\reviewController;
 use App\Http\Controllers\sellerController;
 use App\Http\Controllers\ShippingController;
 use App\Http\Controllers\transactionController;
@@ -98,6 +99,13 @@ Route::get('/transaction/{id}/track', [transactionController::class, 'cekResi'])
 Route::get('/transaction/{id}/confirm-recieved', [transactionController::class, 'confirmRecieved']);
 Route::get('/transaction/{id}/confirm', [transactionController::class, 'confirmTransaction']);
 Route::post('/transaction/{id}/cancel', [transactionController::class, 'cancelTransaction']);
+
+//review
+Route::post('/review', [reviewController::class, 'storeReview']);
+Route::get('/review/product/{productId}', [reviewController::class, 'getReviewsByProduct']);
+Route::get('/review/user/{userId}', [reviewController::class, 'getReviewsByUser']);
+Route::put('/review/{id}/update', [reviewController::class, 'updateReview']);
+Route::delete('/review/{id}', [reviewController::class, 'deleteReview']);
 
 //withdraw
 Route::get('/withdraw', [withdrawController::class, 'listWithdraw']);
