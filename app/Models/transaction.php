@@ -24,4 +24,13 @@ class transaction extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+
+    public function seller()
+    {
+        return $this->belongsTo(User::class, 'seller_id');
+    }
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }
