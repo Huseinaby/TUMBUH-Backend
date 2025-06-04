@@ -150,7 +150,7 @@ class transactionController extends Controller
                     'shipping_service' => $shippingService,
                     'total_price' => $finalPrice,
                     'status' => 'pending',
-                    'payment_method' => 'midtrans',
+                    'payment_method' => $request->payment_method,
                 ]);
 
                 foreach ($items as $item) {
@@ -166,6 +166,7 @@ class transactionController extends Controller
                 $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
 
                 $params = [
+                    'payment_type' => $request->payment_method,
                     'transaction_details' => [
                         'order_id' => $orderId,
                         'subtotal' => $total,
@@ -314,7 +315,7 @@ class transactionController extends Controller
                 'shipping_cost' => $request->shipping_cost['cost'],
                 'shipping_service' => $request->shipping_service,
                 'status' => 'pending',
-                'payment_method' => 'midtrans',
+                'payment_method' => $request->payment_method,
             ]);
 
             orderItem::create([
@@ -328,6 +329,7 @@ class transactionController extends Controller
             $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
 
             $params = [
+                'payment_type' => $request->payment_method,
                 'transaction_details' => [
                     'order_id' => $orderId,
                     'gross_amount' => $finalPrice,
