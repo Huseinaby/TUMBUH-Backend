@@ -46,29 +46,5 @@ class DatabaseSeeder extends Seeder
                 'name' => $category,
             ]);
         }
-
-        $products = [
-            [
-                'user_id' => 1,
-                'product_category_id' => 1,
-                'name' => 'Wijaya Kusuma',
-                'description' => 'Tanaman Wijaya Kusuma',
-                'price' => 100000,
-                'stock' => 10,
-            ],
-            [
-                'user_id' => 2,
-                'product_category_id' => 6,
-                'name' => 'Cangkul',
-                'description' => 'Cangkul untuk berkebun',
-                'price' => 50000,
-            ],
-        ];
-
-        foreach ($products as $product) {
-            Product::create($product);
-        }
-
-
     }
 }
