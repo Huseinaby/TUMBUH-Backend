@@ -158,6 +158,7 @@ class ModulController extends Controller
         
         {
           "isPlant": true,
+          "title": "perbaiki atau lengkapi nama tanaman {$request->title} dalam bahasa indonesia jika kurang lengkap atau kurang benar",
           "category": "tentukan satu kategori tanaman antara : sayuran, buah-buahan, hias, herbal, rempah, pangan, industri, obat, perkebunan, perdu/alang",
           "image": "nama tanaman",
           "content": "Tuliskan konten edukatif singkat tentang tanaman '{$request->title}'.
@@ -203,6 +204,13 @@ class ModulController extends Controller
         $cleaned = trim($cleaned);
 
         $jsonResult = json_decode($cleaned, true);
+
+        if($jsonResult['title'] === $modul->title){
+            return response()->json([
+                'message' => 'Modul sudah ada',
+                'data' => $modul
+            ]);
+        }
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             return response()->json([
