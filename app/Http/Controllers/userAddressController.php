@@ -22,6 +22,7 @@ class userAddressController extends Controller
         ], 200);
     }
 
+
     public function store(Request $request){
         $request->validate([
             'nama_lengkap' => 'required|string|max:255',

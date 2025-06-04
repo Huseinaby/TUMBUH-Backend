@@ -20,7 +20,7 @@ class UserAddress extends Model
 
     public function kabupaten()
     {
-        return $this->belongsTo(Kabupaten::class, 'kabupaten_id');
+        return $this->belongsTo(kabupaten::class, 'kabupaten_id');
     }
 
     public function kecamatan()
