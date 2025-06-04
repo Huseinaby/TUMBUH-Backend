@@ -146,7 +146,6 @@ class ModulController extends Controller
 
         $userId = Auth::user()->id;
 
-
         $geminiKey = env('GEMINI_API_KEY');
 
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$geminiKey}";
@@ -205,7 +204,11 @@ class ModulController extends Controller
 
         $jsonResult = json_decode($cleaned, true);
 
-        if($jsonResult['title'] === $modul->title){
+        $modul = Modul::where('title', $request->title)
+            ->with(['user', 'article', 'video', 'quiz'])
+            ->first();
+
+        if ($modul) {
             return response()->json([
                 'message' => 'Modul sudah ada',
                 'data' => $modul

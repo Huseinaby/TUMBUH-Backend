@@ -98,7 +98,7 @@ class locationController extends Controller
     {
         $kabupatenId = $request->input('kabupaten_code');
 
-        $kabupaten_code = str_replace('.', '', $kabupatenId);
+        $kabupaten_code = (int) str_replace('.', '', $kabupatenId);
 
         $kecamatan = kecamatan::where('kabupaten_id', $kabupaten_code)->get();
 
