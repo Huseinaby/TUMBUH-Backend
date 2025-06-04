@@ -88,6 +88,8 @@ Route::delete('/cart/{id}', [cartController::class, 'destroy']);
 //transaction
 Route::post('/checkout/summary', [transactionController::class, 'checkoutSummary']);
 Route::post('/checkout', [transactionController::class, 'store']);
+Route::post('/buynow/summary', [transactionController::class, 'buyNowSummary']);
+Route::post('/buynow', [transactionController::class, 'buyNow']);
 Route::get('/transaction', [transactionController::class, 'index']);
 Route::get('/transaction/{id}', [transactionController::class, 'show']);
 Route::post('/transaction/webhook', [transactionController::class, 'handleWebhook']);
@@ -99,6 +101,7 @@ Route::get('/transaction/{id}/track', [transactionController::class, 'cekResi'])
 Route::get('/transaction/{id}/confirm-recieved', [transactionController::class, 'confirmRecieved']);
 Route::get('/transaction/{id}/confirm', [transactionController::class, 'confirmTransaction']);
 Route::post('/transaction/{id}/cancel', [transactionController::class, 'cancelTransaction']);
+
 
 //review
 Route::post('/review', [reviewController::class, 'storeReview']);

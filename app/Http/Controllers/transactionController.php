@@ -6,6 +6,7 @@ use App\Models\transaction;
 use Illuminate\Http\Request;
 use App\Models\cartItem;
 use App\Models\orderItem;
+use App\Models\Product;
 use App\Models\Review;
 use App\Models\UserAddress;
 use App\Services\BinderByteService;
@@ -223,6 +224,154 @@ class transactionController extends Controller
             ], 201);
 
 
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Transaction failed',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function buyNowSummary(Request $request) {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        $product = Product::with(['user.sellerDetail', 'user.userAddress'])
+            ->findOrFail($request->product_id);
+
+        $quantity = $request->quantity;
+        $seller = $product->user;
+
+        $user = Auth::user();
+        $address = UserAddress::with(['province', 'kabupaten', 'kecamatan'])
+            ->where('user_id', $user->id)
+            ->where('is_default', true)
+            ->first();
+
+        $shippingCost = $this->getCost(
+            app(RajaOngkirService::class),
+            $seller->userAddress->firstWhere('is_default', true)->origin_id,
+            $address->origin_id,
+            $product->weight * $quantity,
+            $request->input('courier', 'jne')
+        );
+
+
+        return response()->json([
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'stock' => $product->stock,
+                'weight' => $product->weight,
+            ],
+            'seller' => [
+                'id' => $seller->id,
+                'storeName' => $seller->sellerDetail->store_name ?? $seller->username,
+                'origin_id' => $seller->userAddress->firstWhere('is_default', true)->origin_id ?? null,
+            ],
+            'quantity' => $quantity,
+            'shipping_cost' => $shippingCost,
+            'address' => [
+                'full_name' => $address->nama_lengkap,
+                'full_address' => $address->alamat_lengkap,
+                'phone' => $address->nomor_telepon,
+                'province' => $address->province ? $address->province->name : null,
+                'city' => $address->kabupaten ? $address->kabupaten->name : null,
+                'district' => $address->kecamatan ? $address->kecamatan->name : null,
+                'postal_code' => $address->kode_pos,
+            ],
+        ]);
+    }
+
+    public function buyNow(Request $request) {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+            'shipping_cost' => 'required|array',
+            'shipping_service' => 'required|string',
+        ]);
+
+        $user = Auth::user();
+        $product = Product::with('user')
+            ->findOrFail($request->product_id);
+        $seller = $product->user;
+
+        $subtotal = $product->price * $request->quantity;
+        $finalPrice = $subtotal + $request->shipping_cost['cost'];
+
+
+        DB::beginTransaction();
+
+        try {
+            $transaction = Transaction::create([
+                'user_id' => $user->id,
+                'seller_id' => $seller->id,
+                'total_price' => $finalPrice,
+                'shipping_cost' => $request->shipping_cost['cost'],
+                'shipping_service' => $request->shipping_service,
+                'status' => 'pending',
+                'payment_method' => 'midtrans',
+            ]);
+
+            orderItem::create([
+                'transaction_id' => $transaction->id,
+                'product_id' => $product->id,
+                'quantity' => $request->quantity,
+                'price' => $product->price,
+                'subtotal' => $subtotal,
+            ]);
+
+            $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
+
+            $params = [
+                'transaction_details' => [
+                    'order_id' => $orderId,
+                    'gross_amount' => $finalPrice,
+                ],
+                'customer_details' => [
+                    'first_name' => $user->name,
+                    'email' => $user->email,
+                ],
+                'item_details' => [
+                    [
+                        'id' => $product->id,
+                        'price' => $product->price,
+                        'quantity' => $request->quantity,
+                        'name' => $product->name,
+                    ],
+                    [
+                        'id' => 'shipping_' . $seller->id,
+                        'price' => $request->shipping_cost['cost'],
+                        'quantity' => 1,
+                        'name' => $request->shipping_service,
+                    ]
+                ],
+            ];
+
+            $snapUrl = Snap::createTransaction($params)->redirect_url;
+
+            $transaction->update([
+                'invoice_url' => $snapUrl,
+                'midtrans_order_id' => $orderId,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Transaction created successfully',
+                'snap_url' => $snapUrl,
+                'transaction' => [
+                    'id' => $transaction->id,
+                    'total_price' => $finalPrice,
+                    'seller_id' => $seller->id,
+                    'shipping_cost' => $request->shipping_cost['cost'],
+                    'shipping_service' => $request->shipping_service,
+                ],
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
