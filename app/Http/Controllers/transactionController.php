@@ -213,7 +213,9 @@ class transactionController extends Controller
                 $transactions[] = [
                     'transaction_id' => $transaction->id,
                     'seller' => $sellercart['seller'],
-                    'total_price' => $total,
+                    'subTotal' => $total,
+                    'shipping_cost' => $shippingCostValue,
+                    'total_price' => $finalPrice,
                     'snap_url' => $snapUrl,
                 ];
             }
