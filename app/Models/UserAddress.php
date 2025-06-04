@@ -25,6 +25,6 @@ class UserAddress extends Model
 
     public function kecamatan()
     {
-        return $this->belongsTo(Kecamatan::class, 'kecamatan_id');
+        return $this->belongsTo(kecamatan::class, 'kecamatan_id');
     }
 }
