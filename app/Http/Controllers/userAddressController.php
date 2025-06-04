@@ -33,6 +33,7 @@ class userAddressController extends Controller
             'kecamatan_id' => 'required|exists:kecamatans,id',
             'origin_id' => 'required|string|max:255',
             'kode_pos' => 'nullable|string|max:10',
+            'label' => 'nullable|string|max:255',
             'is_default' => 'boolean',
         ]);
 
@@ -54,6 +55,7 @@ class userAddressController extends Controller
                 'kecamatan_id' => $request->kecamatan_id,
                 'origin_id' => $request->origin_id,
                 'kode_pos' => $request->kode_pos,
+                'label' => $request->label,
                 'is_default' => $request->is_default ?? false,
             ]);
 

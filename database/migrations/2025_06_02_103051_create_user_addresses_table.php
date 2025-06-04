@@ -22,6 +22,7 @@ return new class extends Migration
             $table->foreignId('kecamatan_id')->constrained('kecamatans')->onDelete('cascade');
             $table->string('origin_id');
             $table->string('kode_pos')->nullable();
+            $table->string('label')->nullable();
             $table->boolean('is_default')->default(false);
             $table->timestamps();
         });
