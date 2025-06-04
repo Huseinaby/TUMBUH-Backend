@@ -75,7 +75,7 @@ class articleController extends Controller
 
         $articleKeywords = [
             'pengertian',
-            'menanaman',
+            'menanam',
             'merawat',
             'ide bisnis',
         ];
@@ -83,26 +83,39 @@ class articleController extends Controller
         $result = [];
 
         foreach ($articleKeywords as $keyword) {
+            $query = $keyword . ' tanaman ' . $title . ' -filetype:pdf -filetype:doc -filetype:docx -site:researchgate.net -site:jstor.org';
+
             $searchResponse = Http::get('https://www.googleapis.com/customsearch/v1', [
                 'key' => $googleApiKey,
                 'cx' => $googleCx,
-                'q' => $keyword . ' tanaman ' . $title,
+                'q' => $query,
                 'num' => 4,
             ]);
 
             if (!$searchResponse->successful()) {
-                $result[$keyword] = ['error' => 'Failed to fetch articles' . $keyword];
+                $result[$keyword] = ['error' => 'Failed to fetch articles: ' . $keyword];
+                continue;
             }
 
-            $articles = $searchResponse->successful()
-                ? collect($searchResponse['items'])->map(function ($item) {
-                    return [
-                        'title' => $item['title'],
-                        'link' => $item['link'],
-                        'snippet' => $item['snippet'],
-                    ];
-                })
-                : [];
+            // Filter hasil yang mengandung .pdf, .doc, dll sebagai fallback
+            $articles = collect($searchResponse['items'])->filter(function ($item) {
+                $link = strtolower($item['link']);
+                $title = strtolower($item['title']);
+                return !str_contains($link, '.pdf')
+                    && !str_contains($link, '.doc')
+                    && !str_contains($link, '.docx')
+                    && !str_contains($link, 'researchgate.net')
+                    && !str_contains($link, 'jstor.org')
+                    && !str_contains($link, 'youtube.com')
+                    && !str_contains($title, 'jurnal')
+                    && !str_contains($title, 'journal');
+            })->map(function ($item) {
+                return [
+                    'title' => $item['title'],
+                    'link' => $item['link'],
+                    'snippet' => $item['snippet'],
+                ];
+            });
 
             foreach ($articles as $article) {
                 Article::create([
@@ -117,13 +130,15 @@ class articleController extends Controller
             }
 
             $result[$keyword] = [
-                'articles' => $articles,
+                'articles' => $articles->values(),
                 'start' => 4,
-                'Keyword' => $keyword . ' tanaman ' . $title,
+                'keyword' => $keyword . ' tanaman ' . $title,
             ];
         }
+
         return $result;
     }
+
 
     public function generateMoreArticle(Request $request)
     {
@@ -132,7 +147,7 @@ class articleController extends Controller
             'start' => 'required|integer',
             'keyword' => 'required|string',
         ]);
-        
+
 
         $modulId = $request->modulId;
 
@@ -150,7 +165,7 @@ class articleController extends Controller
         if (!$searchResponse->successful()) {
             return response()->json([
                 'message' => 'Failed to fetch articles',
-            'error' => $searchResponse->body()
+                'error' => $searchResponse->body()
             ], 500);
         }
 
@@ -166,7 +181,7 @@ class articleController extends Controller
         $categories = explode(' ', $request->keyword);
         $category = implode(' ', array_slice($categories, 0, -2));
 
-        foreach($articles as $article) {
+        foreach ($articles as $article) {
             Article::create([
                 'modul_id' => $modulId,
                 'title' => $article['title'],
