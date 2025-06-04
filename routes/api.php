@@ -131,6 +131,7 @@ Route::get('/location/origin-id', [locationController::class, 'getOriginByKecama
 Route::get('/address', [userAddressController::class, 'getAddress']);
 Route::post('/address', [userAddressController::class, 'store']);
 Route::delete('/address/{id}', [userAddressController::class, 'destroy']);
+Route::put('/address/{id}', [userAddressController::class, 'update']);
 
 //shipping
 Route::get('/shipping/destination', [ShippingController::class, 'searchDestination']);
