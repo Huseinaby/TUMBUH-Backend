@@ -127,9 +127,10 @@ Route::post('/location/kabupaten', [locationController::class, 'getKabupaten']);
 Route::post('/location/kecamatan', [locationController::class, 'getKecamatan']);
 Route::get('/location/origin-id', [locationController::class, 'getOriginByKecamatan']);
 
-//adress
+//address
 Route::get('/address', [userAddressController::class, 'getAddress']);
 Route::post('/address', [userAddressController::class, 'store']);
+Route::delete('/address/{id}', [userAddressController::class, 'destroy']);
 
 //shipping
 Route::get('/shipping/destination', [ShippingController::class, 'searchDestination']);

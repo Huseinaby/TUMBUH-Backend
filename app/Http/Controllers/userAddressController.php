@@ -73,4 +73,20 @@ class userAddressController extends Controller
             ], 500);
         }
     }
+
+    public function destroy($id){
+        $user = Auth::user();
+        $alamat = UserAddress::where('user_id', $user->id)->findOrFail($id);
+
+        if(!$alamat) {
+            return response()->json([
+                'message' => 'Address not found',
+            ], 404);
+        }
+
+        $alamat->delete();
+        return response()->json([
+            'message' => 'Address deleted successfully',
+        ], 200);
+    }
 }
