@@ -113,6 +113,7 @@ class transactionController extends Controller
         $user = Auth::user();
         $cartIds = $request->input('cart_ids');
         $shippingCostMap = collect($request->input('shipping_costs', []))->keyBy('seller_id');
+        $paymentMethod = $request->input('payment_method');
 
         if (!$cartIds || !is_array($cartIds)) {
             return response()->json([
@@ -166,7 +167,7 @@ class transactionController extends Controller
                 $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
 
                 $params = [
-                    'payment_type' => $request->payment_method,
+                    'payment_type' => $paymentMethod,
                     'transaction_details' => [
                         'order_id' => $orderId,
                         'subtotal' => $total,
@@ -294,6 +295,7 @@ class transactionController extends Controller
             'quantity' => 'required|integer|min:1',
             'shipping_cost' => 'required|array',
             'shipping_service' => 'required|string',
+            'payment_method' => 'required|string',
         ]);
 
         $user = Auth::user();
