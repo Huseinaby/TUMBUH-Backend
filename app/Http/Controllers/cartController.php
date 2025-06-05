@@ -67,10 +67,18 @@ class cartController extends Controller
 
     public function update(Request $request, $id){
         $request->validate([
-            'quantity' => 'required|integer|min:1',
+            'quantity' => 'required|integer|min:0',
         ]);
 
         $item = cartItem::where('user_id', Auth::id())->findOrFail($id);
+
+        if($request->quantity == 0){
+            $item->delete();
+            return response()->json([
+                'message' => 'Item removed from cart successfully',
+            ]);
+        }
+        
         $item->quantity = $request->quantity;
         $item->save();
 
