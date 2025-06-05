@@ -266,7 +266,7 @@ class transactionController extends Controller
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
-            'qourier' => 'nullable|string',
+            'courier' => 'nullable|string',
         ]);
 
         $product = Product::with(['user.sellerDetail', 'user.userAddress'])
