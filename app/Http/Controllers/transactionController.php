@@ -38,8 +38,6 @@ class transactionController extends Controller
     public function index()
     {
         $transactions = transaction::with('user', 'orderItems.product')
-            ->where('user_id', Auth::id())
-            ->latest()
             ->get();
 
         return response()->json([
