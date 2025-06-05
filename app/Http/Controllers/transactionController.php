@@ -265,6 +265,7 @@ class transactionController extends Controller
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
+            'qourier' => 'nullable|string',
         ]);
 
         $product = Product::with(['user.sellerDetail', 'user.userAddress'])
@@ -357,7 +358,7 @@ class transactionController extends Controller
             $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
 
             $params = [
-                'payment_type' => $request->payment_method,
+                'enable_payments' => [$request->payment_method],
                 'transaction_details' => [
                     'order_id' => $orderId,
                     'gross_amount' => $finalPrice,
@@ -394,6 +395,7 @@ class transactionController extends Controller
             return response()->json([
                 'message' => 'Transaction created successfully',
                 'snap_url' => $snapUrl,
+                'payment_method' => $request->payment_method,
                 'transaction' => [
                     'id' => $transaction->id,
                     'total_price' => $finalPrice,
