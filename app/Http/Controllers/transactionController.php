@@ -672,7 +672,7 @@ class transactionController extends Controller
 
     public function mapBinderByteStatus($summaryStatus, $latestHistoryDesc)
     {
-        $status = strtolower($$summaryStatus);
+        $status = strtolower($summaryStatus);
         $desc = strtolower($latestHistoryDesc);
 
         if (str_contains($desc, 'diterima') || $status === 'delivered') {
