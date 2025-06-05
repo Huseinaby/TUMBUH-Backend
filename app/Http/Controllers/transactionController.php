@@ -191,7 +191,7 @@ class transactionController extends Controller
                 $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
 
                 $params = [
-                    'enable_payments' => [$paymentMethod],
+                    'enabled_payments' => [$paymentMethod],
                     'transaction_details' => [
                         'order_id' => $orderId,
                         'subtotal' => $total,
@@ -359,7 +359,7 @@ class transactionController extends Controller
             $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
 
             $params = [
-                'enable_payments' => [$request->payment_method],
+                'enabled_payments' => [$request->payment_method],
                 'transaction_details' => [
                     'order_id' => $orderId,
                     'gross_amount' => $finalPrice,
