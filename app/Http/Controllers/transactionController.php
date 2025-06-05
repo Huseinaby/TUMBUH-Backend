@@ -45,6 +45,32 @@ class transactionController extends Controller
         ]);
     }
 
+    public function getByUser()
+    {
+        $user = Auth::user();
+
+        $transactions = transaction::with('user', 'orderItems.product')
+            ->where('user_id', $user->id)
+            ->get();
+
+        return response()->json([
+            'transactions' => $transactions,
+        ]);
+    }
+
+    public function getBySeller()
+    {
+        $user = Auth::user();
+
+        $transactions = transaction::with('user', 'orderItems.product')
+            ->where('seller_id', $user->id)
+            ->get();
+
+        return response()->json([
+            'transactions' => $transactions,
+        ]);
+    }
+
     public function checkoutSummary(Request $request)
     {
         $user = Auth::user();

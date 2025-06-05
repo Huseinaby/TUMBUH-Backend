@@ -91,6 +91,8 @@ Route::post('/checkout', [transactionController::class, 'store']);
 Route::post('/buynow/summary', [transactionController::class, 'buyNowSummary']);
 Route::post('/buynow', [transactionController::class, 'buyNow']);
 Route::get('/transaction', [transactionController::class, 'index']);
+Route::get('/transaction/user', [transactionController::class, 'getByUser']);
+Route::get('/transaction/seller', [transactionController::class, 'getBySeller']);
 Route::get('/transaction/{id}', [transactionController::class, 'show']);
 Route::post('/transaction/webhook', [transactionController::class, 'handleWebhook']);
 Route::get('/transaction/success', [transactionController::class, 'paymentSuccess']);
