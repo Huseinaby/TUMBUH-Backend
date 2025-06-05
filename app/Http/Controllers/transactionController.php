@@ -191,7 +191,7 @@ class transactionController extends Controller
                 $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
 
                 $params = [
-                    'payment_type' => $paymentMethod,
+                    'enable_payments' => [$paymentMethod],
                     'transaction_details' => [
                         'order_id' => $orderId,
                         'subtotal' => $total,
@@ -240,6 +240,7 @@ class transactionController extends Controller
                     'subTotal' => $total,
                     'shipping_cost' => $shippingCostValue,
                     'total_price' => $finalPrice,
+                    'payment_method' => $paymentMethod,
                     'snap_url' => $snapUrl,
                 ];
             }
