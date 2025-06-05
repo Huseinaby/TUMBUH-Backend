@@ -22,7 +22,7 @@ class transaction extends Model
 
     public function orderItems()
     {
-        return $this->hasMany(OrderItem::class);
+        return $this->hasMany(orderItem::class);
     }
 
     public function seller()
