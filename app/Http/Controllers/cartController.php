@@ -62,6 +62,9 @@ class cartController extends Controller
 
         return response()->json([
             'message' => 'Item added to cart successfully',
+            'cart' => cartItem::with(['product.user.sellerDetail', 'product.images'])
+                ->where('user_id', Auth::id())
+                ->get(),
         ]);
     }
 
@@ -78,12 +81,13 @@ class cartController extends Controller
                 'message' => 'Item removed from cart successfully',
             ]);
         }
-        
+
         $item->quantity = $request->quantity;
         $item->save();
 
         return response()->json([
             'message' => 'Item updated successfully',
+            'item' => $item,
         ]);
     }
 
