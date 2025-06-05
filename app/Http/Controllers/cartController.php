@@ -18,6 +18,7 @@ class cartController extends Controller
         if($cart->isEmpty()) {
             return response()->json([
                 'message' => 'Cart is empty',
+                'cart' => $cart
             ]);
         }
 
