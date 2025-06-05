@@ -11,7 +11,7 @@ class BinderByteService
     public function __construct()
     {
         $this->key = config('services.binderbyte.key');
-        $this->baseUrl = 'https://api.binderbyte.com/api/v1/track';
+        $this->baseUrl = 'https://api.binderbyte.com/v1/track';
     }
 
     public function track($courier, $awb) {
