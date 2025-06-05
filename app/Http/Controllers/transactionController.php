@@ -321,7 +321,7 @@ class transactionController extends Controller
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
-            'shipping_cost' => 'required|array',
+            'shipping_cost' => 'required|numeric',
             'shipping_service' => 'required|string',
             'payment_method' => 'required|string',
         ]);
@@ -332,7 +332,7 @@ class transactionController extends Controller
         $seller = $product->user;
 
         $subtotal = $product->price * $request->quantity;
-        $finalPrice = $subtotal + $request->shipping_cost['cost'];
+        $finalPrice = $subtotal + $request->shipping_cost;
 
 
         DB::beginTransaction();
@@ -342,7 +342,7 @@ class transactionController extends Controller
                 'user_id' => $user->id,
                 'seller_id' => $seller->id,
                 'total_price' => $finalPrice,
-                'shipping_cost' => $request->shipping_cost['cost'],
+                'shipping_cost' => $request->shipping_cost,
                 'shipping_service' => $request->shipping_service,
                 'status' => 'pending',
                 'payment_method' => $request->payment_method,
@@ -377,7 +377,7 @@ class transactionController extends Controller
                     ],
                     [
                         'id' => 'shipping_' . $seller->id,
-                        'price' => $request->shipping_cost['cost'],
+                        'price' => $request->shipping_cost,
                         'quantity' => 1,
                         'name' => $request->shipping_service,
                     ]
@@ -401,7 +401,7 @@ class transactionController extends Controller
                     'id' => $transaction->id,
                     'total_price' => $finalPrice,
                     'seller_id' => $seller->id,
-                    'shipping_cost' => $request->shipping_cost['cost'],
+                    'shipping_cost' => $request->shipping_cost,
                     'shipping_service' => $request->shipping_service,
                 ],
             ]);
