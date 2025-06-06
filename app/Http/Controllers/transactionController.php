@@ -118,7 +118,7 @@ class transactionController extends Controller
 
         $shippingCosts = [];
 
-        foreach($cartData as $group) {
+        foreach ($cartData as $group) {
             $sellerOriginId = $group['seller']['origin_id'];
             $destinationId = $addresses[0]['origin_id'];
             $weight = collect($group['items'])->sum('total_weight');
@@ -130,7 +130,7 @@ class transactionController extends Controller
                 $weight,
                 $request->input('courier', 'jne')
             );
-            
+
             $shippingCosts[] = [
                 'seller_id' => $group['seller']['id'],
                 'cost' => $cost,
@@ -279,7 +279,8 @@ class transactionController extends Controller
         }
     }
 
-    public function buyNowSummary(Request $request) {
+    public function buyNowSummary(Request $request)
+    {
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
@@ -334,7 +335,8 @@ class transactionController extends Controller
         ]);
     }
 
-    public function buyNow(Request $request) {
+    public function buyNow(Request $request)
+    {
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
@@ -496,62 +498,78 @@ class transactionController extends Controller
 
     public function handleWebHook(Request $request)
     {
-        $serverKey = config('services.midtrans.server_key');
+        try {
+            $serverKey = config('services.midtrans.server_key');
 
-        $signature = hash(
-            'sha512',
-            $request->order_id .
-            $request->status_code .
-            $request->gross_amount .
-            $serverKey
-        );
+            $grossAmount = number_format((float) $request->gross_amount, 2, '.', '');
 
-        Log::info('Webhook Signature Debug', [
-            'computed_signature' => $signature,
-            'received_signature' => $request->signature_key,
-            'order_id' => $request->order_id,
-            'status_code' => $request->status_code,
-            'gross_amount' => $request->gross_amount,
-        ]);
+            $signature = hash(
+                'sha512',
+                $request->order_id .
+                $request->status_code .
+                $grossAmount .
+                $serverKey
+            );
 
-
-
-        if ($signature !== $request->signature_key) {
-            return response()->json(['message' => 'invalid signature'], 403);
-        }
-
-        $orderId = explode('-', $request->order_id)[1] ?? null;
-        $transaction = transaction::find($orderId);
-
-        if (!$transaction) {
-            return response()->json(['message' => 'Transaction not found'], 404);
-        }
-
-        if (in_array($request->status, ['paid', 'expired', 'cancelled'])) {
-            return response()->json(['message' => 'Transaction already processed'], 200);
-        }
-
-        $status = $request->transaction_status;
-
-        if (in_array($transaction->status, ['paid', 'expired', 'cancelled'])) {
-            return response()->json(['message' => 'Transaction already processed'], 200);
-        }
-
-        if ($status === 'settlement') {
-            $transaction->update([
-                'status' => 'paid',
-                'paid_at' => now(),
+            Log::info('Webhook Signature Debug', [
+                'computed_signature' => $signature,
+                'received_signature' => $request->signature_key,
+                'order_id' => $request->order_id,
+                'status_code' => $request->status_code,
+                'gross_amount' => $grossAmount,
             ]);
-        } elseif ($status === 'expire') {
-            $transaction->update(['status' => 'expired']);
-        } elseif (in_array($status, ['cancel', 'deny'])) {
-            $transaction->update(['status' => 'cancelled']);
-        } else {
-            return response()->json(['message' => 'Unhandled transaction status'], 400);
-        }
 
-        return response()->json(['message' => 'Transaction status updated'], 200);
+            if ($signature !== $request->signature_key) {
+                return response()->json(['message' => 'Invalid signature'], 403);
+            }
+
+            // Bypass untuk Test Webhook Midtrans
+            if (str_starts_with($request->order_id, 'payment_notif_test')) {
+                Log::info('Received Midtrans TEST Webhook', $request->all());
+                return response()->json(['message' => 'Test Webhook OK'], 200);
+            }
+
+            $orderId = explode('-', $request->order_id)[1] ?? null;
+            if (!$orderId) {
+                return response()->json(['message' => 'Invalid order_id format'], 400);
+            }
+
+            $transaction = transaction::find($orderId);
+            if (!$transaction) {
+                return response()->json(['message' => 'Transaction not found'], 404);
+            }
+
+            if (in_array($transaction->status, ['paid', 'expired', 'cancelled'])) {
+                return response()->json(['message' => 'Transaction already processed'], 200);
+            }
+
+            $status = $request->transaction_status;
+
+            if ($status === 'settlement') {
+                $transaction->update([
+                    'status' => 'paid',
+                    'paid_at' => now(),
+                ]);
+            } elseif ($status === 'expire') {
+                $transaction->update(['status' => 'expired']);
+            } elseif (in_array($status, ['cancel', 'deny'])) {
+                $transaction->update(['status' => 'cancelled']);
+            } else {
+                return response()->json(['message' => 'Unhandled transaction status'], 400);
+            }
+
+            return response()->json(['message' => 'Transaction status updated'], 200);
+
+        } catch (\Throwable $e) {
+            Log::error('Midtrans Webhook Error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json(['message' => 'Internal Server Error'], 500);
+        }
     }
+
 
     public function paymentSuccess(Request $request)
     {
@@ -760,7 +778,8 @@ class transactionController extends Controller
         ]);
     }
 
-    public function confirmTransaction($id){
+    public function confirmTransaction($id)
+    {
         $transaction = transaction::where('id', $id)
             ->where('user_id', Auth::id())
             ->firstOrFail();
@@ -781,5 +800,5 @@ class transactionController extends Controller
         ]);
     }
 
-    
+
 }
