@@ -553,6 +553,11 @@ class transactionController extends Controller
             $status = $request->transaction_status;
 
             if ($status === 'settlement') {
+                foreach($transaction->orderItems as $item) {
+                    $product = $item->product;
+                    $product->decrement('stock', $item->quantity);
+                }
+
                 $transaction->update([
                     'status' => 'paid',
                     'paid_at' => now(),
