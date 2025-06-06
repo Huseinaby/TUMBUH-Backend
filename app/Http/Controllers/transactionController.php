@@ -345,9 +345,16 @@ class transactionController extends Controller
             'payment_method' => 'required|string',
         ]);
 
+
         $user = Auth::user();
         $product = Product::with('user')
             ->findOrFail($request->product_id);
+
+        if ($product->stock < $request->quantity) {
+            return response()->json([
+                'message' => 'Insufficient stock for this product',
+            ], 400);
+        }
         $seller = $product->user;
 
         $subtotal = $product->price * $request->quantity;

@@ -46,6 +46,14 @@ class cartController extends Controller
             'quantity' => 'required|integer|min:1',
         ]);
 
+        $product = Product::findOrFail($request->product_id);
+
+        if($product->stock < $request->quantity) {
+            return response()->json([
+                'message' => 'Insufficient stock for this product',
+            ], 400);
+        }
+
         $existing = cartItem::where('user_id', Auth::id())
             ->where('product_id', $request->product_id)
             ->first();
