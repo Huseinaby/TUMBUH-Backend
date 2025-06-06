@@ -73,6 +73,11 @@ class transactionController extends Controller
 
     public function checkoutSummary(Request $request)
     {
+        $request->validate([
+            'cart_ids' => 'required|array',
+            'courier' => 'nullable|string',
+        ]);
+
         $user = Auth::user();
         $cartIds = $request->input('cart_ids');
 
@@ -111,13 +116,26 @@ class transactionController extends Controller
             });
 
 
-        $shippingCosts = $this->getCost(
-            app(RajaOngkirService::class),
-            $cartData[0]['seller']['origin_id'],
-            $addresses[0]['origin_id'],
-            $cartData[0]['items'][0]['total_weight'],
-            $request->input('courier')
-        );
+        $shippingCosts = [];
+
+        foreach($cartData as $group) {
+            $sellerOriginId = $group['seller']['origin_id'];
+            $destinationId = $addresses[0]['origin_id'];
+            $weight = collect($group['items'])->sum('total_weight');
+
+            $cost = $this->getCost(
+                app(RajaOngkirService::class),
+                $sellerOriginId,
+                $destinationId,
+                $weight,
+                $request->input('courier', 'jne')
+            );
+            
+            $shippingCosts[] = [
+                'seller_id' => $group['seller']['id'],
+                'cost' => $cost,
+            ];
+        }
 
         return response()->json([
             'cart_data' => $cartData,
@@ -129,7 +147,6 @@ class transactionController extends Controller
             'addresses' => $addresses,
             'shipping_costs' => $shippingCosts,
         ]);
-
     }
 
     public function store(Request $request)
