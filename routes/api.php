@@ -96,7 +96,7 @@ Route::get('/transaction/seller', [transactionController::class, 'getBySeller'])
 Route::get('/transaction/{id}', [transactionController::class, 'show']);
 Route::post('/transaction/webhook', [transactionController::class, 'handleWebhook']);
 Route::get('/transaction/finish', [transactionController::class, 'finishPayment']);
-Route::get('/transaction/error', [transactionController::class, 'finishPayment']);
+Route::get('/transaction/error', [transactionController::class, 'paymentError']);
 Route::get('/transaction/income', [transactionController::class, 'sellerIncome']);
 Route::post('/transaction/{id}/resi', [transactionController::class, 'inputResi']);
 Route::get('/transaction/{id}/track', [transactionController::class, 'cekResi']);
