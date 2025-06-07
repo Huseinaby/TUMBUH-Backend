@@ -604,7 +604,7 @@ class transactionController extends Controller
     {
         $invoiceId = $request->query('order_id');
     
-        $transaction = Transaction::with('orderItems.product')
+        $transaction = transaction::with('orderItems.product')
             ->where('midtrans_order_id', $invoiceId)
             ->first();
     
