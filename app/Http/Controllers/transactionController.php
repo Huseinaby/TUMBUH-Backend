@@ -323,6 +323,8 @@ class transactionController extends Controller
             ],
             'quantity' => $quantity,
             'shipping_cost' => $shippingCost,
+            'shipping_service' => $request->input('courier'),
+            'total_price' => ($product->price * $quantity) + $shippingCost['cost'],
             'address' => [
                 'full_name' => $address->nama_lengkap,
                 'full_address' => $address->alamat_lengkap,
@@ -358,7 +360,8 @@ class transactionController extends Controller
         $seller = $product->user;
 
         $subtotal = $product->price * $request->quantity;
-        $finalPrice = $subtotal + $request->shipping_cost;
+        $platformFee = round($subtotal * 0.05); 
+        $finalPrice = $subtotal + $request->shipping_cost + $platformFee;
 
 
         DB::beginTransaction();
@@ -368,6 +371,7 @@ class transactionController extends Controller
                 'user_id' => $user->id,
                 'seller_id' => $seller->id,
                 'total_price' => $finalPrice,
+                'platform_fee' => $platformFee,
                 'shipping_cost' => $request->shipping_cost,
                 'shipping_service' => $request->shipping_service,
                 'status' => 'pending',
@@ -406,6 +410,12 @@ class transactionController extends Controller
                         'price' => $request->shipping_cost,
                         'quantity' => 1,
                         'name' => $request->shipping_service,
+                    ],
+                    [
+                        'id' => 'platform_fee',
+                        'price' => $platformFee,
+                        'quantity' => 1,
+                        'name' => 'Biaya Layanan Platform TUMBUH',
                     ]
                 ],
             ];
@@ -425,8 +435,9 @@ class transactionController extends Controller
                 'payment_method' => $request->payment_method,
                 'transaction' => [
                     'id' => $transaction->id,
-                    'total_price' => $finalPrice,
                     'seller_id' => $seller->id,
+                    'total_price' => $finalPrice,
+                    'platform_fee' => $platformFee,
                     'shipping_cost' => $request->shipping_cost,
                     'shipping_service' => $request->shipping_service,
                 ],
