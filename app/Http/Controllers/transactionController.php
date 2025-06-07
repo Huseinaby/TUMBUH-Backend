@@ -602,35 +602,33 @@ class transactionController extends Controller
 
     public function finishPayment(Request $request)
     {
-        $invoiceId = $request->query('id');
-
+        $invoiceId = $request->query('order_id');
+    
         $transaction = transaction::with('orderItems.product')
             ->where('midtrans_order_id', $invoiceId)
             ->first();
-
+    
         if (!$transaction) {
             return response()->json([
                 'message' => 'Transaction not found',
+                'order_id' => $invoiceId,
             ], 404);
         }
-
-        if($transaction->status !== 'paid') {
-            return response()->json([
-                'message' => 'Transaction is not completed',
-                'status' => $transaction->status,
-                'transaction' => $transaction,
-            ], 400);
-        }
-
+    
         return response()->json([
-            'message' => 'Payment successful',
+            'message' => $transaction->status === 'paid'
+                ? 'Payment successful'
+                : ($transaction->status === 'pending'
+                    ? 'Payment is pending'
+                    : 'Payment failed or expired'),
             'status' => $transaction->status,
             'transaction' => $transaction,
         ]);
     }
+    
 
     public function paymentError(Request $request){
-        $invoiceId = $request->query('id');
+        $invoiceId = $request->query('order_id');
 
         $transaction = transaction::with('orderItems.product')
             ->where('midtrans_order_id', $invoiceId)

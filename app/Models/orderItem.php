@@ -16,6 +16,6 @@ class orderItem extends Model
 
     public function transaction()
     {
-        return $this->belongsTo(Transaction::class);
+        return $this->belongsTo(transaction::class);
     }
 }
