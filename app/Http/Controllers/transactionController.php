@@ -600,7 +600,7 @@ class transactionController extends Controller
     }
 
 
-    public function paymentSuccess(Request $request)
+    public function finishPayment(Request $request)
     {
         $invoiceId = $request->query('id');
 
@@ -614,6 +614,14 @@ class transactionController extends Controller
             ], 404);
         }
 
+        if($transaction->status !== 'paid') {
+            return response()->json([
+                'message' => 'Transaction is not completed',
+                'status' => $transaction->status,
+                'transaction' => $transaction,
+            ], 400);
+        }
+
         return response()->json([
             'message' => 'Payment successful',
             'status' => $transaction->status,
@@ -621,24 +629,7 @@ class transactionController extends Controller
         ]);
     }
 
-    public function paymentFailed(Request $request)
-    {
-        $invoiceId = $request->query('id');
 
-        $transaction = transaction::where('midtrans_order_id', $invoiceId)->first();
-
-        if (!$transaction) {
-            return response()->json([
-                'message' => 'Transaction not found',
-            ], 404);
-        }
-
-        return response()->json([
-            'message' => 'Payment failed',
-            'status' => $transaction->status,
-            'transaction' => $transaction,
-        ]);
-    }
 
     public function inputResi(Request $request, $id)
     {
