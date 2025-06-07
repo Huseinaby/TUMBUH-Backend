@@ -93,7 +93,6 @@ Route::post('/buynow', [transactionController::class, 'buyNow']);
 Route::get('/transaction', [transactionController::class, 'index']);
 Route::get('/transaction/user', [transactionController::class, 'getByUser']);
 Route::get('/transaction/seller', [transactionController::class, 'getBySeller']);
-Route::get('/transaction/{id}', [transactionController::class, 'show']);
 Route::post('/transaction/webhook', [transactionController::class, 'handleWebhook']);
 Route::get('/transaction/finish', [transactionController::class, 'finishPayment']);
 Route::get('/transaction/error', [transactionController::class, 'paymentError']);
@@ -103,6 +102,7 @@ Route::get('/transaction/{id}/track', [transactionController::class, 'cekResi'])
 Route::get('/transaction/{id}/confirm-recieved', [transactionController::class, 'confirmRecieved']);
 Route::get('/transaction/{id}/confirm', [transactionController::class, 'confirmTransaction']);
 Route::post('/transaction/{id}/cancel', [transactionController::class, 'cancelTransaction']);
+Route::get('/transaction/{id}', [transactionController::class, 'show']);
 
 
 //review
