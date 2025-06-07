@@ -629,7 +629,33 @@ class transactionController extends Controller
         ]);
     }
 
+    public function paymentError(Request $request){
+        $invoiceId = $request->query('id');
 
+        $transaction = transaction::with('orderItems.product')
+            ->where('midtrans_order_id', $invoiceId)
+            ->first();
+
+        if(!$transaction){
+            return response()->json([
+                'message' => 'Transaction not found',
+            ], 404);
+        }
+
+        if($transaction->status !== 'paid'){
+            return response()->json([
+                'message' => 'Transaction is not completed',
+                'status' => $transaction->status,
+                'transaction' => $transaction,
+            ], 400);
+        } else {
+            return response()->json([
+                'message' => 'Payment successful',
+                'status' => $transaction->status,
+                'transaction' => $transaction,
+            ]);
+        }
+    }
 
     public function inputResi(Request $request, $id)
     {
