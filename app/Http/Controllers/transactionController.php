@@ -179,17 +179,19 @@ class transactionController extends Controller
                 $sellerId = $sellercart['seller']['id'];
                 $items = $sellercart['items'];
                 $total = collect($items)->sum('subTotal');
+                $platformFee = round($total * 0.05); // 5% platform fee
 
                 $shippingCostValue = $shippingCostMap[$sellerId]['cost'] ?? 0;
                 $shippingService = $shippingCostMap[$sellerId]['service'] ?? 'unknown';
 
-                $finalPrice = $total + $shippingCostValue;
+                $finalPrice = $total + $shippingCostValue + $platformFee;
 
                 $transaction = Transaction::create([
                     'user_id' => $user->id,
                     'seller_id' => $sellerId,
                     'shipping_cost' => $shippingCostValue,
                     'shipping_service' => $shippingService,
+                    'platform_fee' => $platformFee,
                     'total_price' => $finalPrice,
                     'status' => 'pending',
                     'payment_method' => $request->payment_method,
@@ -207,37 +209,40 @@ class transactionController extends Controller
 
                 $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
 
+                $itemDetails = array_map(function ($item) {
+                    return [
+                        'id' => $item['product_id'],
+                        'price' => $item['product']['price'],
+                        'quantity' => $item['quantity'],
+                        'name' => $item['product']['name'],
+                    ];
+                }, $items);
+
+                $itemDetails[] = [
+                    'id' => 'shipping_' . $sellerId,
+                    'price' => $shippingCostValue,
+                    'quantity' => 1,
+                    'name' => $shippingService,
+                ];
+
+                $itemDetails[] = [
+                    'id' => 'platform_fee',
+                    'price' => $platformFee,
+                    'quantity' => 1,
+                    'name' => 'Biaya Layanan Platform TUMBUH',
+                ];
+
                 $params = [
                     'enabled_payments' => [$paymentMethod],
                     'transaction_details' => [
                         'order_id' => $orderId,
-                        'subtotal' => $total,
-                        'shipping_cost' => $shippingCostValue,
-                        'shipping_service' => $shippingService,
                         'gross_amount' => $finalPrice,
                     ],
                     'customer_details' => [
                         'first_name' => $user->name,
                         'email' => $user->email,
                     ],
-                    'item_details' => array_merge(
-                        array_map(function ($item) {
-                            return [
-                                'id' => $item['product_id'],
-                                'price' => $item['product']['price'],
-                                'quantity' => $item['quantity'],
-                                'name' => $item['product']['name'],
-                            ];
-                        }, $items),
-                        [
-                            [
-                                'id' => 'shipping_' . $sellerId,
-                                'price' => $shippingCostValue,
-                                'quantity' => 1,
-                                'name' => 'Ongkir'
-                            ]
-                        ]
-                    ),
+                    'item_details' => $itemDetails,
                 ];
 
                 $snapUrl = Snap::createTransaction($params)->redirect_url;
@@ -256,6 +261,7 @@ class transactionController extends Controller
                     'seller' => $sellercart['seller'],
                     'subTotal' => $total,
                     'shipping_cost' => $shippingCostValue,
+                    'platform_fee' => $platformFee,
                     'total_price' => $finalPrice,
                     'payment_method' => $paymentMethod,
                     'snap_url' => $snapUrl,
