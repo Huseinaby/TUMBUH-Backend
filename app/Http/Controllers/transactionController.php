@@ -602,7 +602,7 @@ class transactionController extends Controller
 
     public function finishPayment(Request $request)
     {
-        $invoiceId = $request->query('id');
+        $invoiceId = $request->query('order_id');
 
         $transaction = transaction::with('orderItems.product')
             ->where('midtrans_order_id', $invoiceId)
@@ -630,7 +630,7 @@ class transactionController extends Controller
     }
 
     public function paymentError(Request $request){
-        $invoiceId = $request->query('id');
+        $invoiceId = $request->query('order_id');
 
         $transaction = transaction::with('orderItems.product')
             ->where('midtrans_order_id', $invoiceId)
