@@ -66,16 +66,17 @@ class SellerDetailResource extends Resource
                 TextColumn::make('store_name'),
                 TextColumn::make('store_phone'),
                 BadgeColumn::make('status')
-                    ->enum([
-                        'pending' => 'Pending',
-                        'approved' => 'Approved',
-                        'rejected' => 'Rejected',
-                    ])
                     ->colors([
                         'pending' => 'warning',
                         'approved' => 'success',
                         'rejected' => 'danger',
-                    ]),
+                    ])
+                    ->formatStateUsing(fn (string $state): string => match($state){
+                        'pending' => 'Pending',
+                        'approved' => 'Approved',
+                        'rejected' => 'Rejected',
+                        default => ucfirst($state),
+                    })
             ])
             ->filters([
                 //
