@@ -17,6 +17,9 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Actions\Action;
 
 
 class SellerDetailResource extends Resource
@@ -40,6 +43,10 @@ class SellerDetailResource extends Resource
                 TextInput::make('bank_name')->nullable(),
                 TextInput::make('bank_account_number')->nullable(),
                 TextInput::make('bank_account_holder_name')->nullable(),
+                TextInput::make('nomor_induk_kependudukan')->nullable(),
+                FileUpload::make('ktp_image')
+                    ->image()
+                    ->nullable(),
                 Select::make('status')
                     ->options([
                         'pending' => 'Pending',
@@ -55,13 +62,37 @@ class SellerDetailResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('user.username')->label('Username'),
+                TextColumn::make('store_name'),
+                TextColumn::make('store_phone'),
+                BadgeColumn::make('status')
+                    ->enum([
+                        'pending' => 'Pending',
+                        'approved' => 'Approved',
+                        'rejected' => 'Rejected',
+                    ])
+                    ->colors([
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                        'rejected' => 'danger',
+                    ]),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Action::make('approve')
+                    ->visible(fn ($record) => $record->status === 'pending')
+                    ->action(function ($record) {
+                        $record->update(['status' => 'approved']);
+                        $record->user->update(['role' => 'seller']);
+                    }),
+                
+                Action::make('reject')
+                    ->visible(fn ($record) => $record->status === 'pending')
+                    ->action(function ($record) {
+                        $record->update(['status' => 'rejected']);
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
