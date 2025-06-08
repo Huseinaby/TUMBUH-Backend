@@ -43,6 +43,7 @@ class sellerController extends Controller
             'bank_name' => 'nullable|string|max:100',
             'bank_account_number' => 'nullable|string|max:20',
             'bank_account_holder_name' => 'nullable|string|max:100',
+            'foto_ktp' => 'nullable|image|max:2048',
         ]);
 
         $data = $request->only([
