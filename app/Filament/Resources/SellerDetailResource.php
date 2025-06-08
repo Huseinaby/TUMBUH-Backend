@@ -1,0 +1,88 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\SellerDetailResource\Pages;
+use App\Filament\Resources\SellerDetailResource\RelationManagers;
+use App\Models\SellerDetail;
+use Dom\Text;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\FileUpload;
+
+
+class SellerDetailResource extends Resource
+{
+    protected static ?string $model = SellerDetail::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                TextInput::make('user_id')->disabled(),
+                TextInput::make('store_name')->required()->maxLength(100),
+                TextArea::make('store_description')->required(),
+                TextInput::make('origin_id')->required(),
+                TextInput::make('store_address')->required()->maxLength(150),
+                TextInput::make('store_phone')->required()->maxLength(15),
+                FileUpload::make('store_logo')->image(),
+                FileUpload::make('store_banner')->image(),
+                TextInput::make('bank_name')->nullable(),
+                TextInput::make('bank_account_number')->nullable(),
+                TextInput::make('bank_account_holder_name')->nullable(),
+                Select::make('status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'approved' => 'Approved',
+                        'rejected' => 'Rejected',
+                    ])
+                    ->default('pending')
+                    ->required(),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                //
+            ])
+            ->filters([
+                //
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListSellerDetails::route('/'),
+            'create' => Pages\CreateSellerDetail::route('/create'),
+            'edit' => Pages\EditSellerDetail::route('/{record}/edit'),
+        ];
+    }
+}

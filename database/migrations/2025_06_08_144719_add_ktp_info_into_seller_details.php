@@ -12,9 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('seller_details', function (Blueprint $table) {
-            $table->string('bank_name')->nullable()->after('store_banner');
-            $table->string('bank_account_number')->nullable()->after('bank_name');
-            $table->string('bank_account_holder_name')->nullable()->after('bank_account_number');
+            $table->string('nomor_induk_kependudukan', 16)->nullable()->after('bank_account_holder_name');
+            $table->string('foto_ktp')->nullable()->after('nomor_induk_kependudukan');
         });
     }
 
