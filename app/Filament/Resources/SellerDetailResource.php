@@ -44,7 +44,7 @@ class SellerDetailResource extends Resource
                 TextInput::make('bank_account_number')->nullable(),
                 TextInput::make('bank_account_holder_name')->nullable(),
                 TextInput::make('nomor_induk_kependudukan')->nullable(),
-                FileUpload::make('ktp_image')
+                FileUpload::make('foto_ktp')
                     ->image()
                     ->nullable(),
                 Select::make('status')
