@@ -15,7 +15,6 @@ return new class extends Migration
             $table->string('bank_name')->nullable()->after('store_banner');
             $table->string('bank_account_number')->nullable()->after('bank_name');
             $table->string('bank_account_holder_name')->nullable()->after('bank_account_number');
-            $table->string('bank_ifsc_code')->nullable()->after('bank_account_holder_name');
         });
     }
 

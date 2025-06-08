@@ -21,6 +21,9 @@ return new class extends Migration
             $table->char('store_phone', 15);
             $table->string('store_logo')->nullable();
             $table->string('store_banner')->nullable();
+            $table->string('bank_name')->nullable();
+            $table->string('bank_account_number')->nullable();
+            $table->string('bank_account_holder_name')->nullable();
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });

@@ -24,6 +24,7 @@ return new class extends Migration
             $table->text('invoice_url')->nullable();
             $table->string('midtrans_order_id')->nullable();
             $table->timestamp('expired_at')->nullable();
+            $table->integer('platform_fee')->default(0);
             $table->timestamp('paid_at')->nullable();
             $table->string('resi_number')->nullable();
             $table->enum('shipping_status', ['pending', 'onProcess', 'shipped', 'delivered', 'cancelled'])->default('pending');
