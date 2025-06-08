@@ -19,6 +19,9 @@ class SellerDetail extends Model
         'store_phone',
         'store_logo',
         'store_banner',
+        'bank_name',
+        'bank_account_number',
+        'bank_account_holder_name',
         'status',
     ];
 
