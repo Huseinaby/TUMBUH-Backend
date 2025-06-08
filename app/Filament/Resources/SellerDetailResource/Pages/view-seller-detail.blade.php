@@ -16,10 +16,11 @@
     <div style="margin-top: 20px;">
         <strong>Store Logo:</strong><br>
         @if($record->store_logo)
-            <img src="{{ asset('storage/' . $record->store_logo) }}" alt="Store Logo" style="max-width: 300px;">
-        @else
-            <p>No Logo</p>
-        @endif
+        <img src="{{ asset('storage/' . $record->store_logo) }}" alt="Store Logo" style="max-width: 300px; cursor: pointer;"
+            onclick="window.open('{{ asset('storage/' . $record->store_logo) }}', '_blank')">
+    @else
+        <p>No Logo</p>
+    @endif    
     </div>
 
     <div style="margin-top: 20px;">
