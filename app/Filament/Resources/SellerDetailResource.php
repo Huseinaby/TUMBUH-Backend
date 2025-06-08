@@ -20,6 +20,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\ImageColumn;
 
 
 class SellerDetailResource extends Resource
@@ -38,13 +39,13 @@ class SellerDetailResource extends Resource
                 TextInput::make('origin_id')->required(),
                 TextInput::make('store_address')->required()->maxLength(150),
                 TextInput::make('store_phone')->required()->maxLength(15),
-                FileUpload::make('store_logo')->image(),
-                FileUpload::make('store_banner')->image(),
+                FileUpload::make('store_logo')->image()->disk('public')->required(),
+                FileUpload::make('store_banner')->image()->disk('public')->nullable(),
                 TextInput::make('bank_name')->nullable(),
                 TextInput::make('bank_account_number')->nullable(),
                 TextInput::make('bank_account_holder_name')->nullable(),
                 TextInput::make('nomor_induk_kependudukan')->nullable(),
-                FileUpload::make('foto_ktp')
+                FileUpload::make('foto_ktp')->disk('public')
                     ->image()
                     ->nullable(),
                 Select::make('status')
@@ -64,7 +65,7 @@ class SellerDetailResource extends Resource
             ->columns([
                 TextColumn::make('user.username')->label('Username'),
                 TextColumn::make('store_name'),
-                TextColumn::make('store_phone'),
+                TextColumn::make('store_phone'),    
                 BadgeColumn::make('status')
                     ->colors([
                         'pending' => 'warning',
@@ -82,6 +83,9 @@ class SellerDetailResource extends Resource
                 //
             ])
             ->actions([
+                Action::make('view')
+                    ->url(fn ($record) => SellerDetailResource::getUrl('view', ['record' => $record]))
+                    ->icon('heroicon-o-eye'),
                 Action::make('approve')
                     ->visible(fn ($record) => $record->status === 'pending')
                     ->action(function ($record) {
@@ -115,6 +119,7 @@ class SellerDetailResource extends Resource
             'index' => Pages\ListSellerDetails::route('/'),
             'create' => Pages\CreateSellerDetail::route('/create'),
             'edit' => Pages\EditSellerDetail::route('/{record}/edit'),
+            'view' => Pages\ViewSellerDetail::route('/{record}/view'),
         ];
     }
 }
