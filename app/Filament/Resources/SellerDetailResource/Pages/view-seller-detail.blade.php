@@ -15,18 +15,24 @@
 
     <div style="margin-top: 20px;">
         <strong>Store Logo:</strong><br>
-        @if($record->store_logo)
-        <a href="{{ asset('storage/' . $record->store_logo) }}" target="_blank">
-            <img src="{{ asset('storage/' . $record->store_logo) }}" alt="Store Logo" style="max-width: 300px; cursor: pointer;">
-        </a>
-    @else
-        <p>No Logo</p>
-    @endif    
+        @if ($record->store_logo)
+            <img src="{{ asset('storage/' . $record->store_logo) }}" alt="Store Logo"
+                style="max-width: 300px; display: block;">
+
+            <!-- Button to open in new tab -->
+            <a href="{{ asset('storage/' . $record->store_logo) }}" target="_blank"
+                style="display: inline-block; margin-top: 10px; padding: 8px 12px; background-color: #3490dc; color: white; text-decoration: none; border-radius: 4px;">
+                Lihat Gambar Penuh
+            </a>
+        @else
+            <p>No Logo</p>
+        @endif
     </div>
+
 
     <div style="margin-top: 20px;">
         <strong>Store Banner:</strong><br>
-        @if($record->store_banner)
+        @if ($record->store_banner)
             <img src="{{ asset('storage/' . $record->store_banner) }}" alt="Store Banner" style="max-width: 500px;">
         @else
             <p>No Banner</p>
