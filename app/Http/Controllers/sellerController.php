@@ -56,11 +56,6 @@ class sellerController extends Controller
             'bank_account_holder_name',
         ]);
 
-        SellerDetail::create($data + [
-            'user_id' => $user->id,
-            'status' => 'pending',
-        ]);
-
         if($request->hasFile('store_logo')) {
             $data['store_logo'] = $request->file('store_logo')->store('seller_logos', 'public');
         }
@@ -68,6 +63,11 @@ class sellerController extends Controller
         if($request->hasFile('store_banner')) {
             $data['store_banner'] = $request->file('store_banner')->store('seller_banners', 'public');
         }
+
+        SellerDetail::create($data + [
+            'user_id' => $user->id,
+            'status' => 'pending',
+        ]);
 
         return response()->json([
             'message' => 'Seller registration successful. Your account is pending approval.',
