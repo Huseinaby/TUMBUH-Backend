@@ -40,6 +40,9 @@ class sellerController extends Controller
             'store_phone' => 'required|string|max:15',
             'store_logo' => 'nullable|image|max:2048',
             'store_banner' => 'nullable|image|max:2048',
+            'bank_name' => 'nullable|string|max:100',
+            'bank_account_number' => 'nullable|string|max:20',
+            'bank_account_holder_name' => 'nullable|string|max:100',
         ]);
 
         $data = $request->only([
@@ -48,6 +51,9 @@ class sellerController extends Controller
             'store_address',
             'origin_id',
             'store_phone',
+            'bank_name',
+            'bank_account_number',
+            'bank_account_holder_name',
         ]);
 
         SellerDetail::create($data + [
