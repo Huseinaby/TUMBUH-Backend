@@ -43,6 +43,7 @@ class sellerController extends Controller
             'bank_name' => 'nullable|string|max:100',
             'bank_account_number' => 'nullable|string|max:20',
             'bank_account_holder_name' => 'nullable|string|max:100',
+            'nomor_induk_kependudukan' => 'nullable|string|max:16',
             'foto_ktp' => 'nullable|image|max:2048',
         ]);
 
@@ -55,6 +56,7 @@ class sellerController extends Controller
             'bank_name',
             'bank_account_number',
             'bank_account_holder_name',
+            'nomor_induk_kependudukan',
         ]);
 
         if($request->hasFile('store_logo')) {
@@ -63,6 +65,10 @@ class sellerController extends Controller
 
         if($request->hasFile('store_banner')) {
             $data['store_banner'] = $request->file('store_banner')->store('seller_banners', 'public');
+        }
+
+        if($request->hasFile('foto_ktp')) {
+            $data['foto_ktp'] = $request->file('foto_ktp')->store('seller_ktps', 'public');
         }
 
         SellerDetail::create($data + [
