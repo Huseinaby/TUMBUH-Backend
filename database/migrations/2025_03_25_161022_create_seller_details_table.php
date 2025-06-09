@@ -16,7 +16,6 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('store_name', 100);
             $table->text('store_description');
-            $table->string('origin_id');
             $table->string('store_address', 150);
             $table->char('store_phone', 15);
             $table->string('store_logo')->nullable();
