@@ -66,6 +66,7 @@ class SellerResource extends Resource
                     ->label('Logo Toko')
                     ->image()
                     ->openable()
+                    ->downloadable()
                     ->required()
                     ->maxSize(1024) // 1MB
                     ->disk('public')
@@ -75,6 +76,7 @@ class SellerResource extends Resource
                     ->label('Banner Toko')
                     ->image()
                     ->required()
+                    ->openable()
                     ->downloadable()
                     ->maxSize(2048) // 2MB
                     ->disk('public')
@@ -105,12 +107,6 @@ class SellerResource extends Resource
                     ->disk('public')
                     ->directory('ktp_photos')
                     ->preserveFilenames(),
-
-                FileUpload::make('attachments')
-                    ->multiple()
-                    ->openable()
-                    ->downloadable(),
-
                 Select::make('status')
                     ->label('Status')
                     ->options([
