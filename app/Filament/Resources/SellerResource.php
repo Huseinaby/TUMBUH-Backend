@@ -138,20 +138,20 @@ class SellerResource extends Resource
                     ->searchable(),
                 TextColumn::make('user.email')
                     ->icon('heroicon-o-envelope')
+                    ->iconColor('primary')
                     ->label('Email')
-                    ->searchable(),                
-                    IconColumn::make('status')
-                        ->icon(fn (string $state): string => match ($state) {
-                            'rejected' => 'heroicon-o-x-mark',
-                            'pending' => 'heroicon-o-clock',
-                            'approved' => 'heroicon-o-check-badge',
-                        })
-                        ->color(fn (string $state): string => match ($state) {
-                            'rejected' => 'danger',
-                            'pending' => 'warning',
-                            'approved' => 'success',
-                        })
-                    
+                    ->copyable()
+                    ->copyMessage('Email telah disalin ke clipboard')
+                    ->copyMessageDuration(1500)
+                    ->searchable(),
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'rejected' => 'danger',
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                    })
+
                     ->sortable()
                     ->searchable(),
             ])
