@@ -142,6 +142,9 @@ class SellerResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('view')
+                    ->label('Lihat Detail')
+                    ->url(fn (SellerDetail $record): string => route('filament.resources.seller-details.view', ['record' => $record->id])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
