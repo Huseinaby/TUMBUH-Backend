@@ -9,6 +9,34 @@ use Illuminate\Support\Facades\Http;
 
 class sellerController extends Controller
 {
+
+    public function getSeller(Request $request){
+        $user = Auth::user();
+
+        if(!$user) {
+            return response()->json([
+                'message' => 'Unauthorized. Please log in first.',
+            ], 401);
+        }
+
+        $sellerDetail = SellerDetail::where('user_id', $user->id)->first();
+
+        if(!$sellerDetail) {
+            return response()->json([
+                'message' => 'You are not registered as a seller.',
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Seller details retrieved successfully.',
+            'seller_detail' => $sellerDetail->load([
+                'user' => function($query) {
+                    $query->select('id', 'name', 'email', 'role');
+                }
+            ]),
+        ]);
+    } 
+
     public function register(Request $request) {
         $user = Auth::user();
 

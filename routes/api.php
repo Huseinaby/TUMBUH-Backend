@@ -121,6 +121,7 @@ Route::post('/withdraw/{id}/handle', [withdrawController::class, 'handleWithdraw
 Route::post('/user/seller', [sellerController::class, 'register']);
 Route::get('/origin/seller', [sellerController::class, 'getOriginSeller']);
 Route::post('/seller/status', [sellerController::class, 'verifySeller']);
+Route::get('/seller', [sellerController::class, 'getSeller']);
 
 //location
 Route::get('/location/province', [locationController::class, 'getProvince']);
