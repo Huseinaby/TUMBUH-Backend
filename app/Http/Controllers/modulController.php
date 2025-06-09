@@ -204,7 +204,10 @@ class ModulController extends Controller
 
         $jsonResult = json_decode($cleaned, true);
 
-        $modul = Modul::where('title', $request->title)
+        $title = $jsonResult['title'] ?? $request->title;
+
+
+        $modul = Modul::where('title', $title)
             ->with(['user', 'article', 'video', 'quiz'])
             ->first();
 
@@ -241,7 +244,7 @@ class ModulController extends Controller
         }
 
         $modul = Modul::create([
-            'title' => $request->title,
+            'title' => $title,
             'user_id' => $userId,
             'content' => $generateContent,
             'category' => $category,
@@ -259,14 +262,14 @@ class ModulController extends Controller
         $videoController = new videoController();
         $articleController = new articleController();
 
-        $articleResult = $articleController->generateArticles( $request->title, $modul->id);
+        $articleResult = $articleController->generateArticles( $title, $modul->id);
 
-        $videoResult = $videoController->generateVideos( $request->title,$modul->id);
+        $videoResult = $videoController->generateVideos( $title,$modul->id);
 
         $quizzes = $quizController->generateQuiz($modul->id, $articleResult);
 
         return response()->json([
-            'title' => $request->title,
+            'title' => $title,
             'id' => $modul->id,
             'user_id' => $userId,
             'content' => $generateContent,
