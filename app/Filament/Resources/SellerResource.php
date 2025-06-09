@@ -19,12 +19,15 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\IconColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class SellerResource extends Resource
 {
     protected static ?string $model = SellerDetail::class;
+
+    protected static ?string $label = 'Detail Penjual';
 
     protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
 
@@ -124,29 +127,33 @@ class SellerResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable()
-                    ->searchable(),
+                ImageColumn::make('store_logo')
+                    ->label('Logo Toko')
+                    ->circular(),
                 TextColumn::make('user.username')
                     ->label('Username')
                     ->searchable(),
                 TextColumn::make('store_name')
                     ->label('Nama Toko')
                     ->searchable(),
-                ImageColumn::make('store_logo')
-                    ->label('Logo Toko')
-                    ->circular(),
-                    TextColumn::make('status')
-                    ->label('Status')
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'pending' => 'Pending',
-                        'approved' => 'Approved',
-                        'rejected' => 'Rejected',
-                        default => $state,
-                    })
+                TextColumn::make('user.email')
+                    ->icon('heroicon-o-envelope')
+                    ->label('Email')
+                    ->searchable(),                
+                    IconColumn::make('status')
+                        ->icon(fn (string $state): string => match ($state) {
+                            'rejected' => 'heroicon-o-x-mark',
+                            'pending' => 'heroicon-o-clock',
+                            'approved' => 'heroicon-o-check-badge',
+                        })
+                        ->color(fn (string $state): string => match ($state) {
+                            'rejected' => 'danger',
+                            'pending' => 'warning',
+                            'approved' => 'success',
+                        })
+                    
                     ->sortable()
-                    ->searchable(),             
+                    ->searchable(),
             ])
             ->filters([
                 //
