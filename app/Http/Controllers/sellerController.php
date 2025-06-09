@@ -31,7 +31,7 @@ class sellerController extends Controller
             'message' => 'Seller details retrieved successfully.',
             'seller_detail' => $sellerDetail->load([
                 'user' => function($query) {
-                    $query->select('id', 'name', 'email', 'role');
+                    $query->select('id', 'username', 'email', 'role');
                 }
             ]),
         ]);
