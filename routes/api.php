@@ -104,7 +104,6 @@ Route::get('/transaction/{id}/confirm', [transactionController::class, 'confirmT
 Route::post('/transaction/{id}/cancel', [transactionController::class, 'cancelTransaction']);
 Route::get('/transaction/{id}', [transactionController::class, 'show']);
 
-
 //review
 Route::post('/review', [reviewController::class, 'storeReview']);
 Route::get('/review/product/{productId}', [reviewController::class, 'getReviewsByProduct']);
