@@ -178,7 +178,7 @@ class sellerController extends Controller
             if($sellerDetail->foto_ktp) {
                 Storage::disk('public')->delete($sellerDetail->foto_ktp);
             }
-            
+
             $data['foto_ktp'] = $request->file('foto_ktp')->store('seller_ktps', 'public');
         }
         // Update the seller detail
@@ -208,6 +208,16 @@ class sellerController extends Controller
             return response()->json([
                 'message' => 'You are not registered as a seller.',
             ], 404);
+        }
+
+        if($sellerDetail->store_logo) {
+            Storage::disk('public')->delete($sellerDetail->store_logo);
+        }
+        if($sellerDetail->store_banner) {
+            Storage::disk('public')->delete($sellerDetail->store_banner);
+        }
+        if($sellerDetail->foto_ktp) {
+            Storage::disk('public')->delete($sellerDetail->foto_ktp);
         }
 
         // Delete the seller detail
