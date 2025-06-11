@@ -122,6 +122,8 @@ Route::post('/user/seller', [sellerController::class, 'register']);
 Route::get('/origin/seller', [sellerController::class, 'getOriginSeller']);
 Route::post('/seller/status', [sellerController::class, 'verifySeller']);
 Route::get('/seller', [sellerController::class, 'getSeller']);
+Route::put('/seller', [sellerController::class, 'update']);
+Route::delete('/seller', [sellerController::class, 'destroy']);
 
 //location
 Route::get('/location/province', [locationController::class, 'getProvince']);
