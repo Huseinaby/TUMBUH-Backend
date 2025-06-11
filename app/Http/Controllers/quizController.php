@@ -82,14 +82,14 @@ class quizController extends Controller
         $links = $this->decodeArticles($articles);
 
         $linkTexts = "";
-        foreach($links as $kategori => $daftarLink){
+        foreach ($links as $kategori => $daftarLink) {
             $linkTexts .= strtoupper($kategori) . ":\n";
-            foreach ($daftarLink as $link){
+            foreach ($daftarLink as $link) {
                 $linkTexts .= "- {$link} \n";
             }
             $linkTexts .= "\n";
         }
-        
+
         $quizPrompt = <<<EOT
         Buatkan 10 soal pilihan ganda berdasarkan bacaan berikut:
         
@@ -133,21 +133,21 @@ class quizController extends Controller
         ]);
 
         try {
-    
+
             $text = $quizResponse['candidates'][0]['content']['parts'][0]['text'] ?? '';
 
             // Bersihkan triple backtick dan label ```json dari awal dan akhir teks
             $cleaned = trim($text);
-            
+
             // Hapus pembuka ```json di awal dan penutup ``` di akhir
             if (str_starts_with($cleaned, '```json')) {
                 $cleaned = preg_replace('/^```json\s*/', '', $cleaned);
                 $cleaned = preg_replace('/\s*```$/', '', $cleaned);
             }
-            
+
             // Decode JSON
             $quizzes = json_decode($cleaned, true);
-            
+
             // Debug jika gagal
             if (json_last_error() !== JSON_ERROR_NONE) {
                 Log::error('Gagal parse JSON dari Gemini', [
@@ -198,18 +198,18 @@ class quizController extends Controller
             return [];
         }
     }
-    
+
     public function decodeArticles($articles)
     {
         $result = [];
 
-        foreach($articles as $kategoriNama => $kategoriData) {
-            if(!isset($kategoriData['articles'])) {
+        foreach ($articles as $kategoriNama => $kategoriData) {
+            if (!isset($kategoriData['articles'])) {
                 continue;
             }
 
-            foreach($kategoriData['articles'] as $article){
-                if(isset($article['link'])){
+            foreach ($kategoriData['articles'] as $article) {
+                if (isset($article['link'])) {
                     $result[$kategoriNama][] = $article['link'];
                 }
             }
@@ -232,7 +232,7 @@ class quizController extends Controller
         foreach ($progressList as $modulId => $progressPerModul) {
             $levels = [];
 
-            foreach ([ 'basic', 'easy', 'medium', 'hard'] as $level) {
+            foreach (['basic', 'easy', 'medium', 'hard'] as $level) {
                 $record = $progressPerModul->firstWhere('level', $level);
                 $levels[$level] = $record
                     ? [
@@ -274,7 +274,6 @@ class quizController extends Controller
             ], 422);
         }
 
-
         $progress = QuizProgress::updateOrCreate(
             [
                 'user_id' => $request->user_id,
@@ -287,9 +286,33 @@ class quizController extends Controller
             ]
         );
 
+        // Beri coins jika hard level selesai
         if ($request->level === 'hard' && $request->isCompleted) {
             $user = User::find($request->user_id);
             $user->increment('coins', 10);
+        }
+
+        // Unlock next level jika current level sudah Completed
+        if ($request->isCompleted) {
+            $levelOrder = ['basic', 'easy', 'medium', 'hard'];
+            $currentIndex = array_search($request->level, $levelOrder);
+
+            if ($currentIndex !== false && $currentIndex < count($levelOrder) - 1) {
+                $nextLevel = $levelOrder[$currentIndex + 1];
+
+                // Update next level → unlock
+                QuizProgress::updateOrCreate(
+                    [
+                        'user_id' => $request->user_id,
+                        'modul_id' => $request->modul_id,
+                        'level' => $nextLevel,
+                    ],
+                    [
+                        'isLocked' => false, // Buka level berikutnya
+                        // isCompleted tetap false untuk next level
+                    ]
+                );
+            }
         }
 
         return response()->json([
@@ -297,4 +320,5 @@ class quizController extends Controller
             'data' => $progress
         ]);
     }
+
 }
