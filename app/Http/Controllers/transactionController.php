@@ -313,7 +313,6 @@ class transactionController extends Controller
             $request->input('courier', 'jne')
         );
 
-
         return response()->json([
             'product' => [
                 'id' => $product->id,
@@ -329,8 +328,8 @@ class transactionController extends Controller
             ],
             'quantity' => $quantity,
             'shipping_cost' => $shippingCost,
+            'total_price' => ($product->price * $quantity),
             'shipping_service' => $request->input('courier'),
-            'total_price' => ($product->price * $quantity) + $shippingCost['cost'],
             'address' => [
                 'full_name' => $address->nama_lengkap,
                 'full_address' => $address->alamat_lengkap,
