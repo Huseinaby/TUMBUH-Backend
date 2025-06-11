@@ -6,6 +6,7 @@ use App\Models\SellerDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class sellerController extends Controller
 {
@@ -155,14 +156,29 @@ class sellerController extends Controller
         ]);
 
         if($request->hasFile('store_logo')) {
+            // Delete old logo if exists
+            if($sellerDetail->store_logo) {
+                Storage::disk('public')->delete($sellerDetail->store_logo);
+            }
+
             $data['store_logo'] = $request->file('store_logo')->store('seller_logos', 'public');
         }
 
         if($request->hasFile('store_banner')) {
+            // Delete old banner if exists
+            if($sellerDetail->store_banner) {
+                Storage::disk('public')->delete($sellerDetail->store_banner);
+            }
+
             $data['store_banner'] = $request->file('store_banner')->store('seller_banners', 'public');
         }
 
         if($request->hasFile('foto_ktp')) {
+            // Delete old KTP photo if exists
+            if($sellerDetail->foto_ktp) {
+                Storage::disk('public')->delete($sellerDetail->foto_ktp);
+            }
+            
             $data['foto_ktp'] = $request->file('foto_ktp')->store('seller_ktps', 'public');
         }
         // Update the seller detail
