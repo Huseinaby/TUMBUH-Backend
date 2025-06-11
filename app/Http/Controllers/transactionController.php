@@ -327,8 +327,8 @@ class transactionController extends Controller
                 'origin_id' => $seller->userAddress->firstWhere('is_default', true)->origin_id ?? null,
             ],
             'quantity' => $quantity,
-            'shipping_cost' => $shippingCost,
             'total_price' => ($product->price * $quantity),
+            'shipping_cost' => $shippingCost,
             'shipping_service' => $request->input('courier'),
             'address' => [
                 'full_name' => $address->nama_lengkap,
