@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('modul_images', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('modul_id')->constrained('moduls')->onDelete('cascade');
-            $table->text('url');
-            $table->timestamps();
+        Schema:: table('modul_images', function (Blueprint $table) {
+            $table->text('url')->change();
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('modul_images');
+        Schema::table('modul_images', function (Blueprint $table) {
+            $table->string('url')->change();
+        });
     }
 };
