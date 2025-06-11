@@ -233,7 +233,7 @@ class ModulController extends Controller
             ], 422);
         }
 
-        $imageKeyword = 'Image of ' . $jsonResult['image'];
+        $imageKeyword = 'Gambar Tanaman ' . $jsonResult['image'];
         $category = $jsonResult['category'] ?? null;
         $generateContent = $jsonResult['content'] ?? null;
 
