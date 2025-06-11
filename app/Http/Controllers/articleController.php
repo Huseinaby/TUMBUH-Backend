@@ -6,6 +6,7 @@ use App\Http\Resources\ArticleResource;
 use Illuminate\Http\Request;
 use App\Models\Article;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class articleController extends Controller
 {
@@ -72,72 +73,184 @@ class articleController extends Controller
     {
         $googleApiKey = env('GOOGLE_API_KEY');
         $googleCx = env('GOOGLE_CSE_ID');
-
+    
         $articleKeywords = [
             'pengertian',
             'menanam',
             'merawat',
             'ide bisnis',
         ];
-
+    
         $result = [];
-
+    
         foreach ($articleKeywords as $keyword) {
-            $query = $keyword . ' tanaman ' . $title . ' -filetype:pdf -filetype:doc -filetype:docx -site:researchgate.net -site:jstor.org';
-
-            $searchResponse = Http::get('https://www.googleapis.com/customsearch/v1', [
-                'key' => $googleApiKey,
-                'cx' => $googleCx,
-                'q' => $query,
-                'num' => 4,
-            ]);
-
-            if (!$searchResponse->successful()) {
-                $result[$keyword] = ['error' => 'Failed to fetch articles: ' . $keyword];
-                continue;
-            }
-
-            // Filter hasil yang mengandung .pdf, .doc, dll sebagai fallback
-            $articles = collect($searchResponse['items'])->filter(function ($item) {
-                $link = strtolower($item['link']);
-                $title = strtolower($item['title']);
-                return !str_contains($link, '.pdf')
-                    && !str_contains($link, '.doc')
-                    && !str_contains($link, '.docx')
-                    && !str_contains($link, 'researchgate.net')
-                    && !str_contains($link, 'jstor.org')
-                    && !str_contains($link, 'youtube.com')
-                    && !str_contains($title, 'jurnal')
-                    && !str_contains($title, 'journal');
-            })->map(function ($item) {
-                return [
-                    'title' => $item['title'],
-                    'link' => $item['link'],
-                    'snippet' => $item['snippet'],
-                ];
-            });
-
-            foreach ($articles as $article) {
-                Article::create([
-                    'modul_id' => $modulId,
-                    'title' => $article['title'],
-                    'link' => $article['link'],
-                    'snippet' => $article['snippet'],
-                    'category' => $keyword,
-                    'keyword' => $keyword . ' tanaman ' . $title,
-                    'start' => 4,
+            $relevantArticles = collect();
+            $start = 1;
+            $maxArticles = 4;
+            $attemptLimit = 5; // Max 5 page attempt (Google CSE paginasi)
+            $attemptCount = 0;
+    
+            while ($relevantArticles->count() < $maxArticles && $attemptCount < $attemptLimit) {
+                $query = $keyword . ' tanaman ' . $title . ' -filetype:pdf -filetype:doc -filetype:docx -site:researchgate.net -site:jstor.org';
+    
+                $searchResponse = Http::get('https://www.googleapis.com/customsearch/v1', [
+                    'key' => $googleApiKey,
+                    'cx' => $googleCx,
+                    'q' => $query,
+                    'num' => 4,
+                    'start' => $start,
                 ]);
+    
+                if (!$searchResponse->successful()) {
+                    $result[$keyword] = ['error' => 'Failed to fetch articles: ' . $keyword];
+                    break; // Stop trying for this keyword
+                }
+    
+                $articlesRaw = collect($searchResponse['items'])->filter(function ($item) {
+                    $link = strtolower($item['link']);
+                    $title = strtolower($item['title']);
+                    return !str_contains($link, '.pdf')
+                        && !str_contains($link, '.doc')
+                        && !str_contains($link, '.docx')
+                        && !str_contains($link, 'researchgate.net')
+                        && !str_contains($link, 'jstor.org')
+                        && !str_contains($link, 'youtube.com')
+                        && !str_contains($title, 'jurnal')
+                        && !str_contains($title, 'journal');
+                })->map(function ($item) {
+                    return [
+                        'title' => $item['title'],
+                        'link' => $item['link'],
+                        'snippet' => $item['snippet'],
+                    ];
+                });
+    
+                foreach ($articlesRaw as $article) {
+                    if ($relevantArticles->count() >= $maxArticles) {
+                        break;
+                    }
+    
+                    $isRelevant = $this->isArticleRelevant(
+                        $article['title'],
+                        $article['snippet'],
+                        $article['link'],
+                        $keyword,
+                        $title
+                    );
+    
+                    if ($isRelevant) {
+                        // Save to DB
+                        Article::create([
+                            'modul_id' => $modulId,
+                            'title' => $article['title'],
+                            'link' => $article['link'],
+                            'snippet' => $article['snippet'],
+                            'category' => $keyword,
+                            'keyword' => $keyword . ' tanaman ' . $title,
+                            'start' => $start,
+                        ]);
+    
+                        $relevantArticles->push($article);
+                    } else {
+                        // Optional: log artikel yang ditolak
+                        Log::info('Artikel tidak relevan, discarding', [
+                            'title' => $article['title'],
+                            'link' => $article['link']
+                        ]);
+                    }
+                }
+    
+                // Move to next page if needed
+                $start += 4;
+                $attemptCount++;
             }
-
+    
             $result[$keyword] = [
-                'articles' => $articles->values(),
-                'start' => 4,
+                'articles' => $relevantArticles->values(),
+                'start' => $start,
                 'keyword' => $keyword . ' tanaman ' . $title,
             ];
         }
-
+    
         return $result;
     }
+
+    
+    public function isArticleRelevant($title, $snippet, $link, $keyword, $tanamanTitle)
+{
+    $geminiKey = env('GEMINI_API_KEY');
+    $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$geminiKey}";
+
+    $prompt = <<<EOT
+Berikut adalah sebuah artikel hasil pencarian:
+
+Judul: {$title}
+Snippet: {$snippet}
+Link: {$link}
+
+Tanaman yang sedang dibahas: {$tanamanTitle}
+Kategori pencarian: {$keyword}
+
+Apakah artikel ini RELEVAN untuk aplikasi Tumbuh (aplikasi edukasi tanaman untuk masyarakat umum, bukan jurnal akademik atau artikel yang sulit diakses)? 
+
+Jawab HANYA dalam format JSON valid berikut:
+
+{
+    "relevance": "RELEVAN" atau "TIDAK RELEVAN"
+}
+
+EOT;
+
+    // Kirim permintaan ke Gemini API
+    $response = Http::post($url, [
+        'contents' => [
+            'parts' => [
+                ['text' => $prompt]
+            ]
+        ]
+    ]);
+
+    try {
+        $text = $response['candidates'][0]['content']['parts'][0]['text'] ?? '';
+
+        // Bersihkan ```json
+        $cleaned = trim($text);
+
+        if (str_starts_with($cleaned, '```json')) {
+            $cleaned = preg_replace('/^```json\s*/', '', $cleaned);
+            $cleaned = preg_replace('/\s*```$/', '', $cleaned);
+        }
+
+        $parsed = json_decode($cleaned, true);
+
+        // Debug jika gagal
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            Log::error('Gagal parse JSON dari Gemini (Relevance Check)', [
+                'error' => json_last_error_msg(),
+                'original_text' => $text,
+                'cleaned_text' => $cleaned,
+            ]);
+            return false; // Anggap tidak relevan kalau parsing gagal
+        }
+
+        if (isset($parsed['relevance'])) {
+            $relevance = strtolower($parsed['relevance']);
+            return $relevance === 'relevan';
+        } else {
+            Log::warning('Field relevance tidak ditemukan pada response Gemini', [
+                'text' => $text,
+                'cleaned' => $cleaned,
+                'parsed' => $parsed,
+            ]);
+            return false;
+        }
+
+    } catch (\Exception $e) {
+        Log::error('Error checking article relevance: ' . $e->getMessage());
+        return false;
+    }
+}
+
 
 
     public function generateMoreArticle(Request $request)
