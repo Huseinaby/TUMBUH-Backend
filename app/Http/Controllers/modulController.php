@@ -119,7 +119,7 @@ class ModulController extends Controller
         $moduls = Modul::where('user_id', $userId)
             ->with(['modulImage'])
             ->withCount('quiz', 'article', 'video')
-            ->get();
+            ->paginate(10);
 
         return response()->json([
             'message' => 'Modul by user',
