@@ -20,7 +20,13 @@ class ModulController extends Controller
 
         return response()->json([
             'message' => 'semua modul',
-            'data' => ModulResource::collection($moduls)
+            'data' => ModulResource::collection($moduls),
+            'meta' => [
+                'current_page' => $moduls->currentPage(),
+                'last_page' => $moduls->lastPage(),
+                'per_page' => $moduls->perPage(),
+                'total' => $moduls->total(),
+                ]
         ]);
     }
 
