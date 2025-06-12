@@ -293,7 +293,7 @@ class transactionController extends Controller
             'courier' => 'nullable|string',
         ]);
 
-        $product = Product::with(['user.sellerDetail', 'user.userAddress'])
+        $product = Product::with(['images','user.sellerDetail', 'user.userAddress'])
             ->findOrFail($request->product_id);
 
 
