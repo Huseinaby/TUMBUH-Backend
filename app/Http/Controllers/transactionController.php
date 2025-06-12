@@ -298,7 +298,6 @@ class transactionController extends Controller
 
 
         $image = $product->images()->first();
-        dd($image);
 
         $quantity = $request->quantity;
         $seller = $product->user;
