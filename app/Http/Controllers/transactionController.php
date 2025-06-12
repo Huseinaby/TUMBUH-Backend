@@ -296,6 +296,10 @@ class transactionController extends Controller
         $product = Product::with(['user.sellerDetail', 'user.userAddress'])
             ->findOrFail($request->product_id);
 
+
+        $image = $product->images()->first();
+        dd($image);
+
         $quantity = $request->quantity;
         $seller = $product->user;
 
@@ -313,7 +317,7 @@ class transactionController extends Controller
             $request->input('courier', 'jne')
         );
 
-        $image = $product->images()->first();
+        
 
         return response()->json([
             'product' => [
