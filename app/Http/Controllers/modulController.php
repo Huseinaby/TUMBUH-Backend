@@ -16,7 +16,7 @@ class ModulController extends Controller
     {
         $moduls = Modul::with(['modulImage', 'user'])
             ->withCount('quiz','article', 'video')
-            ->get();
+            ->paginate(5);
 
         return response()->json([
             'message' => 'semua modul',
