@@ -313,10 +313,13 @@ class transactionController extends Controller
             $request->input('courier', 'jne')
         );
 
+        $image = $product->images()->first();
+
         return response()->json([
             'product' => [
                 'id' => $product->id,
                 'name' => $product->name,
+                'image' => $image ? $image->url : null,
                 'price' => $product->price,
                 'stock' => $product->stock,
                 'weight' => $product->weight,
