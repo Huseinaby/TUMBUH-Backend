@@ -322,7 +322,7 @@ class transactionController extends Controller
             'product' => [
                 'id' => $product->id,
                 'name' => $product->name,
-                'image' => $image ? $image->url : null,
+                'image' => $image ? 'storage/' . $image->image_path : null,
                 'price' => $product->price,
                 'stock' => $product->stock,
                 'weight' => $product->weight,
