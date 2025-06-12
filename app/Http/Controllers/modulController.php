@@ -23,6 +23,7 @@ class ModulController extends Controller
             'data' => ModulResource::collection($moduls),
             'meta' => [
                 'current_page' => $moduls->currentPage(),
+                'next_page_url' => $moduls->nextPageUrl(),
                 'last_page' => $moduls->lastPage(),
                 'per_page' => $moduls->perPage(),
                 'total' => $moduls->total(),
