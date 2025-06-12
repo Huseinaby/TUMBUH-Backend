@@ -14,6 +14,7 @@ class ModulController extends Controller
 {
     public function index()
     {
+        $user = Auth::user();
         $moduls = Modul::with(['modulImage', 'user'])
             ->withCount('quiz','article', 'video')
             ->paginate(5);
@@ -131,6 +132,26 @@ class ModulController extends Controller
         return response()->json([
             'message' => 'Modul by user',
             'data' => ModulResource::collection($moduls)
+        ]);
+    }
+
+    public function getExceptByUser($userId)
+    {
+        $moduls = Modul::where('user_id', '!=', $userId)
+            ->with(['modulImage'])
+            ->withCount('quiz', 'article', 'video')
+            ->paginate(5);
+
+        return response()->json([
+            'message' => 'Modul except by user',
+            'data' => ModulResource::collection($moduls),
+            'meta' => [
+                'current_page' => $moduls->currentPage(),
+                'next_page_url' => $moduls->nextPageUrl(),
+                'last_page' => $moduls->lastPage(),
+                'per_page' => $moduls->perPage(),
+                'total' => $moduls->total(),
+            ]
         ]);
     }
 
