@@ -17,9 +17,19 @@ class productController extends Controller
             ->when($request->product_category_id, fn($q) => $q->where('product_category_id', $request->product_category_id))
             ->when($request->search, fn($q) => $q->where('name', 'like', "%{$request->search}%"))
             ->when($request->province_id, fn($q) => $q->where('province_id', $request->province_id))
-            ->latest()->get();
+            ->latest()->paginate(6);
 
-        return ProductResource::collection($products)->resolve();
+        return response()->json([
+            'message' => 'Products retrieved successfully',
+            'products' => ProductResource::collection($products)->resolve(),
+            'meta' => [
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+            ],
+        ]);
+        
     }
 
     public function store(Request $request)

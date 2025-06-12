@@ -19,6 +19,7 @@ class ModulResource extends JsonResource
             'title' => $this->title,
             'content' => $this->content,
             'category' => $this->category,
+            'favorite' => $this->favoriteModul->count(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'quiz_count' => $this->quiz->count(),

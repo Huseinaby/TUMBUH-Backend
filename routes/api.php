@@ -47,6 +47,7 @@ Route::get('/modul/{userId}/user', [modulController::class, 'getExceptByUser']);
 Route::post('/modul/generate', [modulController::class, 'generateContent']);
 Route::get('/modul/user/{userId}', [modulController::class, 'getModulByUser']);
 Route::post('/modul/{id}/favorite', [ModulController::class, 'favoriteUser']);
+Route::get('/modul/favorite/most', [ModulController::class, 'getMostFavoriteModul']);
 Route::get('/modul/favorite/list', [ModulController::class, 'getFavoriteModul']);
 
 //article

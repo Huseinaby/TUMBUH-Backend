@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use App\Models\modul;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -144,6 +145,28 @@ class ModulController extends Controller
 
         return response()->json([
             'message' => 'Modul except by user',
+            'data' => ModulResource::collection($moduls),
+            'meta' => [
+                'current_page' => $moduls->currentPage(),
+                'next_page_url' => $moduls->nextPageUrl(),
+                'last_page' => $moduls->lastPage(),
+                'per_page' => $moduls->perPage(),
+                'total' => $moduls->total(),
+            ]
+        ]);
+    }
+
+    public function getMostFavoriteModul(){
+
+        $moduls = Modul::with(['modulImage', 'user'])
+            ->withCount('favoriteModul')
+            ->orderBy('favorite_modul_count', 'desc')
+            ->paginate(5);
+
+        
+
+        return response()->json([
+            'message' => 'Modul by most liked',
             'data' => ModulResource::collection($moduls),
             'meta' => [
                 'current_page' => $moduls->currentPage(),
@@ -376,7 +399,8 @@ class ModulController extends Controller
     }
 
     public function favoriteUser(Request $request, $id){
-        $user = $request->user();
+        $user = User::where('id', $request->user_id);
+        dd($user);
         $modul = Modul::findOrFail($id);
 
         if($user->favoriteModul()->where('modul_id', $id)->exists()) {
