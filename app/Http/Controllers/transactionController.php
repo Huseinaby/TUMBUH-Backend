@@ -172,46 +172,45 @@ class transactionController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'cart_ids' => 'required|array',
+            'shipping_costs' => 'required|array',
+            'payment_method' => 'required|string',
+            'product_total' => 'required|numeric',
+            'platform_fee' => 'required|numeric',
+            'total_shipping' => 'required|numeric',
+            'grand_total' => 'required|numeric',
+        ]);
+
         $user = Auth::user();
-        $cartIds = $request->input('cart_ids');
-        $shippingCostMap = collect($request->input('shipping_costs', []))->keyBy('seller_id');
-        $paymentMethod = $request->input('payment_method');
-
-        if (!$cartIds || !is_array($cartIds)) {
-            return response()->json([
-                'message' => 'Invalid cart IDs provided',
-            ], 400);
-        }
-
-        $cartData = $this->getCartGroupedBySeller($cartIds);
-
-        if (empty($cartData)) {
-            return response()->json([
-                'message' => 'No valid cart items found for the provided IDs',
-            ], 404);
-        }
-
+        $cartIds = $request->cart_ids;
+        $shippingMap = collect($request->shipping_costs)->keyBy('seller_id');
         $transactions = [];
 
         DB::beginTransaction();
 
         try {
-            foreach ($cartData as $sellercart) {
-                $sellerId = $sellercart['seller']['id'];
-                $items = $sellercart['items'];
-                $total = collect($items)->sum('subTotal');
-                $platformFee = round($total * 0.05); // 5% platform fee
+            $cartData = $this->getCartGroupedBySeller($cartIds);
 
-                $shippingCostValue = $shippingCostMap[$sellerId]['cost'] ?? 0;
-                $shippingService = $shippingCostMap[$sellerId]['service'] ?? 'unknown';
+            foreach ($cartData as $group) {
+                $sellerId = $group['seller']['id'];
+                $items = $group['items'];
 
-                $finalPrice = $total + $shippingCostValue + $platformFee;
+                $shipping = $shippingMap[$sellerId];
+                $shippingCost = $shipping['cost'];
+                $shippingCourier = $shipping['courier'];
+
+                $subtotal = collect($items)->sum('subTotal');
+
+                // Ambil fee dari request
+                $platformFee = $request->platform_fee;
+                $finalPrice = $subtotal + $shippingCost + $platformFee;
 
                 $transaction = Transaction::create([
                     'user_id' => $user->id,
                     'seller_id' => $sellerId,
-                    'shipping_cost' => $shippingCostValue,
-                    'shipping_service' => $shippingService,
+                    'shipping_cost' => $shippingCost,
+                    'shipping_courier' => $shippingCourier,
                     'platform_fee' => $platformFee,
                     'total_price' => $finalPrice,
                     'status' => 'pending',
@@ -226,6 +225,7 @@ class transactionController extends Controller
                         'price' => $item['product']['price'],
                         'subtotal' => $item['subTotal'],
                     ]);
+                    cartItem::where('id', $item['cart_id'])->delete();
                 }
 
                 $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
@@ -241,20 +241,20 @@ class transactionController extends Controller
 
                 $itemDetails[] = [
                     'id' => 'shipping_' . $sellerId,
-                    'price' => $shippingCostValue,
+                    'price' => $shippingCost,
                     'quantity' => 1,
-                    'name' => $shippingService,
+                    'name' => 'Ongkir - ' . strtoupper($shippingCourier),
                 ];
 
                 $itemDetails[] = [
                     'id' => 'platform_fee',
                     'price' => $platformFee,
                     'quantity' => 1,
-                    'name' => 'Biaya Layanan Platform TUMBUH',
+                    'name' => 'Biaya Layanan TUMBUH',
                 ];
 
                 $params = [
-                    'enabled_payments' => [$paymentMethod],
+                    'enabled_payments' => [$request->payment_method],
                     'transaction_details' => [
                         'order_id' => $orderId,
                         'gross_amount' => $finalPrice,
@@ -273,19 +273,10 @@ class transactionController extends Controller
                     'midtrans_order_id' => $orderId,
                 ]);
 
-                foreach ($items as $item) {
-                    cartItem::where('id', $item['cart_id'])->delete();
-                }
-
                 $transactions[] = [
                     'transaction_id' => $transaction->id,
-                    'seller' => $sellercart['seller'],
-                    'subTotal' => $total,
-                    'shipping_cost' => $shippingCostValue,
-                    'platform_fee' => $platformFee,
-                    'total_price' => $finalPrice,
-                    'payment_method' => $paymentMethod,
                     'snap_url' => $snapUrl,
+                    'total_price' => $finalPrice,
                 ];
             }
 
@@ -296,7 +287,6 @@ class transactionController extends Controller
                 'transactions' => $transactions,
             ], 201);
 
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -305,6 +295,7 @@ class transactionController extends Controller
             ], 500);
         }
     }
+
 
     public function buyNowSummary(Request $request)
     {
@@ -510,27 +501,27 @@ class transactionController extends Controller
         $courier = $request->input('courier');
         $result = [];
 
-            try {
-                $cost = $rajaOngkirService->calculateDomesticCost(
-                    $sellerAddress->origin_id,
-                    $userAddress->origin_id,
-                    $request->weight,
-                    $courier
-                );
+        try {
+            $cost = $rajaOngkirService->calculateDomesticCost(
+                $sellerAddress->origin_id,
+                $userAddress->origin_id,
+                $request->weight,
+                $courier
+            );
 
-                if (!isset($cost['results'])) {
-                    $result[$courier] = $cost;
-                } else {
-                    $result[$courier] = [
-                        'error' => 'Courier not available',
-                    ];
-                }
-            } catch (\Exception $e) {
+            if (!isset($cost['results'])) {
+                $result[$courier] = $cost;
+            } else {
                 $result[$courier] = [
-                    'message' => 'Courier not available',
-                    'error' => $e->getMessage(),
+                    'error' => 'Courier not available',
                 ];
             }
+        } catch (\Exception $e) {
+            $result[$courier] = [
+                'message' => 'Courier not available',
+                'error' => $e->getMessage(),
+            ];
+        }
 
         return response()->json([
             'seller_id' => $request->seller_id,
