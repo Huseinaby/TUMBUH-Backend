@@ -489,7 +489,7 @@ class transactionController extends Controller
             'seller_id' => 'required|exists:users,id',
             'user_id' => 'required|exists:users,id',
             'weight' => 'required|integer|min:1',
-            'courier' => 'required|string|in:jne,jnt,sicepat,anteraja,pos,ninja,',
+            'courier' => 'required|string|in:jne,jnt,sicepat,anteraja,pos,ninja',
         ]);
 
         $userAddress = UserAddress::where('user_id', $request->user_id)
