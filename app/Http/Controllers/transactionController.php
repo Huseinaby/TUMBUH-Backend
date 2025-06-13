@@ -75,77 +75,77 @@ class transactionController extends Controller
     {
         $request->validate([
             'cart_ids' => 'required|array',
-            'courier' => 'nullable|string',
+            'shipping_options' => 'nullable|array',
         ]);
-
+        
         $user = Auth::user();
-        $cartIds = $request->input('cart_ids');
+        $cartId = $request->input('cart_ids');
+        $shippingOptions = collect($request->input('shipping_options', []));
 
+        $cardData = $this->getCartGroupedBySeller($cartId);
 
-        if (!$cartIds || !is_array($cartIds)) {
-            return response()->json([
-                'message' => 'Invalid cart IDs provided',
-            ], 400);
-        }
-
-        $cartData = $this->getCartGroupedBySeller($cartIds);
-
-        if (empty($cartData)) {
+        if(empty($cardData)) {
             return response()->json([
                 'message' => 'No valid cart items found for the provided IDs',
             ], 404);
         }
 
-        $addresses = UserAddress::with(['province', 'kabupaten', 'kecamatan'])
+        $address = UserAddress::with(['province', 'kabupaten', 'kecamatan'])
             ->where('user_id', $user->id)
             ->where('is_default', true)
-            ->get()
-            ->map(function ($address) {
-                return [
-                    'id' => $address->id,
-                    'full_name' => $address->nama_lengkap,
-                    'full_address' => $address->alamat_lengkap,
-                    'phone' => $address->nomor_telepon,
-                    'province' => $address->province ? $address->province->name : null,
-                    'city' => $address->kabupaten ? $address->kabupaten->name : null,
-                    'district' => $address->kecamatan ? $address->kecamatan->name : null,
-                    'postal_code' => $address->kode_pos,
-                    'origin_id' => $address->origin_id,
-                    'is_default' => $address->is_default,
-                ];
-            });
+            ->first();
+        
+        if (!$address) {
+            return response()->json([
+                'message' => 'No default address found for the user',
+            ], 404);
+        }
 
+        $formatAddress = [
+            'id' => $address->id,
+            'full_name' => $address->nama_lengkap,
+            'full_address' => $address->alamat_lengkap,
+            'phone' => $address->nomor_telepon,
+            'province' => $address->province ? $address->province->name : null,
+            'city' => $address->kabupaten ? $address->kabupaten->name : null,
+            'district' => $address->kecamatan ? $address->kecamatan->name : null,
+            'postal_code' => $address->kode_pos,
+            'origin_id' => $address->origin_id,
+        ];
 
         $shippingCosts = [];
+        $totalShippingCost = 0;
 
-        foreach ($cartData as $group) {
-            $sellerOriginId = $group['seller']['origin_id'];
-            $destinationId = $addresses[0]['origin_id'];
-            $weight = collect($group['items'])->sum('total_weight');
+        foreach ($cardData as $group) {
+            $sellerId = $group['seller']['id'];
+            $option = $shippingOptions->firstWhere('seller_id', $sellerId);
 
-            $cost = $this->getCost(
-                app(RajaOngkirService::class),
-                $sellerOriginId,
-                $destinationId,
-                $weight,
-                $request->input('courier', 'jne')
-            );
-
-            $shippingCosts[] = [
-                'seller_id' => $group['seller']['id'],
-                'cost' => $cost,
-            ];
+            if($option) {
+                $shippingCosts[] = [
+                    'seller_id' => $sellerId,
+                    'cost' => $option['cost'],
+                    'service' => $option['service'],
+                ];
+                $totalShippingCost += $option['cost'];
+            } else {
+                $shippingCosts[] = [
+                    'seller_id' => $sellerId,
+                    'cost' => 0,
+                    'service' => 'unknown',
+                ];
+            }
         }
 
         return response()->json([
-            'cart_data' => $cartData,
+            'cart_data' => $cardData,
             'user' => [
                 'id' => $user->id,
                 'name' => $user->username,
                 'email' => $user->email,
             ],
-            'addresses' => $addresses,
+            'address' => $formatAddress,
             'shipping_costs' => $shippingCosts,
+            'total_shipping_cost' => $totalShippingCost,
         ]);
     }
 
