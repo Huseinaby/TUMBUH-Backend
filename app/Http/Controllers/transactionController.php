@@ -303,33 +303,62 @@ class transactionController extends Controller
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
             'courier' => 'nullable|string',
+            'service' => 'nullable|string',
+            'cost' => 'nullable|numeric',
         ]);
-
+    
+        $user = Auth::user();
+        $quantity = $request->quantity;
+    
         $product = Product::with(['images', 'user.sellerDetail', 'user.userAddress'])
             ->findOrFail($request->product_id);
-
-
+    
         $image = $product->images()->first();
-
-        $quantity = $request->quantity;
         $seller = $product->user;
-
-        $user = Auth::user();
+    
         $address = UserAddress::with(['province', 'kabupaten', 'kecamatan'])
             ->where('user_id', $user->id)
             ->where('is_default', true)
             ->first();
-
-        $shippingCost = $this->getCost(
-            app(RajaOngkirService::class),
-            $seller->userAddress->firstWhere('is_default', true)->origin_id,
-            $address->origin_id,
-            $product->weight * $quantity,
-            $request->input('courier', 'jne')
-        );
-
-
-
+    
+        $origin = optional($seller->userAddress->firstWhere('is_default', true))->origin_id;
+        $destination = optional($address)->origin_id;
+    
+        $productTotal = $product->price * $quantity;
+    
+        // Fee tier
+        if ($productTotal < 40000) {
+            $platformFee = 4500;
+        } elseif ($productTotal < 100000) {
+            $platformFee = round($productTotal * 0.07);
+        } else {
+            $platformFee = round($productTotal * 0.05);
+        }
+    
+        $shippingCost = null;
+        $shippingService = null;
+    
+        if ($request->filled(['courier', 'cost', 'service'])) {
+            $shippingCost = $request->cost;
+            $shippingService = $request->service;
+        } else {
+            // Hitung default ongkir hanya jika courier ada
+            if ($request->filled('courier')) {
+                $shipping = $this->getCost(
+                    app(RajaOngkirService::class),
+                    $origin,
+                    $destination,
+                    $product->weight * $quantity,
+                    $request->courier
+                );
+    
+                $shippingCost = is_array($shipping) ? ($shipping['cost'] ?? null) : $shipping;
+                $shippingService = $request->courier;
+            }
+        }
+    
+        $grandTotal = $productTotal + ($shippingCost ?? 0) + $platformFee;
+    
         return response()->json([
             'product' => [
                 'id' => $product->id,
@@ -341,24 +370,27 @@ class transactionController extends Controller
             ],
             'seller' => [
                 'id' => $seller->id,
-                'storeName' => $seller->sellerDetail->store_name ?? $seller->username,
-                'origin_id' => $seller->userAddress->firstWhere('is_default', true)->origin_id ?? null,
+                'store_name' => $seller->sellerDetail->store_name ?? $seller->username,
+                'origin_id' => $origin,
             ],
             'quantity' => $quantity,
-            'total_price' => ($product->price * $quantity),
-            'shipping_cost' => $shippingCost,
-            'shipping_service' => $request->input('courier'),
             'address' => [
-                'full_name' => $address->nama_lengkap,
-                'full_address' => $address->alamat_lengkap,
-                'phone' => $address->nomor_telepon,
-                'province' => $address->province ? $address->province->name : null,
-                'city' => $address->kabupaten ? $address->kabupaten->name : null,
-                'district' => $address->kecamatan ? $address->kecamatan->name : null,
-                'postal_code' => $address->kode_pos,
+                'full_name' => $address->nama_lengkap ?? null,
+                'full_address' => $address->alamat_lengkap ?? null,
+                'phone' => $address->nomor_telepon ?? null,
+                'province' => optional($address->province)->name,
+                'city' => optional($address->kabupaten)->name,
+                'district' => optional($address->kecamatan)->name,
+                'postal_code' => $address->kode_pos ?? null,
             ],
+            'product_total' => $productTotal,
+            'platform_fee' => $platformFee,
+            'total_shipping' => $shippingCost ?? 0,
+            'grand_total' => $grandTotal,
+            'shipping_service' => $shippingService,
         ]);
     }
+    
 
     public function buyNow(Request $request)
     {
