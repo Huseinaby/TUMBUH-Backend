@@ -388,7 +388,7 @@ class transactionController extends Controller
             'platform_fee' => $platformFee,
             'total_shipping' => $shippingCost ?? 0,
             'grand_total' => $grandTotal,
-            'shipping_service' => $shippingService,
+            'shipping_name' => $shippingService,
         ]);
     }
 
@@ -398,9 +398,10 @@ class transactionController extends Controller
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
-            'shipping_cost' => 'required|numeric|min:0',
-            'shipping_service' => 'required|string',
-            'payment_method' => 'required|string',
+            'shipping_cost' => 'nullable|numeric|min:0',
+            'shipping_name' => 'nullable|string',
+            'shipping_service' => 'nullable|string',
+            'payment_method' => 'nullable|string',
         ]);
 
         $user = Auth::user();
@@ -437,7 +438,7 @@ class transactionController extends Controller
                 'total_price' => $finalPrice,
                 'platform_fee' => $platformFee,
                 'shipping_cost' => $shippingCost,
-                'shipping_service' => $request->shipping_service,
+                'shipping_name' => $request->shipping_name,
                 'status' => 'pending',
                 'payment_method' => $request->payment_method,
             ]);
@@ -473,7 +474,7 @@ class transactionController extends Controller
                         'id' => 'shipping_' . $seller->id,
                         'price' => $shippingCost,
                         'quantity' => 1,
-                        'name' => $request->shipping_service,
+                        'name' => $request->shipping_name,
                     ],
                     [
                         'id' => 'platform_fee',
@@ -503,7 +504,7 @@ class transactionController extends Controller
                     'total_price' => $finalPrice,
                     'platform_fee' => $platformFee,
                     'shipping_cost' => $shippingCost,
-                    'shipping_service' => $request->shipping_service,
+                    'shipping_name' => $request->shipping_name,
                 ],
             ]);
         } catch (\Exception $e) {
@@ -862,13 +863,13 @@ class transactionController extends Controller
     {
         $transaction = transaction::findOrFail($transactionId);
 
-        if (!$transaction->resi_number || !$transaction->shipping_service) {
+        if (!$transaction->resi_number || !$transaction->shipping_name) {
             return response()->json([
                 'message' => 'Resi number or shipping service not available',
             ], 404);
         }
 
-        $trackingInfo = $this->binderByteService->track($transaction->shipping_service, $transaction->resi_number);
+        $trackingInfo = $this->binderByteService->track($transaction->shipping_name, $transaction->resi_number);
 
         if (!$trackingInfo || $trackingInfo['status'] !== 200) {
             return response()->json([
@@ -890,7 +891,7 @@ class transactionController extends Controller
 
         return response()->json([
             'resi_number' => $transaction->resi_number,
-            'shipping_service' => $transaction->shipping_service,
+            'shipping_name' => $transaction->shipping_name,
             'tracking_info' => $trackingInfo,
         ]);
     }
