@@ -26,6 +26,7 @@ class productController extends Controller
             'products' => ProductResource::collection($products)->resolve(),
             'meta' => [
                 'current_page' => $products->currentPage(),
+                'next_page_url' => $products->nextPageUrl(),
                 'last_page' => $products->lastPage(),
                 'per_page' => $products->perPage(),
                 'total' => $products->total(),
