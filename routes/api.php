@@ -92,7 +92,7 @@ Route::post('/checkout/summary', [transactionController::class, 'checkoutSummary
 Route::post('/checkout', [transactionController::class, 'store']);
 Route::post('/buynow/summary', [transactionController::class, 'buyNowSummary']);
 Route::post('/buynow', [transactionController::class, 'buyNow']);
-Route::post('/transaction/courier', [transactionController::class, 'getCourier']);
+Route::post('/transaction/courierCost', [transactionController::class, 'getCourierCost']);
 
 Route::get('/transaction', [transactionController::class, 'index']);
 Route::get('/transaction/user', [transactionController::class, 'getByUser']);

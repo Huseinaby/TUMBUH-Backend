@@ -483,7 +483,7 @@ class transactionController extends Controller
         }
     }
 
-    public function getCourier(Request $request)
+    public function getCourierCost(Request $request)
     {
         $request->validate([
             'seller_id' => 'required|exists:users,id',
