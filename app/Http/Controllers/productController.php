@@ -184,7 +184,7 @@ class productController extends Controller
                 'id' => $product->id,
                 'name' => $product->name,
                 'price' => $product->price,
-                'thumbnail' => $product->thumbnail ? Storage::url($product->thumbnail) : null,
+                'image' => $product->images->first() ? Storage::url($product->images->first()->image_path) : null,
                 'categories' => $product->productCategories->name ?? 'No Category',
             ];
         });
