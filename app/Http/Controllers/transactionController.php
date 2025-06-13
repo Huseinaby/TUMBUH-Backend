@@ -82,9 +82,9 @@ class transactionController extends Controller
         $cartId = $request->input('cart_ids');
         $shippingOptions = collect($request->input('shipping_options', []));
 
-        $cardData = $this->getCartGroupedBySeller($cartId);
+        $cartData = $this->getCartGroupedBySeller($cartId);
 
-        if(empty($cardData)) {
+        if(empty($cartData)) {
             return response()->json([
                 'message' => 'No valid cart items found for the provided IDs',
             ], 404);
@@ -113,10 +113,18 @@ class transactionController extends Controller
             'origin_id' => $address->origin_id,
         ];
 
+
+        $productTotal = 0;
+        foreach($cartData as $group) {
+            foreach($group['items'] as $item) {
+                $productTotal += $item['subTotal'] * $item['quantity'];
+            }
+        }
+
         $shippingCosts = [];
         $totalShippingCost = 0;
 
-        foreach ($cardData as $group) {
+        foreach ($cartData as $group) {
             $sellerId = $group['seller']['id'];
             $option = $shippingOptions->firstWhere('seller_id', $sellerId);
 
@@ -136,8 +144,18 @@ class transactionController extends Controller
             }
         }
 
+        if($productTotal < 40000) {
+            $adminFee = 4500;
+        } elseIf ($productTotal < 100000) {
+            $adminFee = (int) round($productTotal * 0.07);
+        } else {
+            $adminFee = (int) round($productTotal * 0.05);
+        }
+
+        $grandTotal = $productTotal + $totalShippingCost + $adminFee;
+
         return response()->json([
-            'cart_data' => $cardData,
+            'cart_data' => $cartData,
             'user' => [
                 'id' => $user->id,
                 'name' => $user->username,
@@ -145,7 +163,10 @@ class transactionController extends Controller
             ],
             'address' => $formatAddress,
             'shipping_costs' => $shippingCosts,
-            'total_shipping_cost' => $totalShippingCost,
+            'product_total' => $productTotal,
+            'total_shipping' => $totalShippingCost,
+            'admin_fee' => $adminFee,
+            'grand_total' => $grandTotal,
         ]);
     }
 
