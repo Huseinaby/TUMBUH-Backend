@@ -145,14 +145,14 @@ class transactionController extends Controller
         }
 
         if ($productTotal < 40000) {
-            $adminFee = 4500;
+            $platformFee = 4500;
         } elseif ($productTotal < 100000) {
-            $adminFee = (int) round($productTotal * 0.07);
+            $platformFee = (int) round($productTotal * 0.07);
         } else {
-            $adminFee = (int) round($productTotal * 0.05);
+            $platformFee = (int) round($productTotal * 0.05);
         }
 
-        $grandTotal = $productTotal + $totalShippingCost + $adminFee;
+        $grandTotal = $productTotal + $totalShippingCost + $platformFee;
 
         return response()->json([
             'cart_data' => $cartData,
@@ -165,7 +165,7 @@ class transactionController extends Controller
             'shipping_costs' => $shippingCosts,
             'product_total' => $productTotal,
             'total_shipping' => $totalShippingCost,
-            'admin_fee' => $adminFee,
+            'platform_fee' => $platformFee,
             'grand_total' => $grandTotal,
         ]);
     }
