@@ -132,7 +132,7 @@ class transactionController extends Controller
                 $shippingCosts[] = [
                     'seller_id' => $sellerId,
                     'cost' => $option['cost'],
-                    'service' => $option['service'],
+                    'service' => $option['courier'],
                 ];
                 $totalShippingCost += $option['cost'];
             } else {
