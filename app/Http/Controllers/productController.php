@@ -6,6 +6,8 @@ use App\Http\Resources\ProductResource;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\ProductImage;
+use App\Models\SellerDetail;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -156,11 +158,52 @@ class productController extends Controller
 
     public function getProductByUser($userId)
     {
+        $seller = User::findOrFail($userId);
+        $sellerDetail = SellerDetail::where('user_id', $userId)->first();
+    
         $products = Product::with(['productCategories', 'user'])
             ->where('user_id', $userId)
             ->latest()
             ->get();
-
-        return ProductResource::collection($products)->resolve();
+    
+        // Ambil semua kategori unik dari produk
+        $categories = $products
+            ->pluck('productCategories')
+            ->flatten()
+            ->unique('id')
+            ->values()
+            ->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                ];
+            });
+    
+        $productList = $products->map(function ($product) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'thumbnail' => $product->thumbnail ? Storage::url($product->thumbnail) : null,
+                'categories' => $product->productCategories->name ?? 'No Category',
+            ];
+        });
+    
+        return response()->json([
+            'store' => [
+                'id' => $seller->id,
+                'store_name' => $sellerDetail->store_name ?? 'No Store Name',
+                'store_logo' => $sellerDetail && $sellerDetail->store_logo ? Storage::url($sellerDetail->store_logo) : null,
+                'store_banner' => $sellerDetail && $sellerDetail->store_banner ? Storage::url($sellerDetail->store_banner) : null,
+                'product_count' => $products->count(),
+                'store_rating' => 'in development', // nanti bisa hitung rata-rata dari review
+            ],
+            'tabs' => [
+                'products' => $productList,
+                'categories' => $categories,
+                'reviews' => [], // opsional, bisa diisi kalau review sudah ada
+            ]
+        ]);
     }
+    
 }
