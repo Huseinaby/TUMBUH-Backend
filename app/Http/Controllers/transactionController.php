@@ -77,14 +77,14 @@ class transactionController extends Controller
             'cart_ids' => 'required|array',
             'shipping_options' => 'nullable|array',
         ]);
-        
+
         $user = Auth::user();
         $cartId = $request->input('cart_ids');
         $shippingOptions = collect($request->input('shipping_options', []));
 
         $cartData = $this->getCartGroupedBySeller($cartId);
 
-        if(empty($cartData)) {
+        if (empty($cartData)) {
             return response()->json([
                 'message' => 'No valid cart items found for the provided IDs',
             ], 404);
@@ -94,7 +94,7 @@ class transactionController extends Controller
             ->where('user_id', $user->id)
             ->where('is_default', true)
             ->first();
-        
+
         if (!$address) {
             return response()->json([
                 'message' => 'No default address found for the user',
@@ -115,8 +115,8 @@ class transactionController extends Controller
 
 
         $productTotal = 0;
-        foreach($cartData as $group) {
-            foreach($group['items'] as $item) {
+        foreach ($cartData as $group) {
+            foreach ($group['items'] as $item) {
                 $productTotal += $item['subTotal'] * $item['quantity'];
             }
         }
@@ -128,7 +128,7 @@ class transactionController extends Controller
             $sellerId = $group['seller']['id'];
             $option = $shippingOptions->firstWhere('seller_id', $sellerId);
 
-            if($option) {
+            if ($option) {
                 $shippingCosts[] = [
                     'seller_id' => $sellerId,
                     'cost' => $option['cost'],
@@ -144,9 +144,9 @@ class transactionController extends Controller
             }
         }
 
-        if($productTotal < 40000) {
+        if ($productTotal < 40000) {
             $adminFee = 4500;
-        } elseIf ($productTotal < 100000) {
+        } elseif ($productTotal < 100000) {
             $adminFee = (int) round($productTotal * 0.07);
         } else {
             $adminFee = (int) round($productTotal * 0.05);
@@ -314,7 +314,7 @@ class transactionController extends Controller
             'courier' => 'nullable|string',
         ]);
 
-        $product = Product::with(['images','user.sellerDetail', 'user.userAddress'])
+        $product = Product::with(['images', 'user.sellerDetail', 'user.userAddress'])
             ->findOrFail($request->product_id);
 
 
@@ -337,7 +337,7 @@ class transactionController extends Controller
             $request->input('courier', 'jne')
         );
 
-        
+
 
         return response()->json([
             'product' => [
@@ -392,7 +392,7 @@ class transactionController extends Controller
         $seller = $product->user;
 
         $subtotal = $product->price * $request->quantity;
-        $platformFee = round($subtotal * 0.05); 
+        $platformFee = round($subtotal * 0.05);
         $finalPrice = $subtotal + $request->shipping_cost + $platformFee;
 
 
@@ -481,6 +481,59 @@ class transactionController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function getCourier(Request $request)
+    {
+        $request->validate([
+            'seller_id' => 'required|exists:users,id',
+            'user_id' => 'required|exists:users,id',
+            'weight' => 'required|integer|min:1',
+        ]);
+
+        $userAddress = UserAddress::where('user_id', $request->user_id)
+            ->where('is_default', true)
+            ->first();
+
+        $sellerAddress = UserAddress::where('user_id', $request->seller_id)
+            ->where('is_default', true)
+            ->first();
+
+        if (!$userAddress || !$sellerAddress) {
+            return response()->json([
+                'message' => 'Default address not found for user or seller',
+            ], 404);
+        }
+
+        $rajaOngkirService = app(RajaOngkirService::class);
+        $courier = $request->input('courier');
+        $result = [];
+
+            try {
+                $cost = $rajaOngkirService->calculateDomesticCost(
+                    $sellerAddress->origin_id,
+                    $userAddress->origin_id,
+                    $request->weight,
+                    $courier
+                );
+
+                if (!isset($cost['results'])) {
+                    $result[$courier] = $cost;
+                } else {
+                    $result[$courier] = [
+                        'error' => 'Courier not available',
+                    ];
+                }
+            } catch (\Exception $e) {
+                $result[$courier] = [
+                    'error' => 'Courier not available',
+                ];
+            }
+
+        return response()->json([
+            'seller_id' => $request->seller_id,
+            'available_couriers' => $result,
+        ]);
     }
 
     public function getCost(RajaOngkirService $rajaOngkirService, $origin, $destination, $weight, $courier)
@@ -596,7 +649,7 @@ class transactionController extends Controller
             $status = $request->transaction_status;
 
             if ($status === 'settlement') {
-                foreach($transaction->orderItems as $item) {
+                foreach ($transaction->orderItems as $item) {
                     $product = $item->product;
                     $product->decrement('stock', $item->quantity);
                 }
@@ -629,18 +682,18 @@ class transactionController extends Controller
     public function finishPayment(Request $request)
     {
         $invoiceId = $request->query('order_id');
-    
+
         $transaction = transaction::with('orderItems.product')
             ->where('midtrans_order_id', $invoiceId)
             ->first();
-    
+
         if (!$transaction) {
             return response()->json([
                 'message' => 'Transaction not found',
                 'order_id' => $invoiceId,
             ], 404);
         }
-    
+
         return response()->json([
             'message' => $transaction->status === 'paid'
                 ? 'Payment successful'
@@ -651,22 +704,23 @@ class transactionController extends Controller
             'transaction' => $transaction,
         ]);
     }
-    
 
-    public function paymentError(Request $request){
+
+    public function paymentError(Request $request)
+    {
         $invoiceId = $request->query('order_id');
 
         $transaction = transaction::with('orderItems.product')
             ->where('midtrans_order_id', $invoiceId)
             ->first();
 
-        if(!$transaction){
+        if (!$transaction) {
             return response()->json([
                 'message' => 'Transaction not found',
             ], 404);
         }
 
-        if($transaction->status !== 'paid'){
+        if ($transaction->status !== 'paid') {
             return response()->json([
                 'message' => 'Transaction is not completed',
                 'status' => $transaction->status,

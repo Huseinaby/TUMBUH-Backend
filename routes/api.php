@@ -92,12 +92,16 @@ Route::post('/checkout/summary', [transactionController::class, 'checkoutSummary
 Route::post('/checkout', [transactionController::class, 'store']);
 Route::post('/buynow/summary', [transactionController::class, 'buyNowSummary']);
 Route::post('/buynow', [transactionController::class, 'buyNow']);
+Route::post('/transaction/courier', [transactionController::class, 'getCourier']);
+
 Route::get('/transaction', [transactionController::class, 'index']);
 Route::get('/transaction/user', [transactionController::class, 'getByUser']);
 Route::get('/transaction/seller', [transactionController::class, 'getBySeller']);
+
 Route::post('/transaction/webhook', [transactionController::class, 'handleWebhook']);
 Route::get('/transaction/finish', [transactionController::class, 'finishPayment']);
 Route::get('/transaction/error', [transactionController::class, 'paymentError']);
+
 Route::get('/transaction/income', [transactionController::class, 'sellerIncome']);
 Route::post('/transaction/{id}/resi', [transactionController::class, 'inputResi']);
 Route::get('/transaction/{id}/track', [transactionController::class, 'cekResi']);
