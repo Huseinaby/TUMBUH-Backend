@@ -397,52 +397,60 @@ class transactionController extends Controller
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
-            'shipping_cost' => 'required|numeric',
+            'shipping_cost' => 'required|numeric|min:0',
             'shipping_service' => 'required|string',
             'payment_method' => 'required|string',
         ]);
-
-
+    
         $user = Auth::user();
-        $product = Product::with('user')
-            ->findOrFail($request->product_id);
-
-        if ($product->stock < $request->quantity) {
+        $product = Product::with('user')->findOrFail($request->product_id);
+        $quantity = $request->quantity;
+    
+        if ($product->stock < $quantity) {
             return response()->json([
                 'message' => 'Insufficient stock for this product',
             ], 400);
         }
+    
         $seller = $product->user;
-
-        $subtotal = $product->price * $request->quantity;
-        $platformFee = round($subtotal * 0.05);
-        $finalPrice = $subtotal + $request->shipping_cost + $platformFee;
-
-
+        $subtotal = $product->price * $quantity;
+    
+        // 🔥 Platform fee berdasarkan tier
+        if ($subtotal < 40000) {
+            $platformFee = 4500;
+        } elseif ($subtotal < 100000) {
+            $platformFee = round($subtotal * 0.07);
+        } else {
+            $platformFee = round($subtotal * 0.05);
+        }
+    
+        $shippingCost = $request->shipping_cost;
+        $finalPrice = $subtotal + $shippingCost + $platformFee;
+    
         DB::beginTransaction();
-
+    
         try {
             $transaction = Transaction::create([
                 'user_id' => $user->id,
                 'seller_id' => $seller->id,
                 'total_price' => $finalPrice,
                 'platform_fee' => $platformFee,
-                'shipping_cost' => $request->shipping_cost,
+                'shipping_cost' => $shippingCost,
                 'shipping_service' => $request->shipping_service,
                 'status' => 'pending',
                 'payment_method' => $request->payment_method,
             ]);
-
+    
             orderItem::create([
                 'transaction_id' => $transaction->id,
                 'product_id' => $product->id,
-                'quantity' => $request->quantity,
+                'quantity' => $quantity,
                 'price' => $product->price,
                 'subtotal' => $subtotal,
             ]);
-
+    
             $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
-
+    
             $params = [
                 'enabled_payments' => [$request->payment_method],
                 'transaction_details' => [
@@ -457,12 +465,12 @@ class transactionController extends Controller
                     [
                         'id' => $product->id,
                         'price' => $product->price,
-                        'quantity' => $request->quantity,
+                        'quantity' => $quantity,
                         'name' => $product->name,
                     ],
                     [
                         'id' => 'shipping_' . $seller->id,
-                        'price' => $request->shipping_cost,
+                        'price' => $shippingCost,
                         'quantity' => 1,
                         'name' => $request->shipping_service,
                     ],
@@ -474,16 +482,16 @@ class transactionController extends Controller
                     ]
                 ],
             ];
-
+    
             $snapUrl = Snap::createTransaction($params)->redirect_url;
-
+    
             $transaction->update([
                 'invoice_url' => $snapUrl,
                 'midtrans_order_id' => $orderId,
             ]);
-
+    
             DB::commit();
-
+    
             return response()->json([
                 'message' => 'Transaction created successfully',
                 'snap_url' => $snapUrl,
@@ -493,7 +501,7 @@ class transactionController extends Controller
                     'seller_id' => $seller->id,
                     'total_price' => $finalPrice,
                     'platform_fee' => $platformFee,
-                    'shipping_cost' => $request->shipping_cost,
+                    'shipping_cost' => $shippingCost,
                     'shipping_service' => $request->shipping_service,
                 ],
             ]);
@@ -505,6 +513,7 @@ class transactionController extends Controller
             ], 500);
         }
     }
+    
 
     public function getCourierCost(Request $request)
     {
