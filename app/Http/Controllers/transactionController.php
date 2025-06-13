@@ -527,7 +527,8 @@ class transactionController extends Controller
                 }
             } catch (\Exception $e) {
                 $result[$courier] = [
-                    'error' => 'Courier not available',
+                    'message' => 'Courier not available',
+                    'error' => $e->getMessage(),
                 ];
             }
 
