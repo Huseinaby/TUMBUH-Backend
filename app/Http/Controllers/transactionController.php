@@ -279,7 +279,7 @@ class transactionController extends Controller
                     'invoice_url' => $snapUrl,
                     'midtrans_order_id' => $orderId,
                 ]);
-                
+
                 $this->clearUserShippingCost($sellerId, $user->id);
 
                 $transactions[] = [
@@ -636,12 +636,13 @@ class transactionController extends Controller
         }
     }
 
-    public function clearUserShippingCost($sellerId, $UserId) {
+    public function clearUserShippingCost($sellerId, $UserId)
+    {
 
         $originId = UserAddress::where('user_id', $sellerId)
             ->where('is_default', true)
             ->value('origin_id');
-        
+
         $destinationId = UserAddress::where('user_id', $UserId)
             ->where('is_default', true)
             ->value('origin_id');
