@@ -177,6 +177,7 @@ class productController extends Controller
                 return [
                     'id' => $category->id,
                     'name' => $category->name,
+                    'count' => $category->products->count(),
                 ];
             });
     
