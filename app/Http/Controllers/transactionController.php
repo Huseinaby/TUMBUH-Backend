@@ -78,30 +78,30 @@ class transactionController extends Controller
             'cart_ids' => 'required|array',
             'shipping_options' => 'nullable|array',
         ]);
-
+    
         $user = Auth::user();
-        $cartId = $request->input('cart_ids');
+        $cartIds = $request->input('cart_ids');
         $shippingOptions = collect($request->input('shipping_options', []));
-
-        $cartData = $this->getCartGroupedBySeller($cartId);
-
+    
+        $cartData = $this->getCartGroupedBySeller($cartIds);
+    
         if (empty($cartData)) {
             return response()->json([
                 'message' => 'No valid cart items found for the provided IDs',
             ], 404);
         }
-
+    
         $address = UserAddress::with(['province', 'kabupaten', 'kecamatan'])
             ->where('user_id', $user->id)
             ->where('is_default', true)
             ->first();
-
+    
         if (!$address) {
             return response()->json([
                 'message' => 'No default address found for the user',
             ], 404);
         }
-
+    
         $formatAddress = [
             'id' => $address->id,
             'full_name' => $address->nama_lengkap,
@@ -113,63 +113,65 @@ class transactionController extends Controller
             'postal_code' => $address->kode_pos,
             'origin_id' => $address->origin_id,
         ];
-
-
-        $productTotal = 0;
-        foreach ($cartData as $group) {
-            foreach ($group['items'] as $item) {
-                $productTotal += $item['subTotal'] * $item['quantity'];
-            }
-        }
-
-        $shippingCosts = [];
+    
+        $sellerSummaries = [];
+        $overallProductTotal = 0;
         $totalShippingCost = 0;
-
+        $overallPlatformFee = 0;
+    
         foreach ($cartData as $group) {
             $sellerId = $group['seller']['id'];
+            $items = $group['items'];
+    
+            $subTotal = collect($items)->sum('subTotal');
+
+    
             $option = $shippingOptions->firstWhere('seller_id', $sellerId);
-
-            if ($option) {
-                $shippingCosts[] = [
-                    'seller_id' => $sellerId,
-                    'cost' => $option['cost'],
-                    'service' => $option['courier'],
-                ];
-                $totalShippingCost += $option['cost'];
+            $shippingCost = $option['cost'] ?? 0;
+            $service = $option['courier'] ?? 'unknown';
+    
+            if ($subTotal < 40000) {
+                $platformFee = 4500;
+            } elseif ($subTotal < 100000) {
+                $platformFee = (int) round($subTotal * 0.07);
             } else {
-                $shippingCosts[] = [
-                    'seller_id' => $sellerId,
-                    'cost' => 0,
-                    'service' => 'unknown',
-                ];
+                $platformFee = (int) round($subTotal * 0.05);
             }
+    
+            $grandTotal = $subTotal + $shippingCost + $platformFee;
+    
+            $sellerSummaries[] = [
+                'seller' => $group['seller'],
+                'items' => $items,
+                'product_total' => $subTotal,
+                'shipping_cost' => $shippingCost,
+                'shipping_service' => $service,
+                'platform_fee' => $platformFee,
+                'grand_total' => $grandTotal,
+            ];
+    
+            $overallProductTotal += $subTotal;
+            $totalShippingCost += $shippingCost;
+            $overallPlatformFee += $platformFee;
         }
-
-        if ($productTotal < 40000) {
-            $platformFee = 4500;
-        } elseif ($productTotal < 100000) {
-            $platformFee = (int) round($productTotal * 0.07);
-        } else {
-            $platformFee = (int) round($productTotal * 0.05);
-        }
-
-        $grandTotal = $productTotal + $totalShippingCost + $platformFee;
-
+    
         return response()->json([
-            'cart_data' => $cartData,
+            'cart_summary' => $sellerSummaries,
             'user' => [
                 'id' => $user->id,
                 'name' => $user->username,
                 'email' => $user->email,
             ],
             'address' => $formatAddress,
-            'shipping_costs' => $shippingCosts,
-            'product_total' => $productTotal,
-            'total_shipping' => $totalShippingCost,
-            'platform_fee' => $platformFee,
-            'grand_total' => $grandTotal,
+            'summary_totals' => [
+                'product_total' => $overallProductTotal,
+                'total_shipping' => $totalShippingCost,
+                'platform_fee' => $overallPlatformFee,
+                'grand_total' => $overallProductTotal + $totalShippingCost + $overallPlatformFee,
+            ]
         ]);
     }
+    
 
     public function store(Request $request)
     {
