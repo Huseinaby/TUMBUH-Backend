@@ -651,6 +651,20 @@ class transactionController extends Controller
             ->delete();
     }
 
+    public function clearShippingCost(Request $request)
+    {
+        $request->validate([
+            'seller_id' => 'required|exists:users,id',
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $this->clearUserShippingCost($request->seller_id, $request->user_id);
+
+        return response()->json([
+            'message' => 'Shipping costs cleared successfully',
+        ]);
+    }
+
     public function getCost(RajaOngkirService $rajaOngkirService, $origin, $destination, $weight, $courier)
     {
         $cost = $rajaOngkirService->calculateDomesticCost($origin, $destination, $weight, $courier);
