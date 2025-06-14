@@ -128,7 +128,8 @@ class transactionController extends Controller
     
             $option = $shippingOptions->firstWhere('seller_id', $sellerId);
             $shippingCost = $option['cost'] ?? 0;
-            $service = $option['courier'] ?? 'unknown';
+            $shippingName = $option['shipping_name'] ?? 'unknown';
+            $shippingService = $option['shipping_service'] ?? 'unknown';
     
             if ($subTotal < 40000) {
                 $platformFee = 4500;
@@ -145,7 +146,8 @@ class transactionController extends Controller
                 'items' => $items,
                 'product_total' => $subTotal,
                 'shipping_cost' => $shippingCost,
-                'shipping_service' => $service,
+                'shipping_name' => $shippingName,
+                'shipping_service' => $shippingService,
                 'platform_fee' => $platformFee,
                 'grand_total' => $grandTotal,
             ];
