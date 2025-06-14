@@ -314,32 +314,32 @@ class transactionController extends Controller
             'shipping_service' => 'nullable|string',
             'shipping_cost' => 'nullable|numeric',
         ]);
-    
+
         $user = Auth::user();
         $quantity = $request->quantity;
-    
+
         $product = Product::with(['images', 'user.sellerDetail', 'user.userAddress'])
             ->findOrFail($request->product_id);
-    
+
         $image = $product->images()->first();
         $seller = $product->user;
-    
+
         $address = UserAddress::with(['province', 'kabupaten', 'kecamatan'])
             ->where('user_id', $user->id)
             ->where('is_default', true)
             ->first();
-    
+
         if (!$address) {
             return response()->json([
                 'message' => 'No default address found for the user',
             ], 404);
         }
-    
+
         $origin = optional($seller->userAddress->firstWhere('is_default', true))->origin_id;
         $destination = optional($address)->origin_id;
-    
+
         $productTotal = $product->price * $quantity;
-    
+
         // Platform fee tiers
         if ($productTotal < 40000) {
             $platformFee = 4500;
@@ -348,11 +348,11 @@ class transactionController extends Controller
         } else {
             $platformFee = round($productTotal * 0.05);
         }
-    
+
         $shippingCost = null;
         $shippingName = null;
         $shippingService = null;
-    
+
         // Jika dikirim dari frontend
         if ($request->filled(['shipping_name', 'shipping_service', 'shipping_cost'])) {
             $shippingName = $request->shipping_name;
@@ -368,17 +368,17 @@ class transactionController extends Controller
                 $product->weight * $quantity,
                 $request->courier
             );
-    
+
             if (is_array($shipping)) {
                 $shippingCost = $shipping['cost'] ?? 0;
             }
-    
+
             $shippingName = $request->courier;
             $shippingService = $shipping['service'] ?? null;
         }
-    
+
         $grandTotal = $productTotal + ($shippingCost ?? 0) + $platformFee;
-    
+
         return response()->json([
             'summary' => [
                 [
@@ -389,7 +389,7 @@ class transactionController extends Controller
                         'origin_id' => $origin,
                     ],
                     'items' => [
-                        [                    
+                        [
                             'product_id' => $product->id,
                             'quantity' => $quantity,
                             'image' => $image ? 'storage/' . $image->image_path : null,
@@ -435,7 +435,7 @@ class transactionController extends Controller
             ]
         ]);
     }
-    
+
 
 
     public function buyNow(Request $request)
@@ -443,10 +443,10 @@ class transactionController extends Controller
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
-            'shipping_cost' => 'nullable|numeric|min:0',
-            'shipping_name' => 'nullable|string',
-            'shipping_service' => 'nullable|string',
-            'payment_method' => 'nullable|string',
+            'shipping_cost' => 'required|numeric|min:0',
+            'shipping_name' => 'required|string',
+            'shipping_service' => 'required|string',
+            'payment_method' => 'required|string',
         ]);
 
         $user = Auth::user();
@@ -462,7 +462,7 @@ class transactionController extends Controller
         $seller = $product->user;
         $subtotal = $product->price * $quantity;
 
-        // 🔥 Platform fee berdasarkan tier
+        // 💰 Hitung platform fee tier
         if ($subtotal < 40000) {
             $platformFee = 4500;
         } elseif ($subtotal < 100000) {
@@ -477,6 +477,7 @@ class transactionController extends Controller
         DB::beginTransaction();
 
         try {
+            // 🔃 Simpan transaksi
             $transaction = Transaction::create([
                 'user_id' => $user->id,
                 'seller_id' => $seller->id,
@@ -484,10 +485,12 @@ class transactionController extends Controller
                 'platform_fee' => $platformFee,
                 'shipping_cost' => $shippingCost,
                 'shipping_name' => $request->shipping_name,
+                'shipping_service' => $request->shipping_service,
                 'status' => 'pending',
                 'payment_method' => $request->payment_method,
             ]);
 
+            // 🛒 Simpan order item
             orderItem::create([
                 'transaction_id' => $transaction->id,
                 'product_id' => $product->id,
@@ -496,7 +499,29 @@ class transactionController extends Controller
                 'subtotal' => $subtotal,
             ]);
 
+            // 📦 Order ID & Midtrans
             $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
+
+            $itemDetails = [
+                [
+                    'id' => $product->id,
+                    'price' => $product->price,
+                    'quantity' => $quantity,
+                    'name' => $product->name,
+                ],
+                [
+                    'id' => 'shipping_' . $seller->id,
+                    'price' => $shippingCost,
+                    'quantity' => 1,
+                    'name' => 'Ongkir - ' . strtoupper($request->shipping_name) . ' (' . strtoupper($request->shipping_service) . ')',
+                ],
+                [
+                    'id' => 'platform_fee',
+                    'price' => $platformFee,
+                    'quantity' => 1,
+                    'name' => 'Biaya Layanan TUMBUH',
+                ]
+            ];
 
             $params = [
                 'enabled_payments' => [$request->payment_method],
@@ -508,26 +533,7 @@ class transactionController extends Controller
                     'first_name' => $user->name,
                     'email' => $user->email,
                 ],
-                'item_details' => [
-                    [
-                        'id' => $product->id,
-                        'price' => $product->price,
-                        'quantity' => $quantity,
-                        'name' => $product->name,
-                    ],
-                    [
-                        'id' => 'shipping_' . $seller->id,
-                        'price' => $shippingCost,
-                        'quantity' => 1,
-                        'name' => $request->shipping_name,
-                    ],
-                    [
-                        'id' => 'platform_fee',
-                        'price' => $platformFee,
-                        'quantity' => 1,
-                        'name' => 'Biaya Layanan Platform TUMBUH',
-                    ]
-                ],
+                'item_details' => $itemDetails,
             ];
 
             $snapUrl = Snap::createTransaction($params)->redirect_url;
@@ -536,6 +542,9 @@ class transactionController extends Controller
                 'invoice_url' => $snapUrl,
                 'midtrans_order_id' => $orderId,
             ]);
+
+            // 🔥 Opsional: hapus shipping cache user setelah transaksi
+            $this->clearUserShippingCost($seller->id, $user->id);
 
             DB::commit();
 
@@ -550,6 +559,7 @@ class transactionController extends Controller
                     'platform_fee' => $platformFee,
                     'shipping_cost' => $shippingCost,
                     'shipping_name' => $request->shipping_name,
+                    'shipping_service' => $request->shipping_service,
                 ],
             ]);
         } catch (\Exception $e) {
@@ -560,6 +570,7 @@ class transactionController extends Controller
             ], 500);
         }
     }
+
 
 
     public function getCourierCost(Request $request)
