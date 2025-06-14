@@ -634,7 +634,16 @@ class transactionController extends Controller
         }
     }
 
-    public function clearUserShippingCost($originId, $destinationId) {
+    public function clearUserShippingCost($sellerId, $UserId) {
+
+        $originId = UserAddress::where('user_id', $sellerId)
+            ->where('is_default', true)
+            ->value('origin_id');
+        
+        $destinationId = UserAddress::where('user_id', $UserId)
+            ->where('is_default', true)
+            ->value('origin_id');
+
         ShippingCostDetail::where('origin_id', $originId)
             ->where('destination_id', $destinationId)
             ->delete();
