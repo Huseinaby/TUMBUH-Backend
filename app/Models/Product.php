@@ -5,6 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\ProductCategories;
+use App\Models\cartItem;
+use App\Models\OrderItem;
+use App\Models\Province;
+use App\Models\ProductImage;
+use App\Models\Review;
+
 
 class Product extends Model
 {
