@@ -305,38 +305,42 @@ class transactionController extends Controller
         }
     }
 
-
-
     public function buyNowSummary(Request $request)
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
-            'courier' => 'nullable|string',
-            'service' => 'nullable|string',
-            'cost' => 'nullable|numeric',
+            'shipping_name' => 'nullable|string',
+            'shipping_service' => 'nullable|string',
+            'shipping_cost' => 'nullable|numeric',
         ]);
-
+    
         $user = Auth::user();
         $quantity = $request->quantity;
-
+    
         $product = Product::with(['images', 'user.sellerDetail', 'user.userAddress'])
             ->findOrFail($request->product_id);
-
+    
         $image = $product->images()->first();
         $seller = $product->user;
-
+    
         $address = UserAddress::with(['province', 'kabupaten', 'kecamatan'])
             ->where('user_id', $user->id)
             ->where('is_default', true)
             ->first();
-
+    
+        if (!$address) {
+            return response()->json([
+                'message' => 'No default address found for the user',
+            ], 404);
+        }
+    
         $origin = optional($seller->userAddress->firstWhere('is_default', true))->origin_id;
         $destination = optional($address)->origin_id;
-
+    
         $productTotal = $product->price * $quantity;
-
-        // Fee tier
+    
+        // Platform fee tiers
         if ($productTotal < 40000) {
             $platformFee = 4500;
         } elseif ($productTotal < 100000) {
@@ -344,62 +348,94 @@ class transactionController extends Controller
         } else {
             $platformFee = round($productTotal * 0.05);
         }
-
+    
         $shippingCost = null;
+        $shippingName = null;
         $shippingService = null;
-
-        if ($request->filled(['courier', 'cost', 'service'])) {
-            $shippingCost = $request->cost;
-            $shippingService = $request->service;
-        } else {
-            // Hitung default ongkir hanya jika courier ada
-            if ($request->filled('courier')) {
-                $shipping = $this->getCost(
-                    app(RajaOngkirService::class),
-                    $origin,
-                    $destination,
-                    $product->weight * $quantity,
-                    $request->courier
-                );
-
-                $shippingCost = is_array($shipping) ? ($shipping['cost'] ?? null) : $shipping;
-                $shippingService = $request->courier;
-            }
+    
+        // Jika dikirim dari frontend
+        if ($request->filled(['shipping_name', 'shipping_service', 'shipping_cost'])) {
+            $shippingName = $request->shipping_name;
+            $shippingService = $request->shipping_service;
+            $shippingCost = $request->shipping_cost;
         }
-
+        // Jika hanya courier, hit API
+        elseif ($request->filled('courier')) {
+            $shipping = $this->getCost(
+                app(RajaOngkirService::class),
+                $origin,
+                $destination,
+                $product->weight * $quantity,
+                $request->courier
+            );
+    
+            if (is_array($shipping)) {
+                $shippingCost = $shipping['cost'] ?? 0;
+            }
+    
+            $shippingName = $request->courier;
+            $shippingService = $shipping['service'] ?? null;
+        }
+    
         $grandTotal = $productTotal + ($shippingCost ?? 0) + $platformFee;
-
+    
         return response()->json([
-            'product' => [
-                'id' => $product->id,
-                'name' => $product->name,
-                'image' => $image ? 'storage/' . $image->image_path : null,
-                'price' => $product->price,
-                'stock' => $product->stock,
-                'weight' => $product->weight,
+            'summary' => [
+                [
+                    'seller' => [
+                        'id' => $seller->id,
+                        'storeName' => $seller->sellerDetail->store_name ?? $seller->username,
+                        'logo' => $seller->sellerDetail->store_logo ? 'storage/' . $seller->sellerDetail->store_logo : null,
+                        'origin_id' => $origin,
+                    ],
+                    'items' => [
+                        [                    
+                            'product_id' => $product->id,
+                            'quantity' => $quantity,
+                            'image' => $image ? 'storage/' . $image->image_path : null,
+                            'subTotal' => $product->price,
+                            'total_weight' => $product->weight * $quantity,
+                            'product' => [
+                                'name' => $product->name,
+                                'price' => $product->price,
+                                'stock' => $product->stock,
+                                'weight' => $product->weight,
+                            ],
+                        ]
+                    ],
+                    'product_total' => $productTotal,
+                    'shipping_cost' => $shippingCost,
+                    'shipping_name' => $shippingName,
+                    'shipping_service' => $shippingService,
+                    'platform_fee' => $platformFee,
+                    'grand_total' => $grandTotal
+                ]
             ],
-            'seller' => [
-                'id' => $seller->id,
-                'store_name' => $seller->sellerDetail->store_name ?? $seller->username,
-                'origin_id' => $origin,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
             ],
-            'quantity' => $quantity,
             'address' => [
-                'full_name' => $address->nama_lengkap ?? null,
-                'full_address' => $address->alamat_lengkap ?? null,
-                'phone' => $address->nomor_telepon ?? null,
+                'id' => $address->id,
+                'full_name' => $address->nama_lengkap,
+                'full_address' => $address->alamat_lengkap,
+                'phone' => $address->nomor_telepon,
                 'province' => optional($address->province)->name,
                 'city' => optional($address->kabupaten)->name,
                 'district' => optional($address->kecamatan)->name,
-                'postal_code' => $address->kode_pos ?? null,
+                'postal_code' => $address->kode_pos,
+                'origin_id' => $address->origin_id,
             ],
-            'product_total' => $productTotal,
-            'platform_fee' => $platformFee,
-            'total_shipping' => $shippingCost ?? 0,
-            'grand_total' => $grandTotal,
-            'shipping_name' => $shippingService,
+            'summary_totals' => [
+                'product_total' => $productTotal,
+                'total_shipping' => $shippingCost,
+                'platform_fee' => $platformFee,
+                'grand_total' => $grandTotal
+            ]
         ]);
     }
+    
 
 
     public function buyNow(Request $request)
