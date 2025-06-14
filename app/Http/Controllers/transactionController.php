@@ -279,6 +279,8 @@ class transactionController extends Controller
                     'invoice_url' => $snapUrl,
                     'midtrans_order_id' => $orderId,
                 ]);
+                
+                $this->clearUserShippingCost($sellerId, $user->id);
 
                 $transactions[] = [
                     'transaction_id' => $transaction->id,
