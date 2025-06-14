@@ -32,7 +32,7 @@ class productController extends Controller
                 'total' => $products->total(),
             ],
         ]);
-        
+
     }
 
     public function store(Request $request)
@@ -121,10 +121,11 @@ class productController extends Controller
         ]);
     }
 
-    public function destroyImage($id){
+    public function destroyImage($id)
+    {
         $image = ProductImage::findOrFail($id);
 
-        if($image->product->user_id !== Auth::id()) {
+        if ($image->product->user_id !== Auth::id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -161,26 +162,32 @@ class productController extends Controller
     {
         $seller = User::findOrFail($userId);
         $sellerDetail = SellerDetail::where('user_id', $userId)->first();
-    
+
         $products = Product::with(['productCategories', 'user'])
             ->where('user_id', $userId)
             ->latest()
             ->get();
-    
+
         // Ambil semua kategori unik dari produk
         $categories = $products
             ->pluck('productCategories')
             ->flatten()
             ->unique('id')
             ->values()
-            ->map(function ($category) {
+            ->map(function ($category) use ($products) {
+                // Hitung berapa produk dari seller ini yang punya kategori ini
+                $productCount = $products->filter(function ($product) use ($category) {
+                    return $product->productCategories->contains('id', $category->id);
+                })->count();
+
                 return [
                     'id' => $category->id,
                     'name' => $category->name,
-                    'count' => $category->products->count(),
+                    'count' => $productCount,
                 ];
             });
-    
+
+
         $productList = $products->map(function ($product) {
             return [
                 'id' => $product->id,
@@ -190,7 +197,7 @@ class productController extends Controller
                 'categories' => $product->productCategories->name ?? 'No Category',
             ];
         });
-    
+
         return response()->json([
             'store' => [
                 'id' => $seller->id,
@@ -207,5 +214,5 @@ class productController extends Controller
             ]
         ]);
     }
-    
+
 }
