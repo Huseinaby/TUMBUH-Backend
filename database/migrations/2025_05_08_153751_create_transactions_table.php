@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('payment_method')->nullable();
             $table->text('notes')->nullable();
             $table->string('shipping_service')->nullable();
+            $table->string('shipping_name')->nullable();
             $table->integer('shipping_cost')->default(0);
             $table->text('invoice_url')->nullable();
             $table->string('midtrans_order_id')->nullable();
