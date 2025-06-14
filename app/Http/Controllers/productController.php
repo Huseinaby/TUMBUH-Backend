@@ -175,7 +175,7 @@ class productController extends Controller
             ->unique('id')
             ->values()
             ->map(function ($category) use ($products) {
-                // Hitung berapa produk dari seller ini yang punya kategori ini
+
                 $productCount = $products->filter(function ($product) use ($category) {
                     return $product->productCategories->contains('id', $category->id);
                 })->count();
