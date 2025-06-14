@@ -739,12 +739,18 @@ class transactionController extends Controller
         $result = [];
 
         foreach ($grouped as $sellerId => $items) {
+
+            $firstItem = $items->first();
+            $user = optional($firstItem->product)->user;
+            $sellerDetail = optional($user)->sellerDetail;
+            $userAddress = optional($user)->userAddress;
+
             $result[] = [
                 'seller' => [
                     'id' => $sellerId,
-                    'storeName' => $items->first()->product->user->sellerDetail->store_name ?? $items->first()->product->user->username,
-                    'logo' => $items->first()->product->user->sellerDetail->store_logo ? 'storage/' . $items->first()->product->user->sellerDetail->store_logo : null,
-                    'origin_id' => $items->first()->product->user->userAddress->firstWhere('is_default', true)?->origin_id ?? null,
+                    'storeName' => $sellerDetail?->store_name ?? $user->username,
+                    'logo' => $sellerDetail?->store_logo ? 'storage/' . $sellerDetail->store_logo : null,
+                    'origin_id' => $userAddress?->firstWhere('is_default', true)->origin_id ?? null,
                 ],
                 'items' => $items->map(function ($item) {
                     return [
