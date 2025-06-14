@@ -78,30 +78,30 @@ class transactionController extends Controller
             'cart_ids' => 'required|array',
             'shipping_options' => 'nullable|array',
         ]);
-    
+
         $user = Auth::user();
         $cartIds = $request->input('cart_ids');
         $shippingOptions = collect($request->input('shipping_options', []));
-    
+
         $cartData = $this->getCartGroupedBySeller($cartIds);
-    
+
         if (empty($cartData)) {
             return response()->json([
                 'message' => 'No valid cart items found for the provided IDs',
             ], 404);
         }
-    
+
         $address = UserAddress::with(['province', 'kabupaten', 'kecamatan'])
             ->where('user_id', $user->id)
             ->where('is_default', true)
             ->first();
-    
+
         if (!$address) {
             return response()->json([
                 'message' => 'No default address found for the user',
             ], 404);
         }
-    
+
         $formatAddress = [
             'id' => $address->id,
             'full_name' => $address->nama_lengkap,
@@ -113,24 +113,24 @@ class transactionController extends Controller
             'postal_code' => $address->kode_pos,
             'origin_id' => $address->origin_id,
         ];
-    
+
         $sellerSummaries = [];
         $overallProductTotal = 0;
         $totalShippingCost = 0;
         $overallPlatformFee = 0;
-    
+
         foreach ($cartData as $group) {
             $sellerId = $group['seller']['id'];
             $items = $group['items'];
-    
+
             $subTotal = collect($items)->sum('subTotal');
 
-    
+
             $option = $shippingOptions->firstWhere('seller_id', $sellerId);
             $shippingCost = $option['cost'] ?? 0;
             $shippingName = $option['shipping_name'] ?? 'unknown';
             $shippingService = $option['shipping_service'] ?? 'unknown';
-    
+
             if ($subTotal < 40000) {
                 $platformFee = 4500;
             } elseif ($subTotal < 100000) {
@@ -138,9 +138,9 @@ class transactionController extends Controller
             } else {
                 $platformFee = (int) round($subTotal * 0.05);
             }
-    
+
             $grandTotal = $subTotal + $shippingCost + $platformFee;
-    
+
             $sellerSummaries[] = [
                 'seller' => $group['seller'],
                 'items' => $items,
@@ -151,12 +151,12 @@ class transactionController extends Controller
                 'platform_fee' => $platformFee,
                 'grand_total' => $grandTotal,
             ];
-    
+
             $overallProductTotal += $subTotal;
             $totalShippingCost += $shippingCost;
             $overallPlatformFee += $platformFee;
         }
-    
+
         return response()->json([
             'cart_summary' => $sellerSummaries,
             'user' => [
@@ -173,7 +173,7 @@ class transactionController extends Controller
             ]
         ]);
     }
-    
+
 
     public function store(Request $request)
     {
@@ -192,6 +192,7 @@ class transactionController extends Controller
         $shippingMap = collect($request->shipping_costs)->keyBy('seller_id');
         $transactions = [];
 
+        
         DB::beginTransaction();
 
         try {
@@ -202,26 +203,27 @@ class transactionController extends Controller
                 $items = $group['items'];
 
                 $shipping = $shippingMap[$sellerId];
-                $shippingCost = $shipping['cost'];
-                $shippingCourier = $shipping['courier'];
+                $productTotal = $shipping['product_total'];
+                $shippingCost = $shipping['shipping_cost'];
+                $shippingName = $shipping['shipping_name'];
+                $shippingService = $shipping['shipping_service'];
+                $platformFee = $shipping['platform_fee'];
+                $finalPrice = $shipping['grand_total'];
 
-                $subtotal = collect($items)->sum('subTotal');
-
-                // Ambil fee dari request
-                $platformFee = $request->platform_fee;
-                $finalPrice = $subtotal + $shippingCost + $platformFee;
-
+                // Simpan transaksi
                 $transaction = Transaction::create([
                     'user_id' => $user->id,
                     'seller_id' => $sellerId,
-                    'shipping_cost' => $shippingCost,
-                    'shipping_courier' => $shippingCourier,
-                    'platform_fee' => $platformFee,
                     'total_price' => $finalPrice,
+                    'platform_fee' => $platformFee,
+                    'shipping_cost' => $shippingCost,
+                    'shipping_name' => $shippingName,
+                    'shipping_service' => $shippingService,
                     'status' => 'pending',
                     'payment_method' => $request->payment_method,
                 ]);
 
+                // Simpan detail produk & hapus dari keranjang
                 foreach ($items as $item) {
                     orderItem::create([
                         'transaction_id' => $transaction->id,
@@ -233,6 +235,7 @@ class transactionController extends Controller
                     cartItem::where('id', $item['cart_id'])->delete();
                 }
 
+                // Siapkan untuk Midtrans
                 $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
 
                 $itemDetails = array_map(function ($item) {
@@ -248,7 +251,7 @@ class transactionController extends Controller
                     'id' => 'shipping_' . $sellerId,
                     'price' => $shippingCost,
                     'quantity' => 1,
-                    'name' => 'Ongkir - ' . strtoupper($shippingCourier),
+                    'name' => 'Ongkir - ' . strtoupper($shippingName) . ' (' . strtoupper($shippingService) . ')',
                 ];
 
                 $itemDetails[] = [
@@ -300,6 +303,7 @@ class transactionController extends Controller
             ], 500);
         }
     }
+
 
 
     public function buyNowSummary(Request $request)
@@ -589,7 +593,7 @@ class transactionController extends Controller
             }
 
             $services = [];
-    
+
 
             foreach ($cost['data'] as $entry) {
                 $services[] = [
