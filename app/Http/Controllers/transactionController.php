@@ -336,6 +336,7 @@ class transactionController extends Controller
         }
 
         $origin = optional($seller->userAddress->firstWhere('is_default', true))->origin_id;
+        $storeLogo = optional($seller->sellerDetail)->store_logo;
         $destination = optional($address)->origin_id;
 
         $productTotal = $product->price * $quantity;
@@ -385,7 +386,7 @@ class transactionController extends Controller
                     'seller' => [
                         'id' => $seller->id,
                         'storeName' => $seller->sellerDetail->store_name ?? $seller->username,
-                        'logo' => $seller->sellerDetail->store_logo ? 'storage/' . $seller->sellerDetail->store_logo : null,
+                        'logo' => $storeLogo ? 'storage/' . $storeLogo : null,
                         'origin_id' => $origin,
                     ],
                     'items' => [
