@@ -192,7 +192,6 @@ class transactionController extends Controller
         $shippingMap = collect($request->shipping_costs)->keyBy('seller_id');
         $transactions = [];
 
-        
         DB::beginTransaction();
 
         try {
@@ -633,6 +632,12 @@ class transactionController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function clearUserShippingCost($originId, $destinationId) {
+        ShippingCostDetail::where('origin_id', $originId)
+            ->where('destination_id', $destinationId)
+            ->delete();
     }
 
     public function getCost(RajaOngkirService $rajaOngkirService, $origin, $destination, $weight, $courier)
