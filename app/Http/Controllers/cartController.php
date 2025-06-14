@@ -58,11 +58,6 @@ class cartController extends Controller
             ->where('product_id', $request->product_id)
             ->first();
 
-        $cart = cartItem::with(['product.images'])
-        ->where('user_id', Auth::id())
-        ->get();
-        dd($cart->toArray());
-
         if ($existing) {
             $existing->quantity += $request->quantity;
             $existing->save();
