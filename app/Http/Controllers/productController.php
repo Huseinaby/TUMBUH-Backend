@@ -170,14 +170,13 @@ class productController extends Controller
 
         // Ambil semua kategori unik dari produk
         $categories = $products
-            ->pluck('productCategories')
-            ->flatten()
+            ->pluck('productCategories') 
+            ->filter() 
             ->unique('id')
             ->values()
             ->map(function ($category) use ($products) {
-
                 $productCount = $products->filter(function ($product) use ($category) {
-                    return $product->productCategories->contains('id', $category->id);
+                    return $product->productCategories && $product->productCategories->id == $category->id;
                 })->count();
 
                 return [
@@ -186,6 +185,7 @@ class productController extends Controller
                     'count' => $productCount,
                 ];
             });
+
 
 
         $productList = $products->map(function ($product) {
