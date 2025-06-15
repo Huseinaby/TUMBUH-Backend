@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,6 +15,11 @@ class ProductResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $avarage = Review::where('product_id', $this->id)
+            ->avg('rating');
+        $count = Review::where('product_id', $this->id)
+            ->count();
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -21,6 +27,8 @@ class ProductResource extends JsonResource
             'price' => $this->price,
             'weight' => $this->weight,
             'stock' => $this->stock,
+            'rating' => $this->reviews->isEmpty() ? 0 : round($avarage, 1),
+            'rating_count' => $count,
             'category' => $this->productCategories ? [
                 'id' => $this->productCategories->id,
                 'name' => $this->productCategories->name,

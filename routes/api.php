@@ -121,7 +121,7 @@ Route::post('/review', [reviewController::class, 'store']);
 Route::get('/review/product/{productId}', [reviewController::class, 'getReviewsByProduct']);
 Route::get('/review/user/{userId}', [reviewController::class, 'getReviewsByUser']);
 Route::put('/review/update/{id}', [reviewController::class, 'updateReview']);
-Route::delete('/review/delete/{id}', [reviewController::class, 'deleteReview']);
+Route::delete('/review/delete/6{id}', [reviewController::class, 'deleteReview']);
 
 //withdraw
 Route::get('/withdraw', [withdrawController::class, 'listWithdraw']);
