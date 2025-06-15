@@ -120,8 +120,8 @@ Route::get('/user/orderItem', [reviewController::class, 'getOrderItem']);
 Route::post('/review', [reviewController::class, 'store']);
 Route::get('/review/product/{productId}', [reviewController::class, 'getReviewsByProduct']);
 Route::get('/review/user/{userId}', [reviewController::class, 'getReviewsByUser']);
-Route::put('/review/{id}/update', [reviewController::class, 'updateReview']);
-Route::delete('/review/{id}', [reviewController::class, 'deleteReview']);
+Route::put('/review/update/{id}', [reviewController::class, 'updateReview']);
+Route::delete('/review/delete/{id}', [reviewController::class, 'deleteReview']);
 
 //withdraw
 Route::get('/withdraw', [withdrawController::class, 'listWithdraw']);

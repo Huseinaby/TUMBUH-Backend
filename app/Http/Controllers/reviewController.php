@@ -93,7 +93,7 @@ class reviewController extends Controller
     public function getReviewsByProduct($productId)
     {
         $reviews = Review::where('product_id', $productId)
-            ->with('user:id,name,photo')
+            ->with('user')
             ->get();
 
         return response()->json($reviews);
@@ -108,11 +108,12 @@ class reviewController extends Controller
         return response()->json($reviews);
     }
 
+
     public function updateReview(Request $request, $id)
     {
         $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string|max:500',
+            'rating' => 'sometimes|integer|min:1|max:5',
+            'comment' => 'sometimes|string|max:500',
         ]);
 
         $review = Review::where('id', $id)
@@ -132,6 +133,7 @@ class reviewController extends Controller
 
         return response()->json([
             'message' => 'Review updated successfully',
+            'review' => $review,
         ]);
     }
 
@@ -145,8 +147,7 @@ class reviewController extends Controller
                 'message' => 'Review not found or you are not authorized to delete this review',
             ], 404);
         }
-
-        if ($review->user_id !== Auth::id() || Auth::user()->role !== 'admin') {
+        if ($review->user_id !== Auth::id() && Auth::user()->role !== 'admin') {
             return response()->json([
                 'message' => 'You are not authorized to delete this review',
             ], 403);
