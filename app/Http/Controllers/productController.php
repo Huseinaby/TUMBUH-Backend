@@ -15,7 +15,7 @@ class productController extends Controller
 {
     public function index(Request $request)
     {
-        $products = Product::with(['productCategories', 'user', 'images', 'province'])
+        $products = Product::with(['productCategories', 'user', 'images', 'province', 'reviews'])
             ->when($request->product_category_id, fn($q) => $q->where('product_category_id', $request->product_category_id))
             ->when($request->search, fn($q) => $q->where('name', 'like', "%{$request->search}%"))
             ->when($request->province_id, fn($q) => $q->where('province_id', $request->province_id))
@@ -163,15 +163,28 @@ class productController extends Controller
         $seller = User::findOrFail($userId);
         $sellerDetail = SellerDetail::where('user_id', $userId)->first();
 
-        $products = Product::with(['productCategories', 'user'])
+        $products = Product::with([
+            'productCategories',
+            'images',
+            'user',
+            'reviews' => function ($query) {
+                $query->select('id', 'product_id', 'user_id', 'rating', 'comment');
+            },
+            'reviews.user' => function ($query) {
+                $query->select('id', 'username');
+            },
+        ])
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating')
             ->where('user_id', $userId)
             ->latest()
             ->get();
 
-        // Ambil semua kategori unik dari produk
+
+        // Kategori
         $categories = $products
-            ->pluck('productCategories') 
-            ->filter() 
+            ->pluck('productCategories')
+            ->filter()
             ->unique('id')
             ->values()
             ->map(function ($category) use ($products) {
@@ -186,8 +199,7 @@ class productController extends Controller
                 ];
             });
 
-
-
+        // Produk
         $productList = $products->map(function ($product) {
             return [
                 'id' => $product->id,
@@ -195,8 +207,32 @@ class productController extends Controller
                 'price' => $product->price,
                 'image' => $product->images->first() ? Storage::url($product->images->first()->image_path) : null,
                 'categories' => $product->productCategories->name ?? 'No Category',
+                'rating' => round($product->reviews_avg_rating ?? 0, 1),
+                'rating_count' => $product->reviews_count,
             ];
         });
+
+        // Ambil semua review dari produk-produk milik seller
+        $allReviews = $products->flatMap(function ($product) {
+            return $product->reviews->map(function ($review) use ($product) {
+                return [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'rating' => $review->rating,
+                    'comment' => $review->comment,
+                    'username' => $review->user->username ?? 'Unknown',
+                ];
+            });
+        })->sortByDesc('reviewed_at')->values()->take(5); // tampilkan 5 terbaru
+
+
+        // Seller rating & total reviews (diambil dari semua produk)
+        $totalReviewCount = $products->sum('reviews_count');
+        $totalReviewScore = $products->sum(function ($product) {
+            return ($product->reviews_avg_rating ?? 0) * $product->reviews_count;
+        });
+
+        $sellerAvgRating = $totalReviewCount > 0 ? round($totalReviewScore / $totalReviewCount, 1) : 0;
 
         return response()->json([
             'store' => [
@@ -205,14 +241,18 @@ class productController extends Controller
                 'store_logo' => $sellerDetail && $sellerDetail->store_logo ? Storage::url($sellerDetail->store_logo) : null,
                 'store_banner' => $sellerDetail && $sellerDetail->store_banner ? Storage::url($sellerDetail->store_banner) : null,
                 'product_count' => $products->count(),
-                'store_rating' => 'in development', // nanti bisa hitung rata-rata dari review
+                'store_rating' => [
+                    'rating' => $sellerAvgRating,
+                    'rating_count' => $totalReviewCount,
+                ]
             ],
             'tabs' => [
                 'products' => $productList,
                 'categories' => $categories,
-                'reviews' => [], // opsional, bisa diisi kalau review sudah ada
+                'reviews' => $allReviews, // bisa diisi nanti dengan review terbaru jika dibutuhkan
             ]
         ]);
     }
+
 
 }
