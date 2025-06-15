@@ -99,10 +99,10 @@ class reviewController extends Controller
         return response()->json($reviews);
     }
 
-    public function getReviewsByUser()
+    public function getReviewsByUser($userId)
     {
-        $reviews = Review::where('user_id', Auth::id())
-            ->with('product:id,name,photo')
+        $reviews = Review::where('user_id', $userId)
+            ->with('product', 'orderItem')
             ->get();
 
         return response()->json($reviews);
