@@ -53,30 +53,29 @@ class reviewController extends Controller
 
         $user = Auth::user();
 
-        $orderItem = orderItem::with('transaction')->findOrFail($request->order_item_id);
+        $orderItem = orderItem::with('transaction')
+            ->where('id', $request->order_item_id)
+            ->firstOrFail();
 
-        if($orderItem->transaction->user_id !== $user->id) {
+        if($orderItem->transaction->user_id !== $user->id || $orderItem->transaction->status !== 'completed') {
             return response()->json([
-                'message' => 'You are not authorized to review this order item',
+                'message' => 'You are not authorized to review this order item or the transaction is not completed.',
             ], 403);
         }
 
-        if($orderItem->transaction->shipping_status !== 'completed') {
+        $existingReview = Review::where('order_item_id', $request->order_item_id)
+            ->where('user_id', $user->id)
+            ->first();
+        if ($existingReview) {
             return response()->json([
-                'message' => 'You can only review completed transactions',
-            ], 400);
-        }
-
-        if($orderItem->review) {
-            return response()->json([
-                'message' => 'You have already reviewed this order item',
+                'message' => 'You have already reviewed this order item.',
             ], 400);
         }
 
         $review = Review::create([
+            'order_item_id' => $request->order_item_id,
             'user_id' => $user->id,
             'product_id' => $orderItem->product_id,
-            'order_item_id' => $orderItem->id,
             'rating' => $request->rating,
             'comment' => $request->comment,
         ]);
@@ -84,7 +83,7 @@ class reviewController extends Controller
         return response()->json([
             'message' => 'Review created successfully',
             'review' => $review,
-        ], 201);
+        ]);
     }
 
     public function getReviewsByProduct($productId)
