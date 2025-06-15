@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\orderItem;
 use App\Models\Review;
 use App\Models\transaction;
 use Illuminate\Http\Request;
@@ -9,46 +10,47 @@ use Illuminate\Support\Facades\Auth;
 
 class reviewController extends Controller
 {
-    public function storeReview(Request $request){
+    public function store(Request $request)
+    {
         $request->validate([
-            'transaction_id' => 'required|exists:transactions,id',
-            'product_id' => 'required|exists:order_items,product_id',
+            'order_item_id' => 'required|exists:order_items,id',
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:500',
         ]);
 
-        $trasaction = transaction::where('id', $request->transaction_id)
-            ->where('user_id', Auth::id())
-            ->whereNotNull('confirmed_received_at')
-            ->firstOrFail();
+        $user = Auth::user();
 
-        if(!$trasaction){
+        $orderItem = orderItem::with('transaction')->findOrFail($request->order_item_id);
+
+        if($orderItem->transaction->user_id !== $user->id) {
             return response()->json([
-                'message' => 'Transaction not found or you are not authorized to review this transaction or transaction not confirmed received',
-            ], 404);
+                'message' => 'You are not authorized to review this order item',
+            ], 403);
         }
 
-        $alreadyReviewed = Review::where('transaction_id', $trasaction->id)
-            ->where('product_id', $request->product_id)
-            ->where('user_id', Auth::id())
-            ->exists();
-
-        if ($alreadyReviewed) {
+        if($orderItem->transaction->shipping_status !== 'completed') {
             return response()->json([
-                'message' => 'You have already reviewed this product',
+                'message' => 'You can only review completed transactions',
             ], 400);
         }
 
-        Review::create([
-            'transaction_id' => $trasaction->id,
-            'product_id' => $request->product_id,
-            'user_id' => Auth::id(),
+        if($orderItem->review) {
+            return response()->json([
+                'message' => 'You have already reviewed this order item',
+            ], 400);
+        }
+
+        $review = Review::create([
+            'user_id' => $user->id,
+            'product_id' => $orderItem->product_id,
+            'order_item_id' => $orderItem->id,
             'rating' => $request->rating,
             'comment' => $request->comment,
         ]);
 
         return response()->json([
-            'message' => 'Review submitted successfully',
+            'message' => 'Review created successfully',
+            'review' => $review,
         ], 201);
     }
 
