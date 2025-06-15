@@ -11,13 +11,14 @@ use Illuminate\Support\Facades\Auth;
 class reviewController extends Controller
 {
 
-    public function getOrderItem(){
+    public function getOrderItem()
+    {
         $user = Auth::user();
 
         $items = orderItem::with(['product', 'review'])
             ->whereHas('transaction', function ($query) use ($user) {
                 $query->where('user_id', $user->id)
-                      ->where('status', 'completed');
+                    ->where('status', 'completed');
             })->get()
             ->map(function ($item) {
                 $image = $item->product->images()->first();
@@ -39,9 +40,10 @@ class reviewController extends Controller
                     ] : null,
                 ];
             });
-        
+
+
         return response()->json($items);
-        
+
     }
     public function store(Request $request)
     {
@@ -57,7 +59,7 @@ class reviewController extends Controller
             ->where('id', $request->order_item_id)
             ->firstOrFail();
 
-        if($orderItem->transaction->user_id !== $user->id || $orderItem->transaction->status !== 'completed') {
+        if ($orderItem->transaction->user_id !== $user->id || $orderItem->transaction->status !== 'completed') {
             return response()->json([
                 'message' => 'You are not authorized to review this order item or the transaction is not completed.',
             ], 403);
@@ -79,6 +81,8 @@ class reviewController extends Controller
             'rating' => $request->rating,
             'comment' => $request->comment,
         ]);
+
+        $orderItem->update(['review_id' => $review->id]);
 
         return response()->json([
             'message' => 'Review created successfully',
