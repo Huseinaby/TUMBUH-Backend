@@ -96,6 +96,7 @@ Route::post('/transaction/courierCost', [transactionController::class, 'getCouri
 
 Route::get('/transaction', [transactionController::class, 'index']);
 Route::get('/transaction/user', [transactionController::class, 'getByUser']);
+Route::get('/transaction/completed/user', [transactionController::class, 'getByUserCompleted']);
 Route::get('/transaction/seller', [transactionController::class, 'getBySeller']);
 
 Route::post('/transaction/webhook', [transactionController::class, 'handleWebhook']);

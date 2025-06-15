@@ -50,9 +50,28 @@ class transactionController extends Controller
     {
         $user = Auth::user();
 
-        $transactions = transaction::with('user', 'orderItems.product')
+        $transactions = transaction::with('seller', 'orderItems.product')
             ->where('user_id', $user->id)
             ->get();
+
+        return response()->json([
+            'transactions' => $transactions,
+        ]);
+    }
+
+    public function getByUserCompleted() {
+        $user = Auth::user();
+
+        $transactions = transaction::with('seller', 'orderItems.product')
+            ->where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->get();
+
+        if ($transactions->isEmpty()) {
+            return response()->json([
+                'message' => 'No completed transactions found for this user',
+            ], 404);
+        }
 
         return response()->json([
             'transactions' => $transactions,
