@@ -116,6 +116,7 @@ Route::get('/transaction/{id}', [transactionController::class, 'show']);
 Route::post('/shippingCost/clear', [transactionController::class, 'clearShippingCost']);
 
 //review
+Route::get('/user/orderItem', [reviewController::class, 'getOrderItem']);
 Route::post('/review', [reviewController::class, 'storeReview']);
 Route::get('/review/product/{productId}', [reviewController::class, 'getReviewsByProduct']);
 Route::get('/review/user/{userId}', [reviewController::class, 'getReviewsByUser']);

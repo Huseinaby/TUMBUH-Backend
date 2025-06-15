@@ -23,4 +23,14 @@ class orderItem extends Model
         return $this->belongsTo(orderItem::class);
     }
 
+    public function transaction()
+    {
+        return $this->belongsTo(transaction::class);
+    }
+
+    public function review()
+    {
+        return $this->hasOne(Review::class);
+    }
+
 }

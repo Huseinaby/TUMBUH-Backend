@@ -10,6 +10,39 @@ use Illuminate\Support\Facades\Auth;
 
 class reviewController extends Controller
 {
+
+    public function getOrderItem(){
+        $user = Auth::user();
+
+        $items = orderItem::with(['product', 'review'])
+            ->whereHas('transaction', function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                      ->where('status', 'completed');
+            })->get()
+            ->map(function ($item) {
+                $image = $item->product->images()->first();
+                return [
+                    'order_item_id' => $item->id,
+                    'product' => [
+                        'id' => $item->product->id,
+                        'name' => $item->product->name,
+                        'image' => $image ? asset('storage/' . $image->image_path) : null,
+                    ],
+                    'quantity' => $item->quantity,
+                    'price' => $item->price,
+                    'subtotal' => $item->subtotal,
+                    'review' => $item->review ? [
+                        'id' => $item->review->id,
+                        'rating' => $item->review->rating,
+                        'comment' => $item->review->comment,
+                        'created_at' => $item->review->created_at,
+                    ] : null,
+                ];
+            });
+        
+        return response()->json($items);
+        
+    }
     public function store(Request $request)
     {
         $request->validate([
