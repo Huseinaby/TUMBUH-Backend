@@ -18,8 +18,6 @@ return new class extends Migration
             $table->integer('quantity');
             $table->integer('price');
             $table->integer('subtotal');
-            $table->string('status')->default('pending'); // pending, completed, cancelled
-            $table->boolean('is_reviewed')->default(false); // Indicates if the item has been reviewed
             $table->timestamps();
         });
     }

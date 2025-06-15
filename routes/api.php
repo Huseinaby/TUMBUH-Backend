@@ -117,7 +117,7 @@ Route::post('/shippingCost/clear', [transactionController::class, 'clearShipping
 
 //review
 Route::get('/user/orderItem', [reviewController::class, 'getOrderItem']);
-Route::post('/review', [reviewController::class, 'storeReview']);
+Route::post('/review', [reviewController::class, 'store']);
 Route::get('/review/product/{productId}', [reviewController::class, 'getReviewsByProduct']);
 Route::get('/review/user/{userId}', [reviewController::class, 'getReviewsByUser']);
 Route::put('/review/{id}/update', [reviewController::class, 'updateReview']);
