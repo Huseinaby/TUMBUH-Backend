@@ -59,6 +59,44 @@ class transactionController extends Controller
         ]);
     }
 
+    public function getByUserPaid(){
+        $user = Auth::user();
+
+        $transactions = transaction::with('seller', 'orderItems.product')
+            ->where('user_id', $user->id)
+            ->where('status', 'paid')
+            ->get();
+
+        if ($transactions->isEmpty()) {
+            return response()->json([
+                'message' => 'No paid transactions found for this user',
+            ], 404);
+        }
+
+        return response()->json([
+            'transactions' => $transactions,
+        ]);
+    }
+
+    public function getByUserPending() {
+        $user = Auth::user();
+
+        $transactions = transaction::with('seller', 'orderItems.product')
+            ->where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->get();
+
+        if ($transactions->isEmpty()) {
+            return response()->json([
+                'message' => 'No pending transactions found for this user',
+            ], 404);
+        }
+
+        return response()->json([
+            'transactions' => $transactions,
+        ]);
+    }
+
     public function getByUserCompleted() {
         $user = Auth::user();
 
@@ -1057,9 +1095,9 @@ class transactionController extends Controller
 
     public function confirmRecieved($id)
     {
-        $transaction = transaction::where('id', $id)
+        $transaction = transaction::with('orderItems.product')
+            ->where('id', $id)
             ->where('user_id', Auth::id())
-            ->where('shipping_status', 'delivered')
             ->firstOrFail();
 
 
@@ -1070,6 +1108,7 @@ class transactionController extends Controller
         }
 
         $transaction->update([
+            'status' => 'completed',
             'confirmed_received_at' => now(),
         ]);
 

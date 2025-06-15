@@ -96,8 +96,11 @@ Route::post('/transaction/courierCost', [transactionController::class, 'getCouri
 
 Route::get('/transaction', [transactionController::class, 'index']);
 Route::get('/transaction/user', [transactionController::class, 'getByUser']);
-Route::get('/transaction/completed/user', [transactionController::class, 'getByUserCompleted']);
+Route::get('/transaction/user/completed', [transactionController::class, 'getByUserCompleted']);
+Route::get('/transaction/user/paid', [transactionController::class, 'getByUserPaid']);
+Route::get('/transaction/user/pending', [transactionController::class, 'getByUserPending']);
 Route::get('/transaction/seller', [transactionController::class, 'getBySeller']);
+Route::get('/transaction/{id}/recieved', [transactionController::class, 'confirmRecieved']);
 
 Route::post('/transaction/webhook', [transactionController::class, 'handleWebhook']);
 Route::get('/transaction/finish', [transactionController::class, 'finishPayment']);
@@ -106,7 +109,6 @@ Route::get('/transaction/error', [transactionController::class, 'paymentError'])
 Route::get('/transaction/income', [transactionController::class, 'sellerIncome']);
 Route::post('/transaction/{id}/resi', [transactionController::class, 'inputResi']);
 Route::get('/transaction/{id}/track', [transactionController::class, 'cekResi']);
-Route::get('/transaction/{id}/confirm-recieved', [transactionController::class, 'confirmRecieved']);
 Route::get('/transaction/{id}/confirm', [transactionController::class, 'confirmTransaction']);
 Route::post('/transaction/{id}/cancel', [transactionController::class, 'cancelTransaction']);
 Route::get('/transaction/{id}', [transactionController::class, 'show']);
