@@ -15,9 +15,8 @@ class ModulController extends Controller
 {
     public function index()
     {
-        $user = Auth::user();
         $moduls = Modul::with(['modulImage', 'user'])
-            ->withCount('quiz','article', 'video')
+            ->withCount('quiz', 'article', 'video')
             ->paginate(5);
 
         return response()->json([
@@ -29,7 +28,7 @@ class ModulController extends Controller
                 'last_page' => $moduls->lastPage(),
                 'per_page' => $moduls->perPage(),
                 'total' => $moduls->total(),
-                ]
+            ]
         ]);
     }
 
@@ -156,14 +155,15 @@ class ModulController extends Controller
         ]);
     }
 
-    public function getMostFavoriteModul(){
+    public function getMostFavoriteModul()
+    {
 
         $moduls = Modul::with(['modulImage', 'user'])
             ->withCount('favoriteModul')
             ->orderBy('favorite_modul_count', 'desc')
             ->paginate(5);
 
-        
+
 
         return response()->json([
             'message' => 'Modul by most liked',
@@ -313,9 +313,9 @@ class ModulController extends Controller
         $videoController = new videoController();
         $articleController = new articleController();
 
-        $articleResult = $articleController->generateArticles( $title, $modul->id);
+        $articleResult = $articleController->generateArticles($title, $modul->id);
 
-        $videoResult = $videoController->generateVideos( $title,$modul->id);
+        $videoResult = $videoController->generateVideos($title, $modul->id);
 
         $quizzes = $quizController->generateQuiz($modul->id, $articleResult);
 
@@ -358,11 +358,12 @@ class ModulController extends Controller
         return null;
     }
 
-    public function fetchGoogleImages($imageKeyword){
+    public function fetchGoogleImages($imageKeyword)
+    {
         $apikey = env('GOOGLE_API_KEY');
         $cseId = env('GOOGLE_CSE_ID');
 
-        if(!$apikey || !$cseId){
+        if (!$apikey || !$cseId) {
             Log::warning('Google API key or CSE ID not set in .env file');
             return [];
         }
@@ -376,7 +377,7 @@ class ModulController extends Controller
                 'num' => 5,
             ]);
 
-            if(!$response->successful()){
+            if (!$response->successful()) {
                 Log::error('Google API request failed', [
                     'status' => $response->status(),
                     'body' => $response->body(),
@@ -398,19 +399,25 @@ class ModulController extends Controller
         }
     }
 
-    public function favoriteUser(Request $request, $id){
-        $user = User::where('id', $request->user_id);
-        dd($user);
-        $modul = Modul::findOrFail($id);
+    public function favoriteUser($modulId)
+    {
+        if (!is_numeric($modulId)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'ID modul tidak valid.'
+            ], 400);
+        }
 
-        if($user->favoriteModul()->where('modul_id', $id)->exists()) {
-            $user->favoriteModul()->detach($id);
+        $user = Auth::user();
+
+        if ($user->favoriteModul()->where('modul_id', $modulId)->exists()) {
+            $user->favoriteModul()->detach($modulId);
             return response()->json([
                 'status' => 'unfavorited',
                 'message' => 'Modul dihapus dari favorit.'
             ]);
         } else {
-            $user->favoriteModul()->attach($id);
+            $user->favoriteModul()->attach($modulId);
             return response()->json([
                 'status' => 'favorited',
                 'message' => 'Modul ditambahkan ke favorit.'
@@ -418,15 +425,29 @@ class ModulController extends Controller
         }
     }
 
-    public function getFavoriteModul(Request $request)
+
+    public function getFavoriteModul()
     {
-        $user = $request->user();
+        $user = Auth::user();
         $favoriteModuls = $user->favoriteModul()->get();
 
+        if ($favoriteModuls->isEmpty()) {
+            return response()->json([
+                'message' => 'Tidak ada modul favorit',
+                'data' => []
+            ]);
+        }
+
         return response()->json([
+            'message' => 'Modul favorit ditemukan',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->username,
+                'email' => $user->email
+            ],
             'data' => $favoriteModuls
         ]);
     }
-    
+
 }
 
