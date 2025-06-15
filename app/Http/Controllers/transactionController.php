@@ -457,7 +457,7 @@ class transactionController extends Controller
                                 'name' => $product->name,
                                 'price' => $product->price,
                                 'stock' => $product->stock,
-                                'weight' => $product->weight,
+                                'weight' => $product->weight
                             ],
                         ]
                     ],
@@ -814,6 +814,7 @@ class transactionController extends Controller
                         'cart_id' => $item->id,
                         'product_id' => $item->product->id,
                         'quantity' => $item->quantity,
+                        'image' => $item->product->images->first() ? 'storage/' . $item->product->images->first()->image_path : null,
                         'subTotal' => $item->product->price * $item->quantity,
                         'total_weight' => $item->product->weight * $item->quantity,
                         'product' => [
