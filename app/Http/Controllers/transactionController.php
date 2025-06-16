@@ -182,6 +182,9 @@ class transactionController extends Controller
 
             $subTotal = collect($items)->sum('subTotal');
 
+            $totalWeight = collect($items)->sum(function ($item) {
+                return $item['quantity'] * ($item['product']['weight'] ?? 0);
+            });
 
             $option = $shippingOptions->firstWhere('seller_id', $sellerId);
             $shippingCost = $option['cost'] ?? 0;
@@ -202,6 +205,7 @@ class transactionController extends Controller
                 'seller' => $group['seller'],
                 'items' => $items,
                 'product_total' => $subTotal,
+                'total_weight' => $totalWeight,
                 'shipping_cost' => $shippingCost,
                 'shipping_name' => $shippingName,
                 'shipping_service' => $shippingService,
@@ -436,6 +440,7 @@ class transactionController extends Controller
         }
 
         $grandTotal = $productTotal + ($shippingCost ?? 0) + $platformFee;
+        $totalWeight = $product->weight * $quantity;
 
         return response()->json([
             'summary' => [
@@ -452,7 +457,7 @@ class transactionController extends Controller
                             'quantity' => $quantity,
                             'image' => $image ? 'storage/' . $image->image_path : null,
                             'subTotal' => $product->price,
-                            'total_weight' => $product->weight * $quantity,
+                            'total_weight' => $totalWeight,
                             'product' => [
                                 'name' => $product->name,
                                 'price' => $product->price,
