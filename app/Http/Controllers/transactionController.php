@@ -616,6 +616,9 @@ class transactionController extends Controller
             // 🔥 Opsional: hapus shipping cache user setelah transaksi
             $this->clearUserShippingCost($seller->id, $user->id);
 
+            $message = 'Transaksi baru dari user ' . $user->username . ' senilai ' . number_format($finalPrice, 0, ',', '.');
+            broadcast(new OrderCreated($seller->id, $message))->toOthers();
+
             DB::commit();
 
             return response()->json([
