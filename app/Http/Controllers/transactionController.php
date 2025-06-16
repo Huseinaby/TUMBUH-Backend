@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OrderCreated;
 use App\Models\transaction;
 use Illuminate\Http\Request;
 use App\Models\cartItem;
@@ -341,7 +342,13 @@ class transactionController extends Controller
                     'midtrans_order_id' => $orderId,
                 ]);
 
+                // hapus shipping cache user setelah transaksi
                 $this->clearUserShippingCost($sellerId, $user->id);
+
+                // Broadcast event to seller
+                $message = 'Transaksi baru dari user ' . $user->username . 'senilai ' . number_format($finalPrice, 0, ',', '.');
+                broadcast(new OrderCreated($sellerId, $message))->toOthers();
+
 
                 $transactions[] = [
                     'transaction_id' => $transaction->id,
