@@ -12,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
-class OrderCreated implements ShouldBroadcastNow
+class OrderCreated implements ShouldBroadcast
 
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
@@ -30,7 +30,7 @@ class OrderCreated implements ShouldBroadcastNow
     }
 
     public function broadcastOn()
-    {
+    {        
         return new Channel('seller.' . $this->sellerId);
     }
 
