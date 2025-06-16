@@ -46,9 +46,9 @@ Route::delete('/modul/{id}', [modulController::class, 'destroy']);
 Route::get('/modul/{userId}/user', [modulController::class, 'getExceptByUser']);
 Route::post('/modul/generate', [modulController::class, 'generateContent']);
 Route::get('/modul/user/{userId}', [modulController::class, 'getModulByUser']);
-Route::get('/modul/favorite/list', [ModulController::class, 'getFavoriteModul']);
-Route::get('/modul/favorite/most', [ModulController::class, 'getMostFavoriteModul']);
-Route::get('/modul/favorite/{modulId}', [ModulController::class, 'favoriteUser']);
+Route::get('/modul/favorite/list', [modulController::class, 'getFavoriteModul']);
+Route::get('/modul/favorite/most', [modulController::class, 'getMostFavoriteModul']);
+Route::get('/modul/favorite/{modulId}', [modulController::class, 'favoriteUser']);
 
 //article
 Route::get('/article', [articleController::class, 'index']);

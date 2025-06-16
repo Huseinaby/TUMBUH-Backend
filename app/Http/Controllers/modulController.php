@@ -11,7 +11,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 
-class ModulController extends Controller
+class modulController extends Controller
 {
     public function index()
     {
