@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\OrderCreated;
+use App\Events\UserNotification;
 use App\Models\transaction;
 use Illuminate\Http\Request;
 use App\Models\cartItem;
@@ -60,7 +61,8 @@ class transactionController extends Controller
         ]);
     }
 
-    public function getByUserPaid(){
+    public function getByUserPaid()
+    {
         $user = Auth::user();
 
         $transactions = transaction::with('seller', 'orderItems.product')
@@ -79,7 +81,8 @@ class transactionController extends Controller
         ]);
     }
 
-    public function getByUserPending() {
+    public function getByUserPending()
+    {
         $user = Auth::user();
 
         $transactions = transaction::with('seller', 'orderItems.product')
@@ -98,7 +101,8 @@ class transactionController extends Controller
         ]);
     }
 
-    public function getByUserCompleted() {
+    public function getByUserCompleted()
+    {
         $user = Auth::user();
 
         $transactions = transaction::with('seller', 'orderItems.product')
@@ -236,7 +240,6 @@ class transactionController extends Controller
         ]);
     }
 
-
     public function store(Request $request)
     {
         $request->validate([
@@ -353,6 +356,12 @@ class transactionController extends Controller
             }
 
             DB::commit();
+
+            broadcast(new UserNotification(
+                $user->id,
+                'Pesanan baru telah dibuat. Segera selesaikan pembayaran sebelum batas waktu',
+                'info'
+            ));
 
             return response()->json([
                 'message' => 'Transactions created successfully',
@@ -636,110 +645,110 @@ class transactionController extends Controller
 
 
     public function getCourierCost(Request $request)
-{
-    $request->validate([
-        'seller_id' => 'required|exists:users,id',
-        'user_id' => 'required|exists:users,id',
-        'weight' => 'required|integer|min:1',
-    ]);
+    {
+        $request->validate([
+            'seller_id' => 'required|exists:users,id',
+            'user_id' => 'required|exists:users,id',
+            'weight' => 'required|integer|min:1',
+        ]);
 
-    $userAddress = UserAddress::where('user_id', $request->user_id)
-        ->where('is_default', true)
-        ->first();
+        $userAddress = UserAddress::where('user_id', $request->user_id)
+            ->where('is_default', true)
+            ->first();
 
-    $sellerAddress = UserAddress::where('user_id', $request->seller_id)
-        ->where('is_default', true)
-        ->first();
+        $sellerAddress = UserAddress::where('user_id', $request->seller_id)
+            ->where('is_default', true)
+            ->first();
 
-    if (!$userAddress || !$sellerAddress) {
-        return response()->json([
-            'message' => 'Default address not found for user or seller',
-        ], 404);
-    }
+        if (!$userAddress || !$sellerAddress) {
+            return response()->json([
+                'message' => 'Default address not found for user or seller',
+            ], 404);
+        }
 
-    $originId = $sellerAddress->origin_id;
-    $destinationId = $userAddress->origin_id;
-    $weight = $request->weight;
+        $originId = $sellerAddress->origin_id;
+        $destinationId = $userAddress->origin_id;
+        $weight = $request->weight;
 
-    $couriers = ['jne', 'jnt', 'sicepat'];
-    $allServices = [];
-    $cached = true;
+        $couriers = ['jne', 'jnt', 'sicepat'];
+        $allServices = [];
+        $cached = true;
 
-    foreach ($couriers as $courier) {
-        $existing = ShippingCostDetail::where([
-            'origin_id' => $originId,
-            'destination_id' => $destinationId,
-            'weight' => $weight,
-            'code' => $courier,
-        ])->get();
+        foreach ($couriers as $courier) {
+            $existing = ShippingCostDetail::where([
+                'origin_id' => $originId,
+                'destination_id' => $destinationId,
+                'weight' => $weight,
+                'code' => $courier,
+            ])->get();
 
-        if ($existing->count() > 0) {
-            $allServices[$courier] = $existing->map(function ($item) {
-                return [
-                    'name' => $item->name,
-                    'code' => $item->code,
-                    'service' => $item->service,
-                    'description' => $item->description,
-                    'cost' => $item->cost,
-                    'etd' => $item->etd,
-                ];
-            });
-        } else {
-            $cached = false;
-            $rajaOngkirService = app(RajaOngkirService::class);
+            if ($existing->count() > 0) {
+                $allServices[$courier] = $existing->map(function ($item) {
+                    return [
+                        'name' => $item->name,
+                        'code' => $item->code,
+                        'service' => $item->service,
+                        'description' => $item->description,
+                        'cost' => $item->cost,
+                        'etd' => $item->etd,
+                    ];
+                });
+            } else {
+                $cached = false;
+                $rajaOngkirService = app(RajaOngkirService::class);
 
-            try {
-                $cost = $rajaOngkirService->calculateDomesticCost(
-                    $originId,
-                    $destinationId,
-                    $weight,
-                    $courier
-                );
+                try {
+                    $cost = $rajaOngkirService->calculateDomesticCost(
+                        $originId,
+                        $destinationId,
+                        $weight,
+                        $courier
+                    );
 
-                if (!isset($cost['data']) || !is_array($cost['data'])) {
+                    if (!isset($cost['data']) || !is_array($cost['data'])) {
+                        continue;
+                    }
+
+                    $services = [];
+
+                    foreach ($cost['data'] as $entry) {
+                        $services[] = [
+                            'name' => $entry['name'],
+                            'code' => $courier,
+                            'service' => $entry['service'],
+                            'description' => $entry['description'] ?? null,
+                            'cost' => $entry['cost'],
+                            'etd' => $entry['etd'] ?? null,
+                        ];
+
+                        ShippingCostDetail::updateOrCreate([
+                            'origin_id' => $originId,
+                            'destination_id' => $destinationId,
+                            'weight' => $weight,
+                            'code' => $courier,
+                            'service' => $entry['service'],
+                        ], [
+                            'name' => $entry['name'],
+                            'description' => $entry['description'] ?? null,
+                            'cost' => $entry['cost'],
+                            'etd' => $entry['etd'] ?? null,
+                        ]);
+                    }
+
+                    $allServices[$courier] = $services;
+
+                } catch (\Exception $e) {
                     continue;
                 }
-
-                $services = [];
-
-                foreach ($cost['data'] as $entry) {
-                    $services[] = [
-                        'name' => $entry['name'],
-                        'code' => $courier,
-                        'service' => $entry['service'],
-                        'description' => $entry['description'] ?? null,
-                        'cost' => $entry['cost'],
-                        'etd' => $entry['etd'] ?? null,
-                    ];
-
-                    ShippingCostDetail::updateOrCreate([
-                        'origin_id' => $originId,
-                        'destination_id' => $destinationId,
-                        'weight' => $weight,
-                        'code' => $courier,
-                        'service' => $entry['service'],
-                    ], [
-                        'name' => $entry['name'],
-                        'description' => $entry['description'] ?? null,
-                        'cost' => $entry['cost'],
-                        'etd' => $entry['etd'] ?? null,
-                    ]);
-                }
-
-                $allServices[$courier] = $services;
-
-            } catch (\Exception $e) {
-                continue;
             }
         }
-    }
 
-    return response()->json([
-        'seller_id' => $request->seller_id,
-        'cached' => $cached,
-        'available_couriers' => $allServices,
-    ]);
-}
+        return response()->json([
+            'seller_id' => $request->seller_id,
+            'cached' => $cached,
+            'available_couriers' => $allServices,
+        ]);
+    }
 
 
     public function clearUserShippingCost($sellerId, $UserId)
@@ -904,6 +913,7 @@ class transactionController extends Controller
                 ]);
 
                 $sellerId = $transaction->seller_id;
+                $userId = $transaction->user_id;
                 $buyerName = $transaction->user->name;
                 $total = number_format($transaction->total_price, 0, ',', '.');
                 $productList = $transaction->orderItems->map(function ($item) {
@@ -913,14 +923,28 @@ class transactionController extends Controller
                 $message = "Pesanan dari {$buyerName} telah dibayar.\n" .
                     "Total: Rp {$total}\n" .
                     "Produk: {$productList}";
-                
+
                 broadcast(new OrderCreated($sellerId, $message))->toOthers();
-                
+                broadcast(new UserNotification(
+                    $userId,
+                    'Pembayaran berhasil untuk pesanan #' . $transaction->id,
+                    'success'
+                ));
 
             } elseif ($status === 'expire') {
                 $transaction->update(['status' => 'expired']);
+                broadcast(new UserNotification(
+                    $transaction->user_id,
+                    'Pembayaran untuk pesanan #' . $transaction->id . ' telah kadaluarsa',
+                    'warning'
+                ));
             } elseif (in_array($status, ['cancel', 'deny'])) {
                 $transaction->update(['status' => 'cancelled']);
+                broadcast(new UserNotification(
+                    $transaction->user_id,
+                    'Pembayaran untuk pesanan #' . $transaction->id . ' telah dibatalkan',
+                    'error'
+                ));
             } else {
                 return response()->json(['message' => 'Unhandled transaction status'], 400);
             }
