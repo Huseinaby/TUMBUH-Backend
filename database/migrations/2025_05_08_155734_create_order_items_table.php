@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('transaction_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->foreignId('review_id')->nullable()->constrained()->onDelete('set null'); // Reference to the review, if any
             $table->integer('quantity');
             $table->integer('price');
             $table->integer('subtotal');
