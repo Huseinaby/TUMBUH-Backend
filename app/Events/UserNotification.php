@@ -11,7 +11,7 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class UserNotification
+class UserNotification implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -31,7 +31,7 @@ class UserNotification
         Log::info("Broadcasting notification to user {$this->userId} with message: {$this->message} and type: {$this->type}");
     }
 
-    
+
     public function broadcastOn()
     {
         return new Channel('user.' . $this->userId);
