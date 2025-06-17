@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\UserNotification;
 use Illuminate\Support\Facades\Route;
 use App\Events\OrderCreated;
 
@@ -8,11 +9,11 @@ Route::get('/', function () {
 });
 
 Route::get('/broadcast', function () {
-    $sellerId = 1; // Example seller ID
+    $userId = 1; // Example seller ID
     $message = 'New order received!';
 
     // Dispatch the event
-    event(new OrderCreated($sellerId, $message));
+    event(new UserNotification($userId, $message, 'info'));
 
     return 'Event broadcasted successfully!';
 });
