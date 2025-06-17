@@ -26,6 +26,6 @@ class Review extends Model
 
     public function orderItem()
     {
-        return $this->belongsTo(OrderItem::class);
+        return $this->belongsTo(orderItem::class);
     }
 }
