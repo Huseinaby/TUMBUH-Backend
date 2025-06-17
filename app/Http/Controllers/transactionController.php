@@ -619,6 +619,12 @@ class transactionController extends Controller
 
             DB::commit();
 
+            broadcast(new UserNotification(
+                $user->id,
+                'Pesanan baru telah dibuat. Segera selesaikan pembayaran sebelum batas waktu',
+                'info'
+            ));
+
             return response()->json([
                 'message' => 'Transaction created successfully',
                 'snap_url' => $snapUrl,
