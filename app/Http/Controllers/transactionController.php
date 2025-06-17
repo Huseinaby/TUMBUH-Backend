@@ -647,33 +647,36 @@ class transactionController extends Controller
 
 
     public function getCourierCost(Request $request)
-    {
-        $request->validate([
-            'seller_id' => 'required|exists:users,id',
-            'user_id' => 'required|exists:users,id',
-            'weight' => 'required|integer|min:1',
-            'courier' => 'required|string|in:jne,jnt,sicepat',
-        ]);
+{
+    $request->validate([
+        'seller_id' => 'required|exists:users,id',
+        'user_id' => 'required|exists:users,id',
+        'weight' => 'required|integer|min:1',
+    ]);
 
-        $userAddress = UserAddress::where('user_id', $request->user_id)
-            ->where('is_default', true)
-            ->first();
+    $userAddress = UserAddress::where('user_id', $request->user_id)
+        ->where('is_default', true)
+        ->first();
 
-        $sellerAddress = UserAddress::where('user_id', $request->seller_id)
-            ->where('is_default', true)
-            ->first();
+    $sellerAddress = UserAddress::where('user_id', $request->seller_id)
+        ->where('is_default', true)
+        ->first();
 
-        if (!$userAddress || !$sellerAddress) {
-            return response()->json([
-                'message' => 'Default address not found for user or seller',
-            ], 404);
-        }
+    if (!$userAddress || !$sellerAddress) {
+        return response()->json([
+            'message' => 'Default address not found for user or seller',
+        ], 404);
+    }
 
-        $originId = $sellerAddress->origin_id;
-        $destinationId = $userAddress->origin_id;
-        $weight = $request->weight;
-        $courier = $request->courier;
+    $originId = $sellerAddress->origin_id;
+    $destinationId = $userAddress->origin_id;
+    $weight = $request->weight;
 
+    $couriers = ['jne', 'jnt', 'sicepat'];
+    $allServices = [];
+    $cached = true;
+
+    foreach ($couriers as $courier) {
         $existing = ShippingCostDetail::where([
             'origin_id' => $originId,
             'destination_id' => $destinationId,
@@ -682,79 +685,73 @@ class transactionController extends Controller
         ])->get();
 
         if ($existing->count() > 0) {
-            return response()->json([
-                'cached' => true,
-                'data' => $existing->map(function ($item) {
-                    return [
-                        'name' => $item->name,
-                        'code' => $item->code,
-                        'service' => $item->service,
-                        'description' => $item->description,
-                        'cost' => $item->cost,
-                        'etd' => $item->etd,
-                    ];
-                }),
-            ]);
-        }
-
-        $rajaOngkirService = app(RajaOngkirService::class);
-        try {
-            $cost = $rajaOngkirService->calculateDomesticCost(
-                $originId,
-                $destinationId,
-                $weight,
-                $courier
-            );
-
-            if (!isset($cost['data']) || !is_array($cost['data'])) {
-                return response()->json([
-                    'message' => 'Courier not available',
-                    'error' => $cost,
-                ], 400);
-            }
-
-            $services = [];
-
-
-            foreach ($cost['data'] as $entry) {
-                $services[] = [
-                    'name' => $entry['name'],
-                    'code' => $courier,
-                    'service' => $entry['service'],
-                    'description' => $entry['description'] ?? null,
-                    'cost' => $entry['cost'],
-                    'etd' => $entry['etd'] ?? null,
+            $allServices[$courier] = $existing->map(function ($item) {
+                return [
+                    'name' => $item->name,
+                    'code' => $item->code,
+                    'service' => $item->service,
+                    'description' => $item->description,
+                    'cost' => $item->cost,
+                    'etd' => $item->etd,
                 ];
+            });
+        } else {
+            $cached = false;
+            $rajaOngkirService = app(RajaOngkirService::class);
 
-                ShippingCostDetail::updateOrCreate([
-                    'origin_id' => $originId,
-                    'destination_id' => $destinationId,
-                    'weight' => $weight,
-                    'code' => $courier,
-                    'service' => $entry['service'],
-                ], [
-                    'name' => $entry['name'],
-                    'description' => $entry['description'] ?? null,
-                    'cost' => $entry['cost'],
-                    'etd' => $entry['etd'] ?? null,
-                ]);
+            try {
+                $cost = $rajaOngkirService->calculateDomesticCost(
+                    $originId,
+                    $destinationId,
+                    $weight,
+                    $courier
+                );
+
+                if (!isset($cost['data']) || !is_array($cost['data'])) {
+                    continue;
+                }
+
+                $services = [];
+
+                foreach ($cost['data'] as $entry) {
+                    $services[] = [
+                        'name' => $entry['name'],
+                        'code' => $courier,
+                        'service' => $entry['service'],
+                        'description' => $entry['description'] ?? null,
+                        'cost' => $entry['cost'],
+                        'etd' => $entry['etd'] ?? null,
+                    ];
+
+                    ShippingCostDetail::updateOrCreate([
+                        'origin_id' => $originId,
+                        'destination_id' => $destinationId,
+                        'weight' => $weight,
+                        'code' => $courier,
+                        'service' => $entry['service'],
+                    ], [
+                        'name' => $entry['name'],
+                        'description' => $entry['description'] ?? null,
+                        'cost' => $entry['cost'],
+                        'etd' => $entry['etd'] ?? null,
+                    ]);
+                }
+
+                $allServices[$courier] = $services;
+
+            } catch (\Exception $e) {
+                continue;
             }
-
-            return response()->json([
-                'seller_id' => $request->seller_id,
-                'cached' => false,
-                'available_couriers' => [
-                    $courier => $services
-                ],
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Courier not available',
-                'error' => $e->getMessage(),
-            ], 500);
         }
     }
+
+    return response()->json([
+        'seller_id' => $request->seller_id,
+        'cached' => $cached,
+        'available_couriers' => $allServices,
+    ]);
+}
+
 
     public function clearUserShippingCost($sellerId, $UserId)
     {
