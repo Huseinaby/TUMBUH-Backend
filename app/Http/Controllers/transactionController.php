@@ -346,7 +346,14 @@ class transactionController extends Controller
                 $this->clearUserShippingCost($sellerId, $user->id);
 
                 // Broadcast event to seller
-                $message = 'Transaksi baru dari user ' . $user->username . 'senilai ' . number_format($finalPrice, 0, ',', '.');
+                $productList = collect($items)->map(function ($item) {
+                    return '- ' . $item['quantity'] . 'x ' . $item['product']['name'];
+                })->implode("\n");
+
+                $message = "Transaksi baru dari user {$user->username}:\n" .
+                    "{$productList}:\n" .
+                    'Total: Rp.' . number_format($finalPrice, 0, ',', '.');
+                
                 broadcast(new OrderCreated($sellerId, $message))->toOthers();
 
 
@@ -616,7 +623,13 @@ class transactionController extends Controller
             // 🔥 Opsional: hapus shipping cache user setelah transaksi
             $this->clearUserShippingCost($seller->id, $user->id);
 
-            $message = 'Transaksi baru dari user ' . $user->username . ' senilai ' . number_format($finalPrice, 0, ',', '.');
+            
+            $productList = "- {$quantity}x {$product->name}";
+
+            $message = "Transaksi baru dari user {$user->username}:\n" .
+                "{$productList}:\n" .
+                'Total: Rp.' . number_format($finalPrice, 0, ',', '.');
+
             broadcast(new OrderCreated($seller->id, $message))->toOthers();
 
             DB::commit();
