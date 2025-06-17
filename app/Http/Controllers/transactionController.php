@@ -902,6 +902,21 @@ class transactionController extends Controller
                     'status' => 'paid',
                     'paid_at' => now(),
                 ]);
+
+                $sellerId = $transaction->seller_id;
+                $buyerName = $transaction->user->name;
+                $total = number_format($transaction->total_price, 0, ',', '.');
+                $productList = $transaction->orderItems->map(function ($item) {
+                    return $item->product->name . ' (x' . $item->quantity . ')';
+                })->implode(', ');
+
+                $message = "Pesanan dari {$buyerName} telah dibayar.\n" .
+                    "Total: Rp {$total}\n" .
+                    "Produk: {$productList}";
+                
+                broadcast(new OrderCreated($sellerId, $message))->toOthers();
+                
+
             } elseif ($status === 'expire') {
                 $transaction->update(['status' => 'expired']);
             } elseif (in_array($status, ['cancel', 'deny'])) {
