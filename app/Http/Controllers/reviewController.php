@@ -105,6 +105,12 @@ class reviewController extends Controller
             ->with('product', 'orderItem')
             ->get();
 
+        if( $reviews->isEmpty()) {
+            return response()->json([
+                'message' => 'No reviews found for this user.',
+            ], 404);
+        }
+
         return response()->json($reviews);
     }
 
