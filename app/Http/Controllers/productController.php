@@ -221,7 +221,8 @@ class productController extends Controller
                     'username' => $review->user->username ?? 'Unknown',
                     'imageUser' => $review->user->photo ? asset($review->user->photo) : null,
                     'rating' => $review->rating,
-                    'comment' => $review->comment,                    
+                    'comment' => $review->comment,
+                    'date' => $review->created_at->format('Y-m-d'),                  
                 ];
             });
         })->sortByDesc('reviewed_at')->values()->take(5); // tampilkan 5 terbaru
