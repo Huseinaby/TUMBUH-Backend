@@ -19,7 +19,7 @@ class userController extends Controller
 
         if ($request->hasFile('photo')) {
             $path = $request->file('photo')->store('profile_photos', 'public');
-            $user->photo = $path;
+            $user->photo = 'storage/'. $path;
             $user->save();
         }
 
