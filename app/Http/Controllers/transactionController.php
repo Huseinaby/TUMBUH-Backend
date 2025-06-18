@@ -996,7 +996,7 @@ class transactionController extends Controller
             $transaction->save();
         }
     
-        return redirect()->away("tumbuh://paymentResult?order_id={$invoiceId}&status={$transactionStatus}");
+        return redirect()->away("tumbuh://paymentResult?order_id={$invoiceId}&status={$transactionStatus}&amount={$transaction->total_price}");
     }
     
 
