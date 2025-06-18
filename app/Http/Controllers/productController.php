@@ -215,7 +215,6 @@ class productController extends Controller
         // Ambil semua review dari produk-produk milik seller
         $allReviews = $products->flatMap(function ($product) {
             return $product->reviews->map(function ($review) use ($product) {
-                dd($review->user->photo);
                 return [
                     'product_id' => $product->id,
                     'product_name' => $product->name,                    
