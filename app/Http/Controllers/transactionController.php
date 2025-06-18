@@ -988,10 +988,10 @@ class transactionController extends Controller
 
         $date = now()->format('Y-m-d H:i:s');
     
-        // Update status berdasarkan transaction_status dari Midtrans
+        
         if ($transactionStatus === 'settlement' && $transaction->status !== 'paid') {
             $transaction->status = 'paid';
-            $transaction->paid_at = now(); // kalau kamu punya kolom ini
+            $transaction->paid_at = now(); 
             $transaction->save();
         } elseif (in_array($transactionStatus, ['expire', 'cancel', 'deny'])) {
             $transaction->status = 'failed';
@@ -1004,33 +1004,33 @@ class transactionController extends Controller
 
 
     public function paymentError(Request $request)
-    {
-        $invoiceId = $request->query('order_id');
+{
+    $invoiceId = $request->query('order_id');
+    $transactionStatus = $request->query('transaction_status'); 
 
-        $transaction = transaction::with('orderItems.product')
-            ->where('midtrans_order_id', $invoiceId)
-            ->first();
+    $transaction = transaction::with('orderItems.product')
+        ->where('midtrans_order_id', $invoiceId)
+        ->first();
 
-        if (!$transaction) {
-            return response()->json([
-                'message' => 'Transaction not found',
-            ], 404);
-        }
-
-        if ($transaction->status !== 'paid') {
-            return response()->json([
-                'message' => 'Transaction is not completed',
-                'status' => $transaction->status,
-                'transaction' => $transaction,
-            ], 400);
-        } else {
-            return response()->json([
-                'message' => 'Payment successful',
-                'status' => $transaction->status,
-                'transaction' => $transaction,
-            ]);
-        }
+    if (!$transaction) {
+        return response()->json([
+            'message' => 'Transaction not found',
+            'order_id' => $invoiceId,
+        ], 404);
     }
+
+    $status = $transaction->status;
+    $statusMessage = match ($status) {
+        'pending' => 'Transaksi belum dibayar.',
+        'failed' => 'Transaksi gagal atau dibatalkan.',
+        'expired' => 'Transaksi kadaluarsa.',
+        'cancelled' => 'Transaksi dibatalkan.',
+        default => 'Status transaksi: ' . $status,
+    };
+
+    return redirect()->away("tumbuh://checkout/payment/result?order_id={$invoiceId}&status={$status}&message=" . urlencode($statusMessage));
+}
+
 
     public function inputResi(Request $request, $id)
     {
