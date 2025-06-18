@@ -972,28 +972,33 @@ class transactionController extends Controller
     public function finishPayment(Request $request)
     {
         $invoiceId = $request->query('order_id');
-
+        $statusCode = $request->query('status_code');
+        $transactionStatus = $request->query('transaction_status');
+    
         $transaction = transaction::with('orderItems.product')
             ->where('midtrans_order_id', $invoiceId)
             ->first();
-
+    
         if (!$transaction) {
             return response()->json([
                 'message' => 'Transaction not found',
                 'order_id' => $invoiceId,
             ], 404);
         }
-
-        return response()->json([
-            'message' => $transaction->status === 'paid'
-                ? 'Payment successful'
-                : ($transaction->status === 'pending'
-                    ? 'Payment is pending'
-                    : 'Payment failed or expired'),
-            'status' => $transaction->status,
-            'transaction' => $transaction,
-        ]);
+    
+        // Update status berdasarkan transaction_status dari Midtrans
+        if ($transactionStatus === 'settlement' && $transaction->status !== 'paid') {
+            $transaction->status = 'paid';
+            $transaction->paid_at = now(); // kalau kamu punya kolom ini
+            $transaction->save();
+        } elseif (in_array($transactionStatus, ['expire', 'cancel', 'deny'])) {
+            $transaction->status = 'failed';
+            $transaction->save();
+        }
+    
+        return redirect()->away("tumbuh://paymentResult?order_id={$invoiceId}&status={$transactionStatus}");
     }
+    
 
 
     public function paymentError(Request $request)
