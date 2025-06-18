@@ -217,10 +217,10 @@ class productController extends Controller
             return $product->reviews->map(function ($review) use ($product) {
                 return [
                     'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'rating' => $review->rating,
+                    'product_name' => $product->name,                    
                     'username' => $review->user->username ?? 'Unknown',
                     'imageUser' => $review->user->photo ? asset($review->user->photo) : null,
+                    'rating' => $review->rating,
                     'comment' => $review->comment,                    
                 ];
             });
