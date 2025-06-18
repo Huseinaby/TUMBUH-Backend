@@ -985,6 +985,8 @@ class transactionController extends Controller
                 'order_id' => $invoiceId,
             ], 404);
         }
+
+        $date = now()->format('Y-m-d H:i:s');
     
         // Update status berdasarkan transaction_status dari Midtrans
         if ($transactionStatus === 'settlement' && $transaction->status !== 'paid') {
@@ -996,7 +998,7 @@ class transactionController extends Controller
             $transaction->save();
         }
     
-        return redirect()->away("tumbuh://checkout/payment/result?order_id={$invoiceId}&status={$transactionStatus}&amount={$transaction->total_price}");
+        return redirect()->away("tumbuh://checkout/payment/result?order_id={$invoiceId}&status={$transactionStatus}&amount={$transaction->total_price}&date={$date}");
     }
     
 
