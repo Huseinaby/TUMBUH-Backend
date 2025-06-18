@@ -168,7 +168,8 @@ class productController extends Controller
             'images',
             'user',
             'reviews' => function ($query) {
-                $query->select('id', 'product_id', 'user_id', 'rating', 'comment');
+                $query->select('id', 'product_id', 'user_id', 'rating', 'comment', 'created_at')
+                    ->latest();
             },
             'reviews.user' => function ($query) {
                 $query->select('id', 'username', 'photo');
@@ -222,7 +223,7 @@ class productController extends Controller
                     'imageUser' => $review->user->photo ? asset($review->user->photo) : null,
                     'rating' => $review->rating,
                     'comment' => $review->comment,
-                    'date' => $review->created_at->format('Y-m-d'),                  
+                    'date' => $review->created_at->format('Y-m-d'),
                 ];
             });
         })->sortByDesc('reviewed_at')->values()->take(5); // tampilkan 5 terbaru
