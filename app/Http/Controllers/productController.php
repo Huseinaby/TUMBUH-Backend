@@ -219,8 +219,9 @@ class productController extends Controller
                     'product_id' => $product->id,
                     'product_name' => $product->name,
                     'rating' => $review->rating,
-                    'comment' => $review->comment,
                     'username' => $review->user->username ?? 'Unknown',
+                    'imageUser' => $review->user->photo ? Storage::url($review->user->photo) : null,
+                    'comment' => $review->comment,                    
                 ];
             });
         })->sortByDesc('reviewed_at')->values()->take(5); // tampilkan 5 terbaru
