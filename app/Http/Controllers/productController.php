@@ -171,7 +171,7 @@ class productController extends Controller
                 $query->select('id', 'product_id', 'user_id', 'rating', 'comment');
             },
             'reviews.user' => function ($query) {
-                $query->select('id', 'username');
+                $query->select('id', 'username', 'photo');
             },
         ])
             ->withCount('reviews')
