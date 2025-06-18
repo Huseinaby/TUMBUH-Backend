@@ -220,7 +220,7 @@ class productController extends Controller
                     'product_name' => $product->name,
                     'rating' => $review->rating,
                     'username' => $review->user->username ?? 'Unknown',
-                    'imageUser' => $review->user->photo ? Storage::url($review->user->photo) : null,
+                    'imageUser' => $review->user->photo ? asset($review->user->photo) : null,
                     'comment' => $review->comment,                    
                 ];
             });
