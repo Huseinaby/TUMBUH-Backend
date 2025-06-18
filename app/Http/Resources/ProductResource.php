@@ -50,6 +50,17 @@ class ProductResource extends JsonResource
                     'image_path' => asset('storage/' . $image->image_path),
                 ];
             }),
+            'reviews' => $this->reviews->map(function ($review) {
+                return [
+                    'id' => $review->id,
+                    'user_id' => $review->user_id,
+                    'imageUser' => $review->user->photo ? asset('storage/' . $review->user->photo) : null,
+                    'username' => $review->user->username,
+                    'rating' => $review->rating,
+                    'date' => $review->created_at->format('Y-m-d'),
+                    'comment' => $review->comment,
+                ];
+            }),
         ];
     }
 }
