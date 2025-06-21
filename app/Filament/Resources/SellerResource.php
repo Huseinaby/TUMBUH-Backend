@@ -117,17 +117,11 @@ class SellerResource extends Resource
                         'approved' => 'Approved',
                         'rejected' => 'Rejected',
                     ])
-                    ->afterSave(function ($record){
-                        if ($record->status === 'approved') {
-                            $user = User::find($record->user_id);
-                            if ($user) {
-                                $user->update(['role' => 'seller']);
-                            }
-                        } elseif ($record->status === 'rejected') {
-                            $user = User::find($record->user_id);
-                            if ($user) {
-                                $user->update(['role' => 'customer']);
-                            }
+                    ->afterStateUpdated(function (callable $set, $state) {
+                        if ($state === 'approved') {
+                            $set('user.role', 'seller');
+                        } elseif ($state === 'rejected') {
+                            $set('user.role', 'user');
                         }
                     })
                     ->required(),
