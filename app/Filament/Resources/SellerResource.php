@@ -68,9 +68,6 @@ class SellerResource extends Resource
                     ->rows(2),
                 FileUpload::make('store_logo')
                     ->label('Logo Toko')
-                    ->image(),
-                FileUpload::make('store_logo')
-                    ->label('Logo Toko')
                     ->image()
                     ->openable()
                     ->downloadable()
@@ -108,6 +105,7 @@ class SellerResource extends Resource
                 FileUpload::make('foto_ktp')
                     ->label('Foto KTP')
                     ->image()
+                    ->openable()
                     ->columnSpan(2)
                     ->required()
                     ->maxSize(2048) // 2MB
