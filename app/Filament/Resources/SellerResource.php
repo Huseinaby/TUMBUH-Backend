@@ -73,7 +73,7 @@ class SellerResource extends Resource
                     ->downloadable()
                     ->required()
                     ->maxSize(1024) // 1MB
-                    ->disk('storage')
+                    ->disk('public')
                     ->directory('store_logos')
                     ->preserveFilenames(),
                 FileUpload::make('store_banner')
