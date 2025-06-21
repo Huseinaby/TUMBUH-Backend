@@ -22,6 +22,7 @@ use Filament\Tables\Table;
 use Filament\Tables\Columns\IconColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Storage;
 
 class SellerResource extends Resource
 {
@@ -66,16 +67,17 @@ class SellerResource extends Resource
                     ->required()
                     ->maxLength(150)
                     ->rows(2),
-                FileUpload::make('store_logo')
+                    FileUpload::make('store_logo')
                     ->label('Logo Toko')
                     ->image()
                     ->openable()
                     ->downloadable()
                     ->required()
                     ->maxSize(1024) // 1MB
-                    ->disk('storage')
+                    ->disk('public') // GANTI INI
                     ->directory('store_logos')
-                    ->preserveFilenames(),
+                    ->preserveFilenames()
+                    ->getUploadedFileUrlUsing(fn ($file) => Storage::disk('public')->url($file)),                
                 FileUpload::make('store_banner')
                     ->label('Banner Toko')
                     ->image()
