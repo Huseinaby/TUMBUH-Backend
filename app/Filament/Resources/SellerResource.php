@@ -79,7 +79,6 @@ class SellerResource extends Resource
                 FileUpload::make('store_banner')
                     ->label('Banner Toko')
                     ->image()
-                    ->required()
                     ->openable()
                     ->downloadable()
                     ->maxSize(2048) // 2MB
