@@ -46,10 +46,6 @@ class SellerResource extends Resource
                     ->preload()
                     ->columnSpan(2)
                     ->placeholder('Pilih user'),
-                TextInput::make('user.role')
-                    ->label('Role')
-                    ->hidden()
-                    ->required(),
                 TextInput::make('store_name')
                     ->label('Nama Toko')
                     ->required()
@@ -121,13 +117,7 @@ class SellerResource extends Resource
                         'approved' => 'Approved',
                         'rejected' => 'Rejected',
                     ])
-                    ->afterStateUpdated(function (callable $set, $state) {
-                        if ($state === 'approved') {
-                            $set('user.role', 'seller');
-                        } elseif ($state === 'rejected') {
-                            $set('user.role', 'user');
-                        }
-                    })
+                    ->default('pending')
                     ->required(),
             ]);
     }
