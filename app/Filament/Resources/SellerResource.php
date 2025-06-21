@@ -117,6 +117,13 @@ class SellerResource extends Resource
                         'approved' => 'Approved',
                         'rejected' => 'Rejected',
                     ])
+                    ->afterStateUpdated(function (callable $set, $state) {
+                        if ($state === 'approved') {
+                            $set('user.role', 'seller');
+                        } elseif ($state === 'rejected') {
+                            $set('user.role', 'user');
+                        }
+                    })
                     ->default('pending')
                     ->required(),
             ]);
