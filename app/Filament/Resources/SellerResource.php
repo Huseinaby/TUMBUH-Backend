@@ -124,7 +124,6 @@ class SellerResource extends Resource
                             $set('user.role', 'user');
                         }
                     })
-                    ->default('pending')
                     ->required(),
             ]);
     }
