@@ -68,6 +68,9 @@ class SellerResource extends Resource
                     ->rows(2),
                 FileUpload::make('store_logo')
                     ->label('Logo Toko')
+                    ->image(),
+                FileUpload::make('store_logo')
+                    ->label('Logo Toko')
                     ->image()
                     ->openable()
                     ->downloadable()
@@ -81,6 +84,7 @@ class SellerResource extends Resource
                     ->image()
                     ->openable()
                     ->downloadable()
+                    ->required() // Added required validation
                     ->maxSize(2048) // 2MB
                     ->disk('public')
                     ->directory('store_banners')
