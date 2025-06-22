@@ -360,7 +360,7 @@ class transactionController extends Controller
             broadcast(new UserNotification(
                 $user->id,
                 'Pesanan baru telah dibuat. Segera selesaikan pembayaran sebelum batas waktu',
-                'order_created'
+                'success'
             ));
 
             return response()->json([
@@ -622,7 +622,7 @@ class transactionController extends Controller
             broadcast(new UserNotification(
                 $user->id,
                 'Pesanan baru telah dibuat. Segera selesaikan pembayaran sebelum batas waktu',
-                'order_created'
+                'success'
             ));
 
             return response()->json([
@@ -935,7 +935,7 @@ class transactionController extends Controller
                 broadcast(new UserNotification(
                     $userId,
                     'Pembayaran berhasil untuk pesanan #' . $transaction->id,
-                    'payment_success'
+                    'success'
                 ));
 
             } elseif ($status === 'expire') {
@@ -943,14 +943,14 @@ class transactionController extends Controller
                 broadcast(new UserNotification(
                     $transaction->user_id,
                     'Pembayaran untuk pesanan #' . $transaction->id . ' telah kadaluarsa',
-                    'payment_expired'
+                    'warning'
                 ));
             } elseif (in_array($status, ['cancel', 'deny'])) {
                 $transaction->update(['status' => 'cancelled']);
                 broadcast(new UserNotification(
                     $transaction->user_id,
                     'Pembayaran untuk pesanan #' . $transaction->id . ' telah dibatalkan',
-                    'payment_cancelled'
+                    'error'
                 ));
             } else {
                 return response()->json(['message' => 'Unhandled transaction status'], 400);

@@ -113,4 +113,9 @@ class User extends Authenticatable implements HasName, FilamentUser
     {
         return $this->role === 'admin';
     }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
 }
