@@ -931,7 +931,7 @@ class transactionController extends Controller
                     "Total: Rp {$total}\n" .
                     "Produk: {$productList}";
 
-                broadcast(new OrderCreated($sellerId, $message))->toOthers();
+                broadcast(new UserNotification($sellerId, $message))->toOthers();
                 broadcast(new UserNotification(
                     $userId,
                     'Pembayaran berhasil untuk pesanan #' . $transaction->id,
