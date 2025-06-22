@@ -26,6 +26,7 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 Route::put('/user', [userController::class, 'update'])->middleware('auth:sanctum');
+Route::post('/user/expo-token', [userController::class, 'storeExpoToken'])->middleware('auth:sanctum');
 
 //Authentication
 Route::post('/register', [AuthController::class, 'register']);

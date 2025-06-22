@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('coins')->default(0);
             $table->string('gauth_id')->nullable();
             $table->string('gauth_type')->nullable();
+            $table->string('expo_token')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

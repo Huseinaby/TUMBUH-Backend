@@ -45,4 +45,20 @@ class userController extends Controller
             'user' => $user,
         ]);
     }
+
+    public function storeExpoToken(Request $request)
+    {
+        $request->validate([
+            'expo_token' => 'required|string|max:255',
+        ]);
+
+        $user = Auth::user();
+        $user->expo_token = $request->expo_token;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Expo token stored successfully',
+            'user' => $user,
+        ]);
+    }
 }
