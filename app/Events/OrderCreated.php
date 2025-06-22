@@ -31,7 +31,7 @@ class OrderCreated implements ShouldBroadcast
 
     public function broadcastOn()
     {        
-        return new Channel('seller.' . $this->sellerId);
+        return new PrivateChannel('seller.' . $this->sellerId);
     }
 
     public function broadcastAs()
