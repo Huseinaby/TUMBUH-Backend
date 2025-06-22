@@ -34,7 +34,7 @@ class UserNotification implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new Channel('user.' . $this->userId);
+        return new PrivateChannel('user.' . $this->userId);
     }
 
     public function broadcastAs()
