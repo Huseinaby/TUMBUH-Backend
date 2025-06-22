@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Models\Notification;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -27,6 +28,14 @@ class UserNotification implements ShouldBroadcast
         $this->userId = $userId;
         $this->message = $message;
         $this->type = $type;
+
+        Notification::create([
+            'user_id' => $this->userId,
+            'message' => $this->message,
+            'type' => $this->type,
+            'read' => false, // Default to unread
+        ]);
+
 
         Log::info("Broadcasting notification to user {$this->userId} with message: {$this->message} and type: {$this->type}");
     }
