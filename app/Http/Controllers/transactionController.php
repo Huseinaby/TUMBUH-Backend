@@ -360,7 +360,7 @@ class transactionController extends Controller
             broadcast(new UserNotification(
                 $user->id,
                 'Pesanan baru telah dibuat. Segera selesaikan pembayaran sebelum batas waktu',
-                'info'
+                'order_created'
             ));
 
             return response()->json([
@@ -622,7 +622,7 @@ class transactionController extends Controller
             broadcast(new UserNotification(
                 $user->id,
                 'Pesanan baru telah dibuat. Segera selesaikan pembayaran sebelum batas waktu',
-                'info'
+                'order_created'
             ));
 
             return response()->json([
@@ -931,11 +931,11 @@ class transactionController extends Controller
                     "Total: Rp {$total}\n" .
                     "Produk: {$productList}";
 
-                broadcast(new UserNotification($sellerId, $message))->toOthers();
+                broadcast(new UserNotification($sellerId, $message, 'new_order'))->toOthers();
                 broadcast(new UserNotification(
                     $userId,
                     'Pembayaran berhasil untuk pesanan #' . $transaction->id,
-                    'success'
+                    'payment_success'
                 ));
 
             } elseif ($status === 'expire') {
@@ -943,14 +943,14 @@ class transactionController extends Controller
                 broadcast(new UserNotification(
                     $transaction->user_id,
                     'Pembayaran untuk pesanan #' . $transaction->id . ' telah kadaluarsa',
-                    'warning'
+                    'payment_expired'
                 ));
             } elseif (in_array($status, ['cancel', 'deny'])) {
                 $transaction->update(['status' => 'cancelled']);
                 broadcast(new UserNotification(
                     $transaction->user_id,
                     'Pembayaran untuk pesanan #' . $transaction->id . ' telah dibatalkan',
-                    'error'
+                    'payment_cancelled'
                 ));
             } else {
                 return response()->json(['message' => 'Unhandled transaction status'], 400);
