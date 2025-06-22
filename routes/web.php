@@ -9,7 +9,7 @@ Route::get('/', function () {
 });
 
 Route::get('/broadcast', function () {
-    $userId = 1; // Example seller ID
+    $userId = 4; // Example seller ID
     $message = 'New order received!';
 
     // Dispatch the event
