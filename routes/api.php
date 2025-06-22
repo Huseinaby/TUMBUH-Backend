@@ -6,6 +6,7 @@ use App\Http\Controllers\cartController;
 use App\Http\Controllers\checkoutController;
 use App\Http\Controllers\locationController;
 use App\Http\Controllers\modulController;
+use App\Http\Controllers\notificationController;
 use App\Http\Controllers\productController;
 use App\Http\Controllers\quizController;
 use App\Http\Controllers\reviewController;
@@ -154,6 +155,10 @@ Route::put('/address/{id}', [userAddressController::class, 'update']);
 //shipping
 Route::get('/shipping/destination', [ShippingController::class, 'searchDestination']);
 Route::post('/shipping/cost', [ShippingController::class, 'cost']);
+
+//notification
+Route::get('/notification', [notificationController::class, 'getUserNotifications']);
+Route::put('/notification/{id}/read', [notificationController::class, 'markAsRead']);
 
 //test generate quiz
 Route::post('/quiz/generate', [QuizController::class, 'generateQuiz']);
