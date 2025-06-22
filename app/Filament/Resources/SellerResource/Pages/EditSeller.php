@@ -6,6 +6,7 @@ use App\Filament\Resources\SellerResource;
 use App\Models\User;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use App\Events\UserNotification;
 
 class EditSeller extends EditRecord
 {
@@ -24,8 +25,18 @@ class EditSeller extends EditRecord
 
         if($this->record->status == 'approved') {
             $user->update(['role' => 'seller']);
+            broadcast(new UserNotification(
+                $this->record->user_id,
+                'Permina Anda sebagai penjual telah disetujui.',
+                'success'
+            ))->toOthers();
         } else if($this->record->status == 'rejected') {
             $user->update(['role' => 'user']);
+            broadcast(new UserNotification(
+                $this->record->user_id,
+                'Permohonan Anda sebagai penjual telah ditolak.',
+                'error'
+            ))->toOthers();
         }   
     }
 }
