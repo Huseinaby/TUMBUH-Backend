@@ -19,6 +19,7 @@ use App\Http\Controllers\withdrawController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Broadcast;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -156,6 +157,9 @@ Route::post('/shipping/cost', [ShippingController::class, 'cost']);
 
 //test generate quiz
 Route::post('/quiz/generate', [QuizController::class, 'generateQuiz']);
+
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
+
 
 //Test Email
 Route::get('/test-email', function () {
