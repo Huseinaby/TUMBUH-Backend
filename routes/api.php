@@ -138,6 +138,7 @@ Route::post('/seller/status', [sellerController::class, 'verifySeller']);
 Route::get('/seller', [sellerController::class, 'getSeller']);
 Route::put('/seller', [sellerController::class, 'update']);
 Route::delete('/seller', [sellerController::class, 'destroy']);
+Route::get('/seller/weeklySales', [sellerController::class, 'getWeeklySales']);
 
 //location
 Route::get('/location/province', [locationController::class, 'getProvince']);
