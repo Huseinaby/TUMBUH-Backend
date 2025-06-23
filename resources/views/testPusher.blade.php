@@ -30,7 +30,7 @@
     });
 
     // Tangkap event user.notification
-    channel.bind('user.notification', (data) => {
+    channel.bind('.user.notification', (data) => {
         console.log('🔔 Notification received:', data);
       const li = document.createElement('li');
       li.textContent = `${data.type}: ${data.message}`;
