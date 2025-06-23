@@ -81,7 +81,6 @@ class SellerResource extends Resource
                     ->image()
                     ->openable()
                     ->downloadable()
-                    ->required() // Added required validation
                     ->maxSize(2048) // 2MB
                     ->disk('public')
                     ->directory('store_banners')

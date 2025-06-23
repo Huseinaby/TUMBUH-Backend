@@ -3,7 +3,6 @@
 use App\Http\Controllers\articleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\cartController;
-use App\Http\Controllers\checkoutController;
 use App\Http\Controllers\locationController;
 use App\Http\Controllers\modulController;
 use App\Http\Controllers\notificationController;
