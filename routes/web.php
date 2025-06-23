@@ -18,10 +18,13 @@ Route::get('/broadcast', function () {
     return 'Event broadcasted successfully!';
 });
 
-
 Route::get('/test-pusher/{sellerId}', function ($sellerId) {
     broadcast(new OrderCreated($sellerId, 'Notifikasi test dari backend'))->toOthers();
     return 'Broadcast sent';
+});
+
+Route::get('/test-pusher', function () {
+    return view('testPusher');
 });
 
 
