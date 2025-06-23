@@ -164,8 +164,6 @@ Route::put('/notification/{id}/read', [notificationController::class, 'markAsRea
 //test generate quiz
 Route::post('/quiz/generate', [QuizController::class, 'generateQuiz']);
 
-Broadcast::routes(['middleware' => ['auth:sanctum']]);
-
 
 //Test Email
 Route::get('/test-email', function () {
