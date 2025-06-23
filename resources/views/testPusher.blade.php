@@ -22,7 +22,7 @@
     });
 
     // Subscribe ke private channel (prefix private- otomatis ditambahkan oleh pusher-js)
-    const channel = pusher.subscribe('private-user.4');
+    const channel = pusher.subscribe('user.4');
 
     // Cek apakah berhasil subscribe
     channel.bind('pusher:subscription_succeeded', () => {
