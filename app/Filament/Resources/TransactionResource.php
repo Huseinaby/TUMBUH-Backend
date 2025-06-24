@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TransactionResource\Pages;
 use App\Filament\Resources\TransactionResource\RelationManagers;
-use App\Models\Transaction;
+use App\Models\transaction;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -35,7 +35,7 @@ class TransactionResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('id')->sortable(),
-                TextColumn::make('user.username')->label('User'),
+                TextColumn::make('user.username')->label('User'),   
                 TextColumn::make('seller_names')
                     ->label('Seller')
                     ->getStateUsing(fn ($record) => $record->orderItems
