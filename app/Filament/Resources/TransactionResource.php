@@ -45,7 +45,7 @@ class TransactionResource extends Resource
                     ),            
                 TextColumn::make('status')->badge(),                
                 TextColumn::make('total_price')->money('IDR'),
-                TextColumn::make('created_at')->label('tanggal')->dateTime()
+                TextColumn::make('created_at')->label('tanggal')->dateTime()->sortable(),
             ])
             ->filters([
                 //
