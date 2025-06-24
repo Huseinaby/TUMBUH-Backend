@@ -36,13 +36,7 @@ class TransactionResource extends Resource
             ->columns([
                 TextColumn::make('id')->sortable(),
                 TextColumn::make('user.username')->label('User'),   
-                TextColumn::make('seller_names')
-                    ->label('Seller')
-                    ->getStateUsing(fn ($record) => $record->orderItems
-                        ->map(fn($item) => $item->product->user->username)
-                        ->unique()
-                        ->implode(', ')
-                    ),            
+                TextColumn::make('orderItems.product.user.username')->label('Seller'),
                 TextColumn::make('status')->badge(),                
                 TextColumn::make('total_price')->money('IDR'),
                 TextColumn::make('created_at')->label('tanggal')->dateTime()->sortable(),
