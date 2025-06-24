@@ -48,7 +48,9 @@ class TransactionResource extends Resource
             ->actions([
                 DeleteAction::make()
                     ->requiresConfirmation()
-                        $
+                    ->action(function (transaction $record) {
+                        $record->delete();
+                    })->icon('heroicon-o-trash'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
