@@ -84,6 +84,7 @@ class ProductResource extends Resource
                         FileUpload::make('image_path')
                             ->label('Gambar')
                             ->image()
+                            ->openable()
                             ->disk('public')
                             ->directory('products')
                             ->preserveFilenames()
