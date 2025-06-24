@@ -21,7 +21,7 @@ class TransactionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
     protected static ?string $label = 'Daftar Transaksi';
-protected static ?string $navigationLabel = 'Transaksi';
+    protected static ?string $navigationLabel = 'Transaksi';
     protected static ?string $navigationGroup = 'Marketplace';
 
     public static function form(Form $form): Form
@@ -36,9 +36,9 @@ protected static ?string $navigationLabel = 'Transaksi';
         return $table
             ->columns([
                 TextColumn::make('id')->sortable(),
-                TextColumn::make('user.username')->label('User'),   
+                TextColumn::make('user.username')->label('User'),
                 TextColumn::make('orderItems.product.user.username')->label('Seller'),
-                TextColumn::make('status')->badge(),                
+                TextColumn::make('status')->badge(),
                 TextColumn::make('total_price')->money('IDR'),
                 TextColumn::make('created_at')->label('tanggal')->dateTime()->sortable(),
             ])
