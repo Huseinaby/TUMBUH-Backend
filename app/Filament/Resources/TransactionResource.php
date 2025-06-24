@@ -35,8 +35,15 @@ class TransactionResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('id')->sortable(),
-                TextColumn::make('user.username')->label('user'),
-                TextColumn::make('status')->badge(),
+                TextColumn::make('user.username')->label('User'),
+                TextColumn::make('seller_names')
+                    ->label('Seller')
+                    ->getStateUsing(fn ($record) => $record->orderItems
+                        ->map(fn($item) => $item->product->user->username)
+                        ->unique()
+                        ->implode(', ')
+                    ),            
+                TextColumn::make('status')->badge(),                
                 TextColumn::make('total_price')->money('IDR'),
                 TextColumn::make('created_at')->label('tanggal')->dateTime()
             ])
@@ -68,4 +75,11 @@ class TransactionResource extends Resource
             'edit' => Pages\EditTransaction::route('/{record}/edit'),
         ];
     }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['orderItems.product.user']);
+    }
+
 }
