@@ -52,7 +52,7 @@ class transactionController extends Controller
     {
         $user = Auth::user();
 
-        $transactions = transaction::with('seller', 'orderItems.product')
+        $transactions = transaction::with('seller', 'orderItems.product.images')
             ->where('user_id', $user->id)
             ->get();
 
