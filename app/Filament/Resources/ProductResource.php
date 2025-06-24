@@ -81,7 +81,7 @@ class ProductResource extends Resource
                     ->label('Gambar Produk')
                     ->relationship()
                     ->schema([
-                        FileUpload::make('image')
+                        FileUpload::make('image_path')
                             ->label('Gambar')
                             ->image()
                             ->disk('public')
