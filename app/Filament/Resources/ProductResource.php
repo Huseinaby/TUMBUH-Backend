@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -52,11 +53,12 @@ class ProductResource extends Resource
                     ->searchable()
                     ->preload()
                     ->placeholder('Pilih kategori produk'),
-                TextInput::make('description')
+                Textarea::make('description')
                     ->label('Deskripsi Produk')
                     ->required()
-                    ->maxLength(500)
-                    ->columnSpanFull(),
+                    ->maxLength(500)                
+                    ->columnSpanFull()
+                    ->rows(5),
                 TextInput::make('price')
                     ->label('Harga')
                     ->required()
