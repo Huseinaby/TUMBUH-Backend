@@ -46,7 +46,9 @@ class TransactionResource extends Resource
                 //
             ])
             ->actions([
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->requiresConfirmation()
+                        $
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
