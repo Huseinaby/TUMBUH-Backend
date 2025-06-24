@@ -87,6 +87,7 @@ class ProductResource extends Resource
                             ->label('Gambar')
                             ->image()
                             ->openable()
+                            ->required()
                             ->disk('public')
                             ->directory('products')
                             ->preserveFilenames()
@@ -145,7 +146,7 @@ class ProductResource extends Resource
                     ->requiresConfirmation()
                     ->action(function (Product $record) {
                         $record->delete();
-                        return redirect()->route('filament.resources.products.index');
+                        return redirect(ProductResource::getUrl('index'));
                     })->icon('heroicon-o-trash'),
             ])
             ->bulkActions([
