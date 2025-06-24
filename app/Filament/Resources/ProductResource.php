@@ -47,7 +47,7 @@ class ProductResource extends Resource
                     ->maxLength(100),
                 Select::make('product_category_id')
                     ->label('Kategori Produk')
-                    ->relationship('category', 'name')
+                    ->relationship('productCategories', 'name')
                     ->required()
                     ->searchable()
                     ->preload()
@@ -114,7 +114,7 @@ class ProductResource extends Resource
                     ->label('Penjual')
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('category.name')
+                TextColumn::make('productCategories.name')
                     ->label('Kategori')
                     ->sortable()
                     ->searchable(),
