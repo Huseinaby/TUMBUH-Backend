@@ -89,8 +89,7 @@ class ProductResource extends Resource
                             ->openable()
                             ->required()
                             ->disk('public')
-                            ->directory('products')
-                            ->preserveFilenames()
+                            ->directory('products')                        
                             ->maxSize(1024)
                             ->columnSpanFull(),
                     ])

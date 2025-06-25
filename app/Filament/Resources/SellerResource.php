@@ -74,8 +74,7 @@ class SellerResource extends Resource
                     ->required()
                     ->maxSize(1024) // 1MB
                     ->disk('public')
-                    ->directory('store_logos')
-                    ->preserveFilenames(),
+                    ->directory('store_logos'),                
                 FileUpload::make('store_banner')
                     ->label('Banner Toko')
                     ->image()
@@ -83,8 +82,7 @@ class SellerResource extends Resource
                     ->downloadable()
                     ->maxSize(2048) // 2MB
                     ->disk('public')
-                    ->directory('store_banners')
-                    ->preserveFilenames(),
+                    ->directory('store_banners'),
                 TextInput::make('bank_name')
                     ->label('Nama Bank')
                     ->maxLength(50)
@@ -109,8 +107,7 @@ class SellerResource extends Resource
                     ->required()
                     ->maxSize(2048) // 2MB
                     ->disk('public')
-                    ->directory('ktp_photos')
-                    ->preserveFilenames(),
+                    ->directory('ktp_photos'),
                 Select::make('status')
                     ->label('Status')
                     ->options([
