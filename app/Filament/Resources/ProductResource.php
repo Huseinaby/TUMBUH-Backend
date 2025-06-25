@@ -56,7 +56,6 @@ class ProductResource extends Resource
                 Textarea::make('description')
                     ->label('Deskripsi Produk')
                     ->required()
-                    ->maxLength(500)                
                     ->columnSpanFull()
                     ->rows(5),
                 TextInput::make('price')
