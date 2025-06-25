@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ModulResource\Pages;
 use App\Filament\Resources\ModulResource\RelationManagers;
-use App\Models\Modul;
+use App\Models\modul;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Get;
