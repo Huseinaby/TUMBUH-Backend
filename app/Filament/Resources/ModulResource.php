@@ -62,22 +62,22 @@ class ModulResource extends Resource
                     ->relationship()
                     ->schema([
                         TextInput::make('url')
-                        ->label('URL Gambar dari Google')
-                        ->live(onBlur: true) // <-- Membuat form bereaksi saat input ini berubah
-                        ->required()
-                        ->url(),            
+                            ->label('URL Gambar dari Google')
+                            ->live(onBlur: true) // <-- Membuat form bereaksi saat input ini berubah
+                            ->required()
+                            ->url(),
                         Placeholder::make('image_preview')
-                        ->label('Preview Gambar')
-                        ->visible(fn (Get $get): bool => filled($get('url')))
-                        ->content(function (Get $get): ?HtmlString {
-                            $url = $get('url');
-                            if (! $url) {
-                                return null;
-                            }
+                            ->label('Preview Gambar')
+                            ->visible(fn(Get $get): bool => filled($get('url')))
+                            ->content(function (Get $get): ?HtmlString {
+                                $url = $get('url');
+                                if (!$url) {
+                                    return null;
+                                }
 
-                            // Kita membuat tag <img> secara langsung di sini
-                            return new HtmlString('<img src="' . e($url) . '" style="max-height: 250px; width: auto; margin-top: 10px;" class="rounded-lg border" />');
-                        }),
+                                // Kita membuat tag <img> secara langsung di sini
+                                return new HtmlString('<img src="' . e($url) . '" style="max-height: 250px; width: auto; margin-top: 10px;" class="rounded-lg border" />');
+                            }),
                     ])
                     ->maxItems(5)
                     ->minItems(1)
@@ -116,6 +116,12 @@ class ModulResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->requiresConfirmation()
+                    ->action(function (modul $record) {
+                        $record->delete();
+                        return redirect(ModulResource::getUrl('index'));
+                    })->icon('heroicon-o-trash'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
