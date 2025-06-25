@@ -357,12 +357,6 @@ class transactionController extends Controller
 
             DB::commit();
 
-            broadcast(new UserNotification(
-                $user->id,
-                'Pesanan baru telah dibuat. Segera selesaikan pembayaran sebelum batas waktu',
-                'success'
-            ));
-
             return response()->json([
                 'message' => 'Transactions created successfully',
                 'transactions' => $transactions,
@@ -618,12 +612,6 @@ class transactionController extends Controller
             ]);
 
             DB::commit();
-
-            broadcast(new UserNotification(
-                $user->id,
-                'Pesanan baru telah dibuat. Segera selesaikan pembayaran sebelum batas waktu',
-                'success'
-            ));
 
             return response()->json([
                 'message' => 'Transaction created successfully',
@@ -931,27 +919,13 @@ class transactionController extends Controller
                     "Total: Rp {$total}\n" .
                     "Produk: {$productList}";
 
-                broadcast(new UserNotification($sellerId, $message, 'new_order'))->toOthers();
-                broadcast(new UserNotification(
-                    $userId,
-                    'Pembayaran berhasil untuk pesanan #' . $transaction->id,
-                    'success'
-                ));
 
             } elseif ($status === 'expire') {
                 $transaction->update(['status' => 'expired']);
-                broadcast(new UserNotification(
-                    $transaction->user_id,
-                    'Pembayaran untuk pesanan #' . $transaction->id . ' telah kadaluarsa',
-                    'warning'
-                ));
+
             } elseif (in_array($status, ['cancel', 'deny'])) {
                 $transaction->update(['status' => 'cancelled']);
-                broadcast(new UserNotification(
-                    $transaction->user_id,
-                    'Pembayaran untuk pesanan #' . $transaction->id . ' telah dibatalkan',
-                    'error'
-                ));
+
             } else {
                 return response()->json(['message' => 'Unhandled transaction status'], 400);
             }
@@ -974,11 +948,11 @@ class transactionController extends Controller
         $invoiceId = $request->query('order_id');
         $statusCode = $request->query('status_code');
         $transactionStatus = $request->query('transaction_status');
-    
+
         $transaction = transaction::with('orderItems.product')
             ->where('midtrans_order_id', $invoiceId)
             ->first();
-    
+
         if (!$transaction) {
             return response()->json([
                 'message' => 'Transaction not found',
@@ -987,49 +961,49 @@ class transactionController extends Controller
         }
 
         $date = now()->format('Y-m-d H:i:s');
-    
-        
+
+
         if ($transactionStatus === 'settlement' && $transaction->status !== 'paid') {
             $transaction->status = 'paid';
-            $transaction->paid_at = now(); 
+            $transaction->paid_at = now();
             $transaction->save();
         } elseif (in_array($transactionStatus, ['expire', 'cancel', 'deny'])) {
             $transaction->status = 'failed';
             $transaction->save();
         }
-    
+
         return redirect()->away("tumbuh://checkout/payment/result?order_id={$invoiceId}&status={$transactionStatus}&amount={$transaction->total_price}&date={$date}");
     }
-    
+
 
 
     public function paymentError(Request $request)
-{
-    $invoiceId = $request->query('order_id');
-    $transactionStatus = $request->query('transaction_status'); 
+    {
+        $invoiceId = $request->query('order_id');
+        $transactionStatus = $request->query('transaction_status');
 
-    $transaction = transaction::with('orderItems.product')
-        ->where('midtrans_order_id', $invoiceId)
-        ->first();
+        $transaction = transaction::with('orderItems.product')
+            ->where('midtrans_order_id', $invoiceId)
+            ->first();
 
-    if (!$transaction) {
-        return response()->json([
-            'message' => 'Transaction not found',
-            'order_id' => $invoiceId,
-        ], 404);
+        if (!$transaction) {
+            return response()->json([
+                'message' => 'Transaction not found',
+                'order_id' => $invoiceId,
+            ], 404);
+        }
+
+        $status = $transaction->status;
+        $statusMessage = match ($status) {
+            'pending' => 'Transaksi belum dibayar.',
+            'failed' => 'Transaksi gagal atau dibatalkan.',
+            'expired' => 'Transaksi kadaluarsa.',
+            'cancelled' => 'Transaksi dibatalkan.',
+            default => 'Status transaksi: ' . $status,
+        };
+
+        return redirect()->away("tumbuh://checkout/payment/result?order_id={$invoiceId}&status={$status}&message=" . urlencode($statusMessage));
     }
-
-    $status = $transaction->status;
-    $statusMessage = match ($status) {
-        'pending' => 'Transaksi belum dibayar.',
-        'failed' => 'Transaksi gagal atau dibatalkan.',
-        'expired' => 'Transaksi kadaluarsa.',
-        'cancelled' => 'Transaksi dibatalkan.',
-        default => 'Status transaksi: ' . $status,
-    };
-
-    return redirect()->away("tumbuh://checkout/payment/result?order_id={$invoiceId}&status={$status}&message=" . urlencode($statusMessage));
-}
 
 
     public function inputResi(Request $request, $id)

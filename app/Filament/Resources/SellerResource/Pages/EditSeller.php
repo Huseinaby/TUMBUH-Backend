@@ -23,20 +23,5 @@ class EditSeller extends EditRecord
     {
         $user = User::where('id', $this->record->user_id);
 
-        if($this->record->status == 'approved') {
-            $user->update(['role' => 'seller']);
-            broadcast(new UserNotification(
-                $this->record->user_id,
-                'Permina Anda sebagai penjual telah disetujui.',
-                'success'
-            ))->toOthers();
-        } else if($this->record->status == 'rejected') {
-            $user->update(['role' => 'user']);
-            broadcast(new UserNotification(
-                $this->record->user_id,
-                'Permohonan Anda sebagai penjual telah ditolak.',
-                'error'
-            ))->toOthers();
-        }   
     }
 }
