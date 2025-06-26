@@ -276,7 +276,7 @@ class transactionController extends Controller
                 $finalPrice = $shipping['grand_total'];
 
                 // Simpan transaksi
-                $transaction = Transaction::create([
+                $transaction = transaction::create([
                     'user_id' => $user->id,
                     'seller_id' => $sellerId,
                     'total_price' => $finalPrice,
@@ -547,7 +547,7 @@ class transactionController extends Controller
 
         try {
             // 🔃 Simpan transaksi
-            $transaction = Transaction::create([
+            $transaction = transaction::create([
                 'user_id' => $user->id,
                 'seller_id' => $seller->id,
                 'total_price' => $finalPrice,
@@ -838,7 +838,7 @@ class transactionController extends Controller
 
     public function show($id)
     {
-        $transaction = Transaction::with('user', 'orderItems.product')
+        $transaction = transaction::with('user', 'orderItems.product')
             ->where('user_id', Auth::id())
             ->findOrFail($id);
 
