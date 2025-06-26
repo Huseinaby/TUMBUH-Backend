@@ -275,12 +275,14 @@ class sellerController extends Controller
         ]);
     }
 
-    public function getWeeklySales(Request $request)
+    public function getDashboard(Request $request)
     {
         $seller = Auth::user();
 
         $startDate = Carbon::now()->startOfWeek();
         $endDate = Carbon::now()->endOfWeek();
+
+        $saldo = $seller->saldo;
 
         $sales = orderItem::query()
             ->selectRaw('DATE(transactions.created_at) as date, SUM(order_items.quantity) as total')
