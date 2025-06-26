@@ -13,7 +13,20 @@ class NotificationService
     {
         $token = $user->fcm_token;
 
-        if (!$token) return false;
+        if (!$token)
+            return false;
+
+
+        // Simpan ke database
+        Notification::create([
+            'user_id' => $user->id,
+            'title' => $title,
+            'body' => $body,
+            'type' => $type,
+            'data' => json_encode($data),
+            'is_read' => false,
+        ]);
+
 
         // Kirim ke Expo
         $response = Http::post($this->expoUrl, [
@@ -25,15 +38,6 @@ class NotificationService
             'data' => $data,
         ]);
 
-        // Simpan ke database
-        Notification::create([
-            'user_id' => $user->id,
-            'title' => $title,
-            'body' => $body,
-            'type' => $type,
-            'data' => json_encode($data),
-            'is_read' => false,
-        ]);
 
         return $response->successful();
     }
