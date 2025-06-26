@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('bank_account_holder_name')->nullable();
             $table->string('nomor_induk_kependudukan', 16)->nullable();
             $table->string('foto_ktp')->nullable();
+            $table->integer('saldo')->default(0);
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });

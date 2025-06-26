@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->string('type')->after('body');
+        Schema::table('seller_details', function (Blueprint $table) {
+            $table->integer('saldo')->default(0)->after('foto_ktp');
         });
     }
 
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('notifications', function (Blueprint $table) {
+        Schema::table('seller_detail', function (Blueprint $table) {
             //
         });
     }
