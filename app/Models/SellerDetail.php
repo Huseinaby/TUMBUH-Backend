@@ -23,6 +23,7 @@ class SellerDetail extends Model
         'bank_account_holder_name',
         'nomor_induk_kependudukan',
         'foto_ktp',
+        'saldo',
         'status',
     ];
 

@@ -1138,9 +1138,7 @@ class transactionController extends Controller
 
             foreach ($transaction->orderItems as $item) {
                 $seller = $item->product->user;
-                $subtotal = $item->price * $item->quantity;
-
-                dd($seller, $subtotal);
+                $subtotal = $item->price * $item->quantity;    
 
                 // Tambahkan ke saldo seller_detail
                 $sellerDetail = $seller->sellerDetail;
