@@ -27,7 +27,7 @@ class notificationController extends Controller
                     'type' => $notif->type,
                     'read' => (bool) $notif->read,
                     'created_at' => $notif->created_at->toISOString(),
-                    'data' => $notif->data,
+                    'data' => json_decode($notif->data, true), 
                 ];
             });
 
