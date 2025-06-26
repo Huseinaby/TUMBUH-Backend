@@ -6,7 +6,8 @@ use App\Filament\Resources\SellerResource;
 use App\Models\User;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
-use App\Events\UserNotification;
+use App\Services\NotificationService;
+
 
 class EditSeller extends EditRecord
 {
@@ -21,7 +22,20 @@ class EditSeller extends EditRecord
 
     protected function afterSave(): void
     {
-        $user = User::where('id', $this->record->user_id);
+        if ($this->record->status === 'accepted') {
+            $user = User::find($this->record->user_id);
 
+            if ($user) {
+                app(NotificationService::class)->sendToUser(
+                    $user,
+                    'Akun Penjual Telah Diverifikasi',
+                    'Selamat! Akun penjual Anda telah diverifikasi dan Anda dapat mulai berjualan.',
+                    'success',
+                    [
+                        'screen' => 'dashboard', // atau ke halaman khusus penjual
+                    ]
+                );
+            }
+        }
     }
 }
