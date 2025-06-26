@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
             $table->text('body');
+            $table->string('type');
             $table->json('data');
             $table->integer('badge')->nullable();
             $table->boolean('read')->default(false);

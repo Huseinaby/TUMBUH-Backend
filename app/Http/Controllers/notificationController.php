@@ -22,7 +22,8 @@ class notificationController extends Controller
             ->map(function ($notif) {
                 return [
                     'id' => $notif->id,
-                    'title' => $notif->title,                
+                    'title' => $notif->title,
+                    'body' => $notif->body,                
                     'type' => $notif->type,
                     'read' => (bool) $notif->read,
                     'created_at' => $notif->created_at->toISOString(),
