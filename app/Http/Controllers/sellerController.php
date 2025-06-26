@@ -311,6 +311,7 @@ class sellerController extends Controller
 
         return response()->json([
             'seller_id' => $seller->id,
+            'saldo' => $saldo,
             'sales' => $weeklySales,
         ]);
     }
