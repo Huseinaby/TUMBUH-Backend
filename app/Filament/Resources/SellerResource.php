@@ -145,6 +145,8 @@ class SellerResource extends Resource
                     ->copyMessage('Email telah disalin ke clipboard')
                     ->copyMessageDuration(1500)
                     ->searchable(),
+                TextColumn::make('saldo')
+                    ->label('saldo'),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
