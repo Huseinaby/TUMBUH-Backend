@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Log;
 use Xendit\Configuration;
 use Xendit\Invoice\InvoiceApi;
 use Xendit\Invoice\CreateInvoiceRequest;
+use App\Services\NotificationService;
 use Midtrans\Config;
 use Midtrans\Snap;
 
@@ -57,7 +58,7 @@ class transactionController extends Controller
             ->where('user_id', $user->id)
             ->get();
 
-        if(!$transactions) {
+        if (!$transactions) {
             return response()->json(['message' => 'Transaction Not Found']);
         }
 
@@ -350,6 +351,18 @@ class transactionController extends Controller
                     'midtrans_order_id' => $orderId,
                 ]);
 
+                app(NotificationService::class)->sendToUser(
+                    $user,
+                    'Transaksi Berhasil Dibuat',
+                    'Silakan selesaikan pembayaran sebesar Rp' . number_format($finalPrice, 0, ',', '.'),
+                    'success',
+                    [
+                        'transaction_id' => $transaction->id,
+                        'amount' => $finalPrice,
+                        'screen' => 'invoice',
+                    ]
+                );
+
                 // hapus shipping cache user setelah transaksi
                 $this->clearUserShippingCost($sellerId, $user->id);
 
@@ -615,6 +628,21 @@ class transactionController extends Controller
                 'invoice_url' => $snapUrl,
                 'midtrans_order_id' => $orderId,
             ]);
+
+            // Kirim notifikasi ke pembeli
+            app(NotificationService::class)->sendToUser(
+                $user,
+                'Transaksi Berhasil Dibuat',
+                'Silakan selesaikan pembayaran sebesar Rp' . number_format($finalPrice, 0, ',', '.'),
+                'success',
+                [
+
+                    'transaction_id' => $transaction->id,
+                    'amount' => $finalPrice,
+                    'screen' => 'invoice',
+                ]
+            );
+
 
             DB::commit();
 
@@ -907,6 +935,43 @@ class transactionController extends Controller
                     $product->decrement('stock', $item->quantity);
                 }
 
+                $notificationService = new NotificationService();
+
+                // Notifikasi ke pembeli
+                $notificationService->sendToUser(
+                    $transaction->user,
+                    'Pembayaran Berhasil',
+                    'Terima kasih, pembayaranmu telah berhasil.',
+                    'success',
+                    [
+                        'transaction_id' => $transaction->id,
+                    ]
+                );
+
+                // Notifikasi ke seller (bisa ada lebih dari satu seller)
+                $notifiedSellerIds = [];
+                foreach ($transaction->orderItems as $item) {
+                    $product = $item->product;
+                    $product->decrement('stock', $item->quantity);
+
+                    $seller = $product->seller;
+
+                    // Hindari mengirim notifikasi dua kali ke seller yang sama
+                    if ($seller && !in_array($seller->id, $notifiedSellerIds)) {
+                        $notificationService->sendToUser(
+                            $seller,
+                            'Produk Terjual!',
+                            "Salah satu produkmu baru saja terjual.",
+                            'success',
+                            [
+                                'transaction_id' => $transaction->id,
+                                'product_id' => $product->id,
+                            ]
+                        );
+                        $notifiedSellerIds[] = $seller->id;
+                    }
+                }
+
                 $transaction->update([
                     'status' => 'paid',
                     'paid_at' => now(),
@@ -1138,7 +1203,7 @@ class transactionController extends Controller
 
             foreach ($transaction->orderItems as $item) {
                 $seller = $item->product->user;
-                $subtotal = $item->price * $item->quantity;    
+                $subtotal = $item->price * $item->quantity;
 
                 // Tambahkan ke saldo seller_detail
                 $sellerDetail = $seller->sellerDetail;
