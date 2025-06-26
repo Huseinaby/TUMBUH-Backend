@@ -17,29 +17,29 @@ class notificationController extends Controller
         }
 
         $notifications = Notification::where('user_id', $user->id)
-        ->orderBy('created_at', 'desc')
-        ->get()
-        ->map(function ($notif) {
-            return [
-                'id' => $notif->id,
-                'title' => $notif->title,
-                'message' => $notif->message,
-                'type' => $notif->type,
-                'read' => (bool) $notif->read,
-                'created_at' => $notif->created_at->toISOString(),
-                'data' => $notif->data,      // Pastikan `data` bertipe JSON di DB dan model
-                'sender' => $notif->sender   // Juga harus JSON
-            ];
-        });
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($notif) {
+                return [
+                    'id' => $notif->id,
+                    'title' => $notif->title,
+                    'message' => $notif->message,
+                    'type' => $notif->type,
+                    'read' => (bool) $notif->read,
+                    'created_at' => $notif->created_at->toISOString(),
+                    'data' => $notif->data,      // Pastikan `data` bertipe JSON di DB dan model
+                    'sender' => $notif->sender   // Juga harus JSON
+                ];
+            });
 
-    return response()->json($notifications);
+        return response()->json($notifications);
     }
 
     public function store(Request $request)
     {
         $user = Auth::user();
 
-        if(!$user) {
+        if (!$user) {
             return response()->json(['message' => 'User Not Found'], 404);
         }
 
@@ -47,7 +47,7 @@ class notificationController extends Controller
             'title' => 'required|string',
             'body' => 'required|string',
             'data' => 'nullable|array',
-            'badge' => 'nullable|integer',  
+            'badge' => 'nullable|integer',
         ]);
 
         $validateData['user_id'] = $user->id;
