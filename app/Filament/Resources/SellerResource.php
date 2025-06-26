@@ -49,7 +49,7 @@ class SellerResource extends Resource
                     ->placeholder('Pilih user'),
                 TextInput::make('saldo')
                     ->label('saldo')
-                    ->nullable(),                
+                    ->nullable(),
                 TextInput::make('store_name')
                     ->label('Nama Toko')
                     ->required()
@@ -78,7 +78,7 @@ class SellerResource extends Resource
                     ->required()
                     ->maxSize(1024) // 1MB
                     ->disk('public')
-                    ->directory('store_logos'),                
+                    ->directory('store_logos'),
                 FileUpload::make('store_banner')
                     ->label('Banner Toko')
                     ->image()
@@ -146,7 +146,9 @@ class SellerResource extends Resource
                     ->copyMessageDuration(1500)
                     ->searchable(),
                 TextColumn::make('saldo')
-                    ->label('saldo'),
+                    ->label('saldo')
+                    ->sortable()
+                    ->money('idr', true),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
