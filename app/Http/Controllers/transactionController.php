@@ -1146,7 +1146,7 @@ class transactionController extends Controller
                 // Buat histori wallet
                 WalletHistory::create([
                     'user_id' => $seller->id,
-                    'type' => 'credit',
+                    'type' => 'income',
                     'amount' => $subtotal,
                     'description' => 'Penerimaan dari transaksi #' . $transaction->id,
                 ]);
