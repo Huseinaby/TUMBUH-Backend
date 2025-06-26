@@ -47,6 +47,9 @@ class SellerResource extends Resource
                     ->preload()
                     ->columnSpan(2)
                     ->placeholder('Pilih user'),
+                TextInput::make('saldo')
+                    ->label('saldo')
+                    ->nullable(),                
                 TextInput::make('store_name')
                     ->label('Nama Toko')
                     ->required()
