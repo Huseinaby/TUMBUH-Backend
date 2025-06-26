@@ -1117,28 +1117,32 @@ class transactionController extends Controller
             ->where('id', $id)
             ->where('user_id', Auth::id())
             ->firstOrFail();
-    
+
         if ($transaction->confirmed_received_at) {
             return response()->json([
                 'message' => 'Transaction already confirmed received',
             ], 400);
         }
-    
+
         DB::beginTransaction();
-    
+
         try {
             $transaction->update([
                 'status' => 'completed',
                 'confirmed_received_at' => now(),
             ]);
-    
+
             foreach ($transaction->orderItems as $item) {
                 $seller = $item->product->user;
                 $subtotal = $item->price * $item->quantity;
-    
-                // Tambahkan ke saldo
-                SellerDetail::update('saldo' => $subtotal);
-    
+
+                // Tambahkan ke saldo seller_detail
+                $sellerDetail = $seller->sellerDetail;
+
+                if ($sellerDetail) {
+                    $sellerDetail->increment('saldo', $subtotal);
+                }
+
                 // Buat histori wallet
                 WalletHistory::create([
                     'user_id' => $seller->id,
@@ -1147,23 +1151,23 @@ class transactionController extends Controller
                     'description' => 'Penerimaan dari transaksi #' . $transaction->id,
                 ]);
             }
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'message' => 'Transaction confirmed received successfully',
                 'transaction' => $transaction,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-    
+
             return response()->json([
                 'message' => 'Failed to confirm transaction',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
-    
+
 
     public function cancelTransaction(Request $request, $id)
     {
