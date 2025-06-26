@@ -27,8 +27,7 @@ class notificationController extends Controller
                     'type' => $notif->type,
                     'read' => (bool) $notif->read,
                     'created_at' => $notif->created_at->toISOString(),
-                    'data' => $notif->data,      // Pastikan `data` bertipe JSON di DB dan model
-                    'sender' => $notif->sender   // Juga harus JSON
+                    'data' => $notif->data,
                 ];
             });
 
