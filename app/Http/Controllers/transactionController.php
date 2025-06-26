@@ -1137,7 +1137,7 @@ class transactionController extends Controller
                 $subtotal = $item->price * $item->quantity;
     
                 // Tambahkan ke saldo
-                $seller->increment('saldo', $subtotal);
+                SellerDetail::update('saldo' => $subtotal);
     
                 // Buat histori wallet
                 WalletHistory::create([
