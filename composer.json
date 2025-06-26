@@ -9,7 +9,7 @@
         "filament/filament": "^3.3",
         "google/apiclient": "^2.18",
         "guzzlehttp/guzzle": "^7.9",
-        "kreait/laravel-firebase": "*",
+        "kreait/laravel-firebase": "^6.1",
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.20",

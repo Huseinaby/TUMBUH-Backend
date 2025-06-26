@@ -30,6 +30,7 @@ class User extends Authenticatable implements HasName, FilamentUser
         'gauth_id',
         'gauth_type',
         'photo',
+        'fcm_token'
     ];
 
     /**

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class userController extends Controller
 {
@@ -15,6 +16,9 @@ class userController extends Controller
         ]);
 
         $user = Auth::user();
+        if(!$user) {
+            
+        }
         $user->update($request->only('username'));
 
         if ($request->hasFile('photo')) {
@@ -46,18 +50,18 @@ class userController extends Controller
         ]);
     }
 
-    public function storeExpoToken(Request $request)
+    public function storeFcmToken(Request $request)
     {
         $request->validate([
-            'expo_token' => 'required|string|max:255',
+            'fcm_token' => 'required|string|max:255',
         ]);
 
         $user = Auth::user();
-        $user->expo_token = $request->expo_token;
+        $user->fcm_token = $request->fcm_token;
         $user->save();
 
         return response()->json([
-            'message' => 'Expo token stored successfully',
+            'message' => 'FCM token stored successfully',
             'user' => $user,
         ]);
     }
