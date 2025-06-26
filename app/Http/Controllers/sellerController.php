@@ -283,7 +283,7 @@ class sellerController extends Controller
         $endDate = Carbon::now()->endOfWeek();
 
         $sales = orderItem::query()
-            ->selectRaw('DATE(transactions.created_at) as date, SUM(order_items.quantity * order_items.price) as total')
+            ->selectRaw('DATE(transactions.created_at) as date, SUM(order_items.quantity) as total')
             ->join('products', 'order_items.product_id', '=', 'products.id')
             ->join('transactions', 'order_items.transaction_id', '=', 'transactions.id')
             ->where('products.user_id', $seller->id)
@@ -312,5 +312,6 @@ class sellerController extends Controller
             'sales' => $weeklySales,
         ]);
     }
+
 
 }

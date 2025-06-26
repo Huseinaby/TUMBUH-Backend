@@ -73,14 +73,14 @@ class userController extends Controller
     {
         $user = User::findOrFail($userId);
 
-        if(!$user) {
+        if (!$user) {
             return response()->json([
                 'message' => "User Not Found"
             ], 400);
         }
 
-        if(!$user->fcm_token) {
-            return response()->json(['message' => 'FCM Token Not Found' ], 400);
+        if (!$user->fcm_token) {
+            return response()->json(['message' => 'FCM Token Not Found'], 400);
         }
 
         $firebase = new FirebaseNotificationService();
