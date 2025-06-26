@@ -282,7 +282,7 @@ class sellerController extends Controller
         $startDate = Carbon::now()->startOfWeek();
         $endDate = Carbon::now()->endOfWeek();
 
-        $saldo = $seller->saldo;
+        $saldo = $seller->sellerDetail->saldo;
 
         $sales = orderItem::query()
             ->selectRaw('DATE(transactions.created_at) as date, SUM(order_items.quantity) as total')
