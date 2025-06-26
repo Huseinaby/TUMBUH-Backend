@@ -1113,7 +1113,7 @@ class transactionController extends Controller
 
     public function confirmRecieved($id)
     {
-        $transaction = Transaction::with('orderItems.product')
+        $transaction = transaction::with('orderItems.product')
             ->where('id', $id)
             ->where('user_id', Auth::id())
             ->firstOrFail();
