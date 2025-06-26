@@ -95,7 +95,7 @@ class User extends Authenticatable implements HasName, FilamentUser
     {
         return $this->hasOne(SellerDetail::class);
     }
-    
+
     public function userAddress()
     {
         return $this->hasMany(UserAddress::class);
@@ -118,5 +118,10 @@ class User extends Authenticatable implements HasName, FilamentUser
     public function notifications()
     {
         return $this->hasMany(Notification::class);
+    }
+
+    public function walletHistory()
+    {
+        return $this->hasMany(WalletHistory::class);
     }
 }

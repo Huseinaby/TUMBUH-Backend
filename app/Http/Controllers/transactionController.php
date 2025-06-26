@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\OrderCreated;
 use App\Events\UserNotification;
 use App\Models\transaction;
+use App\Models\WalletHistory;
 use Illuminate\Http\Request;
 use App\Models\cartItem;
 use App\Models\orderItem;
@@ -907,18 +908,6 @@ class transactionController extends Controller
                     'paid_at' => now(),
                 ]);
 
-                $sellerId = $transaction->seller_id;
-                $userId = $transaction->user_id;
-                $buyerName = $transaction->user->name;
-                $total = number_format($transaction->total_price, 0, ',', '.');
-                $productList = $transaction->orderItems->map(function ($item) {
-                    return $item->product->name . ' (x' . $item->quantity . ')';
-                })->implode(', ');
-
-                $message = "Pesanan dari {$buyerName} telah dibayar.\n" .
-                    "Total: Rp {$total}\n" .
-                    "Produk: {$productList}";
-
 
             } elseif ($status === 'expire') {
                 $transaction->update(['status' => 'expired']);
@@ -1124,28 +1113,57 @@ class transactionController extends Controller
 
     public function confirmRecieved($id)
     {
-        $transaction = transaction::with('orderItems.product')
+        $transaction = Transaction::with('orderItems.product')
             ->where('id', $id)
             ->where('user_id', Auth::id())
             ->firstOrFail();
-
-
+    
         if ($transaction->confirmed_received_at) {
             return response()->json([
                 'message' => 'Transaction already confirmed received',
             ], 400);
         }
-
-        $transaction->update([
-            'status' => 'completed',
-            'confirmed_received_at' => now(),
-        ]);
-
-        return response()->json([
-            'message' => 'Transaction confirmed received successfully',
-            'transaction' => $transaction,
-        ]);
+    
+        DB::beginTransaction();
+    
+        try {
+            $transaction->update([
+                'status' => 'completed',
+                'confirmed_received_at' => now(),
+            ]);
+    
+            foreach ($transaction->orderItems as $item) {
+                $seller = $item->product->user;
+                $subtotal = $item->price * $item->quantity;
+    
+                // Tambahkan ke saldo
+                $seller->increment('saldo', $subtotal);
+    
+                // Buat histori wallet
+                WalletHistory::create([
+                    'user_id' => $seller->id,
+                    'type' => 'credit',
+                    'amount' => $subtotal,
+                    'description' => 'Penerimaan dari transaksi #' . $transaction->id,
+                ]);
+            }
+    
+            DB::commit();
+    
+            return response()->json([
+                'message' => 'Transaction confirmed received successfully',
+                'transaction' => $transaction,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+    
+            return response()->json([
+                'message' => 'Failed to confirm transaction',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
+    
 
     public function cancelTransaction(Request $request, $id)
     {
