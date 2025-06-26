@@ -16,13 +16,23 @@ class notificationController extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        $notification = Notification::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $notifications = Notification::where('user_id', $user->id)
+        ->orderBy('created_at', 'desc')
+        ->get()
+        ->map(function ($notif) {
+            return [
+                'id' => $notif->id,
+                'title' => $notif->title,
+                'message' => $notif->message,
+                'type' => $notif->type,
+                'read' => (bool) $notif->read,
+                'created_at' => $notif->created_at->toISOString(),
+                'data' => $notif->data,      // Pastikan `data` bertipe JSON di DB dan model
+                'sender' => $notif->sender   // Juga harus JSON
+            ];
+        });
 
-        return response()->json([
-            'notifications' => $notification,
-        ], 200);
+    return response()->json($notifications);
     }
 
     public function store(Request $request)
