@@ -282,15 +282,13 @@ class sellerController extends Controller
         $startDate = Carbon::now()->startOfWeek();
         $endDate = Carbon::now()->endOfWeek();
 
-        $sales = orderItem::with(['product', 'transaction'])
-            ->whereHas('product', function ($query) use ($seller) {
-                $query->where('user_id', $seller->id);
-            })
-            ->whereHas('transaction', function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('created_at', [$startDate, $endDate])
-                    ->where('status', 'paid');
-            })
-            ->selectRaw('DATE(created_at) as date, SUM(quantity) as total')
+        $sales = orderItem::query()
+            ->selectRaw('DATE(transactions.created_at) as date, SUM(order_items.quantity * order_items.price) as total')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('transactions', 'order_items.transaction_id', '=', 'transactions.id')
+            ->where('products.user_id', $seller->id)
+            ->whereBetween('transactions.created_at', [$startDate, $endDate])
+            ->where('transactions.status', 'paid')
             ->groupBy('date')
             ->orderBy('date')
             ->get()
@@ -298,9 +296,9 @@ class sellerController extends Controller
 
         $weeklySales = [];
 
-        for($date = $startDate->copy(); $date <= $endDate; $date->addDay()) {
+        for ($date = $startDate->copy(); $date <= $endDate; $date->addDay()) {
             $dateString = $date->toDateString();
-            $dayName = $date->format('l');
+            $dayName = $date->translatedFormat('D'); // Sen, Sel, Rab, dst.
 
             $weeklySales[] = [
                 'date' => $dateString,
@@ -310,8 +308,9 @@ class sellerController extends Controller
         }
 
         return response()->json([
-            'saller_id' => $seller->id,
+            'seller_id' => $seller->id,
             'sales' => $weeklySales,
         ]);
     }
+
 }
