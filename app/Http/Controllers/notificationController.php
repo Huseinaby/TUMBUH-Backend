@@ -44,6 +44,7 @@ class notificationController extends Controller
         $validateData = $request->validate([
             'title' => 'required|string',
             'body' => 'required|string',
+            'type' => 'required|string',
             'data' => 'nullable|array',
             'badge' => 'nullable|integer',
         ]);
