@@ -57,6 +57,10 @@ class transactionController extends Controller
             ->where('user_id', $user->id)
             ->get();
 
+        if(!$transactions) {
+            return response()->json(['message' => 'Transaction Not Found']);
+        }
+
         return response()->json([
             'transactions' => $transactions,
         ]);
@@ -1135,6 +1139,8 @@ class transactionController extends Controller
             foreach ($transaction->orderItems as $item) {
                 $seller = $item->product->user;
                 $subtotal = $item->price * $item->quantity;
+
+                dd($seller, $subtotal);
 
                 // Tambahkan ke saldo seller_detail
                 $sellerDetail = $seller->sellerDetail;
