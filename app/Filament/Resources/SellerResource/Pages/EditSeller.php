@@ -22,7 +22,7 @@ class EditSeller extends EditRecord
 
     protected function afterSave(): void
     {
-        if ($this->record->status === 'accepted') {
+        if ($this->record->status === 'approved') {
             $user = User::find($this->record->user_id);
 
             if ($user) {
