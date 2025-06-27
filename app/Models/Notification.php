@@ -8,9 +8,6 @@ class Notification extends Model
 {
     protected $guarded = ['id'];
 
-    protected $casts = [
-        'data' => 'array',
-    ];
 
     public function user()
     {
