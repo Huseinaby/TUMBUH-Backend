@@ -23,11 +23,11 @@ class notificationController extends Controller
                 return [
                     'id' => $notif->id,
                     'title' => $notif->title,
-                    'body' => $notif->body,                
+                    'body' => $notif->body,
                     'type' => $notif->type,
                     'read' => (bool) $notif->read,
                     'created_at' => $notif->created_at->toISOString(),
-                    'data' => json_decode($notif->data, true), 
+                    'data' => json_decode($notif->data, true),
                 ];
             });
 
@@ -82,5 +82,19 @@ class notificationController extends Controller
         return response()->json([
             'notification' => $notification,
         ], 200);
+    }
+
+    public function show($id)
+    {
+        $notification = Notification::findOrFail($id);
+
+        if (!$notification) {
+            return response()->json(['message' => 'Notification Not Found'], 404);
+        }
+
+        return response()->json([
+            'message' => 'Notification Found',
+            'notification' => $notification,
+        ]);
     }
 }
