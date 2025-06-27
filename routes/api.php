@@ -129,7 +129,7 @@ Route::put('/review/update/{id}', [reviewController::class, 'updateReview']);
 Route::delete('/review/delete/{id}', [reviewController::class, 'deleteReview']);
 
 //withdraw
-Route::get('/withdraw', [withdrawController::class, 'listWithdraw']);
+Route::get('/wigthdraw', [withdrawController::class, 'listWithdraw']);
 Route::post('/wihdraw/request', [withdrawController::class, 'requestWithdraw']);
 Route::post('/withdraw/{id}/handle', [withdrawController::class, 'handleWithdraw']);
 
@@ -141,7 +141,7 @@ Route::get('/seller', [sellerController::class, 'getSeller']);
 Route::put('/seller', [sellerController::class, 'update']);
 Route::delete('/seller', [sellerController::class, 'destroy']);
 Route::get('/seller/dashboard', [sellerController::class, 'getDashboard']);
-Route::get('/seller/saldoHistory', [wallateHistoryController::class, 'getByUser']);
+Route::get('/seller/saldo-history', [wallateHistoryController::class, 'getByUser']);
 
 //location
 Route::get('/location/province', [locationController::class, 'getProvince']);
