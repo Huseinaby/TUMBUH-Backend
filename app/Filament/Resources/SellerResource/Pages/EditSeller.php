@@ -36,6 +36,21 @@ class EditSeller extends EditRecord
                     ]
                 );
             }
+        } elseif ($this->record->status === 'rejected') {
+            $user = User::find($this->record->user_id);
+
+            if ($user) {
+                app(NotificationService::class)->sendToUser(
+                    $user,
+                    'Akun Penjual Ditolak',
+                    'Maaf, pengajuan akun penjual Anda ditolak. Silakan periksa kembali data Anda atau hubungi admin untuk informasi lebih lanjut.',
+                    'error',
+                    [
+                        'screen' => 'seller-application', // atau ke halaman pengajuan ulang
+                    ]
+
+                );
+            }
         }
     }
 }

@@ -86,8 +86,18 @@ class notificationController extends Controller
 
     public function show($id)
     {
-        $notification = Notification::findOrFail($id);
+        $notif = Notification::findOrFail($id);
 
+        $notification = [
+            'id' => $notif->id,
+            'title' => $notif->title,
+            'body' => $notif->body,
+            'type' => $notif->type,
+            'read' => (bool) $notif->read,
+            'created_at' => $notif->created_at->toISOString(),
+            'data' => json_decode($notif->data, true),
+        ];
+        
         if (!$notification) {
             return response()->json(['message' => 'Notification Not Found'], 404);
         }

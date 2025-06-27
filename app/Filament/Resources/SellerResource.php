@@ -49,6 +49,7 @@ class SellerResource extends Resource
                     ->placeholder('Pilih user'),
                 TextInput::make('saldo')
                     ->label('saldo')
+                    ->disabled()                
                     ->nullable(),
                 TextInput::make('store_name')
                     ->label('Nama Toko')
