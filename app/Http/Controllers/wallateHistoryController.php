@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SellerDetail;
 use App\Models\WalletHistory;
 use Illuminate\Http\Request;
 
@@ -17,8 +18,11 @@ class wallateHistoryController extends Controller
             return response()->json(['message' => 'History Not Found'], 404);
         }
 
+        $saldo = SellerDetail::where('user_id', $userId)->value('saldo');
+
         return response()->json([
             'message' => 'History Found',
+            'saldo' => $saldo,
             'history' => $history
         ], 200);
     }
