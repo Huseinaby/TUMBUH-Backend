@@ -23,7 +23,7 @@ class NotificationService
             'title' => $title,
             'body' => $body,
             'type' => $type,
-            'data' => $data,
+            'data' => json_encode($data),
             'is_read' => false,
         ]);
 
