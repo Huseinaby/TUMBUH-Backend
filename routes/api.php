@@ -141,7 +141,7 @@ Route::get('/seller', [sellerController::class, 'getSeller']);
 Route::put('/seller', [sellerController::class, 'update']);
 Route::delete('/seller', [sellerController::class, 'destroy']);
 Route::get('/seller/dashboard', [sellerController::class, 'getDashboard']);
-Route::get('/seller/saldo-history', [wallateHistoryController::class, 'getByUser']);
+Route::get('/seller/saldo-history/{userId}', [wallateHistoryController::class, 'getByUser']);
 
 //location
 Route::get('/location/province', [locationController::class, 'getProvince']);
