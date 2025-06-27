@@ -15,6 +15,7 @@ use App\Http\Controllers\transactionController;
 use App\Http\Controllers\userAddressController;
 use App\Http\Controllers\userController;
 use App\Http\Controllers\videoController;
+use App\Http\Controllers\wallateHistoryController;
 use App\Http\Controllers\withdrawController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -140,6 +141,7 @@ Route::get('/seller', [sellerController::class, 'getSeller']);
 Route::put('/seller', [sellerController::class, 'update']);
 Route::delete('/seller', [sellerController::class, 'destroy']);
 Route::get('/seller/dashboard', [sellerController::class, 'getDashboard']);
+Route::get('/seller/saldoHistory', [wallateHistoryController::class, 'getByUser']);
 
 //location
 Route::get('/location/province', [locationController::class, 'getProvince']);
