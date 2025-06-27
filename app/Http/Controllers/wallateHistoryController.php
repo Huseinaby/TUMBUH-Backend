@@ -10,7 +10,8 @@ class wallateHistoryController extends Controller
     public function getByUser($userId)
     {
         $history = WalletHistory::where('user_id', $userId)
-            ->orderBy('created_at', 'desc');
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         if(!$history) {
             return response()->json(['message' => 'History Not Found'], 404);
