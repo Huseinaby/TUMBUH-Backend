@@ -142,11 +142,10 @@ class locationController extends Controller
         ], 500);
     }
 
-    public function getOriginByKecamatan()
+    public function getOriginByKecamatan(RajaOngkirService $rajaOngkirService)
     {
         $keyword = request()->input('search', '');
-        $baseUrl = config('services.rajaongkir.base_url', 'https://rajaongkir.komerce.id/api/v1');
- 
+
         if (!$keyword) {
             return response()->json([
                 'status' => 'error',
@@ -154,24 +153,20 @@ class locationController extends Controller
             ], 400);
         }
 
-        $response = Http::withHeaders([
-            'key' => config('services.rajaongkir.api_key'),
-        ])->get("{$baseUrl}/destination/domestic-destination", [
-            'search' => $keyword,
-            'limit' => 10,
-            'offset' => 0,
-        ]);
+        try {
+            $results = $rajaOngkirService->searchDestination($keyword, 10, 0);
 
-        if($response->successful()){
             return response()->json([
                 'status' => 'success',
-                'data' => $response->json()['data'],
+                'data' => $results['data'] ?? [],
             ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve origin data.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Failed to retrieve origin data.',
-        ], 500);
     }
+
 }
