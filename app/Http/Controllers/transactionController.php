@@ -716,11 +716,21 @@ class transactionController extends Controller
                 ], 502);
             }
 
+            // Konversi semua nominal harga ke satuan cent (misal: 12000 → 1200000)
+            $convertedServices = collect($cost['data'])->map(function ($service) {
+                return [
+                    ...$service,
+                    'shipping_cost' => round($service['shipping_cost'] * 100),
+                    'cashback' => isset($service['cashback']) ? round($service['cashback'] * 100) : 0,
+                    'insurance_fee' => isset($service['insurance_fee']) ? round($service['insurance_fee'] * 100) : 0,
+                    // Tambahkan kolom nominal lain jika perlu
+                ];
+            });
+
             return response()->json([
                 'seller_id' => $request->seller_id,
-                'available_services' => $cost['data'],
+                'available_services' => $convertedServices,
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to retrieve shipping cost.',
@@ -728,6 +738,7 @@ class transactionController extends Controller
             ], 500);
         }
     }
+
 
 
 
