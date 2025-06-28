@@ -6,6 +6,7 @@ use App\Models\kabupaten;
 use App\Models\kecamatan;
 use App\Models\Province;
 use Illuminate\Http\Request;
+use App\Services\RajaOngkirService;
 use Illuminate\Support\Facades\Http;
 
 class locationController extends Controller
@@ -142,7 +143,7 @@ class locationController extends Controller
         ], 500);
     }
 
-    public function getOriginByKecamatan(RajaOngkirService $rajaOngkirService)
+    public function getOriginByKecamatan()
     {
         $keyword = request()->input('search', '');
 
@@ -152,6 +153,8 @@ class locationController extends Controller
                 'message' => 'Search keyword is required.',
             ], 400);
         }
+
+        $rajaOngkirService = app(RajaOngkirService::class);
 
         try {
             $results = $rajaOngkirService->searchDestination($keyword, 10, 0);
