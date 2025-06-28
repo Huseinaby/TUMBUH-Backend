@@ -672,77 +672,90 @@ class transactionController extends Controller
 
 
     public function getCourierCost(Request $request)
-{
-    $request->validate([
-        'seller_id' => 'required|exists:users,id',
-        'user_id' => 'required|exists:users,id',
-        'weight' => 'required|integer|min:1',
-        'product_total' => 'required|integer'
-    ]);
-
-    $userAddress = UserAddress::where('user_id', $request->user_id)
-        ->where('is_default', true)
-        ->first();
-
-    $sellerAddress = UserAddress::where('user_id', $request->seller_id)
-        ->where('is_default', true)
-        ->first();
-
-    if (!$userAddress || !$sellerAddress) {
-        return response()->json([
-            'message' => 'Default address not found for user or seller',
-        ], 404);
-    }
-
-    $originId = $sellerAddress->origin_id;
-    $destinationId = $userAddress->origin_id;
-    $weight = $request->weight;
-    $productTotal = $request->product_total;
-
-    $rajaOngkirService = app(RajaOngkirService::class);
-
-    try {
-        $cost = $rajaOngkirService->calculateDomesticCost(
-            $originId,
-            $destinationId,
-            $weight,
-            $productTotal,
-            'no'
-        );
-
-        if (!isset($cost['data']) || !is_array($cost['data'])) {
-            return response()->json([
-                'message' => 'No shipping options available.',
-            ], 502);
-        }
-
-        // Map dan bulatkan nilai tertentu
-        $formattedServices = collect($cost['data'])->map(function ($service) {
-            return [
-                'service' => $service['service'] ?? null,
-                'description' => $service['description'] ?? null,
-                'shipping_cost' => isset($service['shipping_cost']) ? round($service['shipping_cost']) : null,
-                'cashback' => isset($service['cashback']) ? round($service['cashback']) : null,
-                // tambahkan field lain sesuai kebutuhan
-            ];
-        });
-
-        return response()->json([
-            'seller_id' => $request->seller_id,
-            'available_services' => $formattedServices,
+    {
+        $request->validate([
+            'seller_id' => 'required|exists:users,id',
+            'user_id' => 'required|exists:users,id',
+            'weight' => 'required|integer|min:1',
+            'product_total' => 'required|integer'
         ]);
 
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => 'Failed to retrieve shipping cost.',
-            'error' => $e->getMessage(),
-        ], 500);
+        $userAddress = UserAddress::where('user_id', $request->user_id)
+            ->where('is_default', true)
+            ->first();
+
+        $sellerAddress = UserAddress::where('user_id', $request->seller_id)
+            ->where('is_default', true)
+            ->first();
+
+        if (!$userAddress || !$sellerAddress) {
+            return response()->json([
+                'message' => 'Default address not found for user or seller',
+            ], 404);
+        }
+
+        $originId = $sellerAddress->origin_id;
+        $destinationId = $userAddress->origin_id;
+        $weight = $request->weight;
+        $productTotal = $request->product_total;
+
+        $rajaOngkirService = app(RajaOngkirService::class);
+
+        try {
+            $cost = $rajaOngkirService->calculateDomesticCost(
+                $originId,
+                $destinationId,
+                $weight,
+                $productTotal,
+                'no'
+            );
+
+            if (!isset($cost['data']) || !is_array($cost['data'])) {
+                return response()->json([
+                    'message' => 'No shipping options available.',
+                ], 502);
+            }
+
+            // Gunakan map untuk iterasi setiap kategori (calculate_reguler, dll)
+            $formattedServices = collect($cost['data'])->map(function ($servicesInCategory) {
+
+                // Jika kategori kosong (misal: calculate_instant), kembalikan array kosong
+                if (empty($servicesInCategory)) {
+                    return [];
+                }
+
+                // Gunakan map lagi untuk memformat setiap service di dalam kategori
+                return collect($servicesInCategory)->map(function ($service) {
+                    // Asumsi nilai biaya dalam 'sen' atau unit terkecil, bagi 100 untuk mendapatkan Rupiah.
+                    // Jika nilai sudah dalam Rupiah, hapus pembagian dengan 100.
+                    return [
+                        'shipping_name' => $service['shipping_name'] ?? null,
+                        'service_name' => $service['service_name'] ?? null,
+                        'weight' => $service['weight'] ?? 0,
+                        'is_cod' => $service['is_cod'] ?? false,
+                        'shipping_cost' => isset($service['shipping_cost']) ? round($service['shipping_cost'] / 100) : 0,
+                        'shipping_cashback' => isset($service['shipping_cashback']) ? round($service['shipping_cashback'] / 100) : 0,
+                        'shipping_cost_net' => isset($service['shipping_cost_net']) ? round($service['shipping_cost_net'] / 100) : 0,
+                        'grandtotal' => isset($service['grandtotal']) ? round($service['grandtotal'] / 100) : 0,
+                        'service_fee' => isset($service['service_fee']) ? round($service['service_fee'] / 100) : 0,
+                        'net_income' => isset($service['net_income']) ? round($service['net_income'] / 100) : 0,
+                        'etd' => $service['etd'] ?? '-',
+                    ];
+                });
+            });
+
+            return response()->json([
+                'seller_id' => (int) $request->seller_id,
+                'available_services' => $formattedServices,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve shipping cost.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
-}
-
-
-
-
 
     public function clearUserShippingCost($sellerId, $UserId)
     {
