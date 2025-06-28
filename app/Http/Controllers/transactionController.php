@@ -716,37 +716,9 @@ class transactionController extends Controller
                 ], 502);
             }
 
-            $allServices = [];
-
-            foreach ($cost['data'] as $courierEntry) {
-                $courierCode = $courierEntry['code'] ?? 'unknown';
-                $courierName = $courierEntry['name'] ?? 'Unknown Courier';
-
-                $services = collect($courierEntry['costs'] ?? [])->map(function ($service) use ($courierCode, $courierName) {
-                    if (strtolower($service['service']) === 'cod') {
-                        return null; // Skip COD service
-                    }
-
-                    return [
-                        'name' => $courierName,
-                        'code' => $courierCode,
-                        'service' => $service['service'],
-                        'description' => $service['description'] ?? null,
-                        'cost' => $service['cost'][0]['value'] ?? 0,
-                        'etd' => $service['cost'][0]['etd'] ?? null,
-                    ];
-                })->filter()->values();
-
-                if ($services->isNotEmpty()) {
-                    $allServices[$courierCode] = $services;
-                }
-            }
-
             return response()->json([
                 'seller_id' => $request->seller_id,
-                'cached' => false,
-                'available_couriers' => $allServices,
-                'cost' => $cost
+                'available_services' => $cost['data'],
             ]);
 
         } catch (\Exception $e) {
@@ -756,6 +728,7 @@ class transactionController extends Controller
             ], 500);
         }
     }
+
 
 
 
