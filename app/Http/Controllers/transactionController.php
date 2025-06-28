@@ -671,8 +671,6 @@ class transactionController extends Controller
 
 
 
-    use App\Services\KomerceShippingService;
-
     public function getCourierCost(Request $request)
     {
         $request->validate([
@@ -701,19 +699,26 @@ class transactionController extends Controller
         $weight = $request->weight;
         $productTotal = $request->product_total;
 
+        $rajaOngkirService = app(RajaOngkirService::class);
+
         try {
-            $shippingService = app(KomerceShippingService::class);
-            $results = $shippingService->getShippingCosts([
-                'origin_id' => $originId,
-                'destination_id' => $destinationId,
-                'weight' => $weight,
-                'item_value' => $productTotal * 100, // convert to cent
-                'is_cod' => false
-            ]);
+            $cost = $rajaOngkirService->calculateDomesticCost(
+                $originId,
+                $destinationId,
+                $weight,
+                $productTotal *,
+                'no'
+            );
+
+            if (!isset($cost['data']) || !is_array($cost['data'])) {
+                return response()->json([
+                    'message' => 'No shipping options available.',
+                ], 502);
+            }
 
             return response()->json([
                 'seller_id' => $request->seller_id,
-                'available_services' => $results,
+                'available_services' => $cost['data'],
             ]);
 
         } catch (\Exception $e) {
@@ -723,7 +728,6 @@ class transactionController extends Controller
             ], 500);
         }
     }
-
 
 
 
