@@ -672,72 +672,73 @@ class transactionController extends Controller
 
 
     public function getCourierCost(Request $request)
-    {
-        $request->validate([
-            'seller_id' => 'required|exists:users,id',
-            'user_id' => 'required|exists:users,id',
-            'weight' => 'required|integer|min:1',
-            'product_total' => 'required|integer'
+{
+    $request->validate([
+        'seller_id' => 'required|exists:users,id',
+        'user_id' => 'required|exists:users,id',
+        'weight' => 'required|integer|min:1',
+        'product_total' => 'required|integer'
+    ]);
+
+    $userAddress = UserAddress::where('user_id', $request->user_id)
+        ->where('is_default', true)
+        ->first();
+
+    $sellerAddress = UserAddress::where('user_id', $request->seller_id)
+        ->where('is_default', true)
+        ->first();
+
+    if (!$userAddress || !$sellerAddress) {
+        return response()->json([
+            'message' => 'Default address not found for user or seller',
+        ], 404);
+    }
+
+    $originId = $sellerAddress->origin_id;
+    $destinationId = $userAddress->origin_id;
+    $weight = $request->weight;
+    $productTotal = $request->product_total;
+
+    $rajaOngkirService = app(RajaOngkirService::class);
+
+    try {
+        $cost = $rajaOngkirService->calculateDomesticCost(
+            $originId,
+            $destinationId,
+            $weight,
+            $productTotal,
+            'no'
+        );
+
+        if (!isset($cost['data']) || !is_array($cost['data'])) {
+            return response()->json([
+                'message' => 'No shipping options available.',
+            ], 502);
+        }
+
+        // Map dan bulatkan nilai tertentu
+        $formattedServices = collect($cost['data'])->map(function ($service) {
+            return [
+                'service' => $service['service'] ?? null,
+                'description' => $service['description'] ?? null,
+                'shipping_cost' => isset($service['shipping_cost']) ? round($service['shipping_cost']) : null,
+                'cashback' => isset($service['cashback']) ? round($service['cashback']) : null,
+                // tambahkan field lain sesuai kebutuhan
+            ];
+        });
+
+        return response()->json([
+            'seller_id' => $request->seller_id,
+            'available_services' => $formattedServices,
         ]);
 
-        $userAddress = UserAddress::where('user_id', $request->user_id)
-            ->where('is_default', true)
-            ->first();
-
-        $sellerAddress = UserAddress::where('user_id', $request->seller_id)
-            ->where('is_default', true)
-            ->first();
-
-        if (!$userAddress || !$sellerAddress) {
-            return response()->json([
-                'message' => 'Default address not found for user or seller',
-            ], 404);
-        }
-
-        $originId = $sellerAddress->origin_id;
-        $destinationId = $userAddress->origin_id;
-        $weight = $request->weight;
-        $productTotal = $request->product_total;
-
-        $rajaOngkirService = app(RajaOngkirService::class);
-
-        try {
-            $cost = $rajaOngkirService->calculateDomesticCost(
-                $originId,
-                $destinationId,
-                $weight,
-                $productTotal,
-                'no'
-            );
-
-            if (!isset($cost['data']) || !is_array($cost['data'])) {
-                return response()->json([
-                    'message' => 'No shipping options available.',
-                ], 502);
-            }
-
-            // Konversi semua nominal harga ke satuan cent (misal: 12000 → 1200000)
-            $convertedServices = collect($cost['data'])->map(function ($service) {
-                return [
-                    ...$service,
-                    'shipping_cost' => round($service['shipping_cost'] * 100),
-                    'cashback' => isset($service['cashback']) ? round($service['cashback'] * 100) : 0,
-                    'insurance_fee' => isset($service['insurance_fee']) ? round($service['insurance_fee'] * 100) : 0,
-                    // Tambahkan kolom nominal lain jika perlu
-                ];
-            });
-
-            return response()->json([
-                'seller_id' => $request->seller_id,
-                'available_services' => $convertedServices,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to retrieve shipping cost.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Failed to retrieve shipping cost.',
+            'error' => $e->getMessage(),
+        ], 500);
     }
+}
 
 
 
