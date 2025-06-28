@@ -677,6 +677,7 @@ class transactionController extends Controller
             'seller_id' => 'required|exists:users,id',
             'user_id' => 'required|exists:users,id',
             'weight' => 'required|integer|min:1',
+            'product_total' => 'required|integer'
         ]);
 
         $userAddress = UserAddress::where('user_id', $request->user_id)
@@ -696,6 +697,7 @@ class transactionController extends Controller
         $originId = $sellerAddress->origin_id;
         $destinationId = $userAddress->origin_id;
         $weight = $request->weight;
+        $productTotal = $request->product_total;
 
         $rajaOngkirService = app(RajaOngkirService::class);
 
@@ -704,7 +706,7 @@ class transactionController extends Controller
                 $originId,
                 $destinationId,
                 $weight,
-                0,
+                $productTotal,
                 'no'
             );
 
