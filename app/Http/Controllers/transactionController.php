@@ -706,7 +706,7 @@ class transactionController extends Controller
                 $originId,
                 $destinationId,
                 $weight,
-                $productTotal *,
+                $productTotal * 100,
                 'no'
             );
 
