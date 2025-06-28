@@ -20,21 +20,21 @@ class RajaOngkirService
     public function searchDestination($search = '', $limit = 10, $offset = 0)
     {
         $client = new \GuzzleHttp\Client();
-
-        $response = $client->request('GET', "{$this->baseUrl}/destination", [
+    
+        $response = $client->request('GET', "{$this->baseUrl}/destination/search", [
             'query' => [
-                'search' => $search,
-                'limit' => $limit,
-                'offset' => $offset,
+                'keyword' => $search, // ✅ Ganti 'search' jadi 'keyword'
+                // 'limit' dan 'offset' tidak diperlukan jika tidak didukung oleh endpoint ini
             ],
             'headers' => [
                 'x-api-key' => $this->key,
                 'accept' => 'application/json',
             ],
         ]);
-
+    
         return json_decode($response->getBody(), true);
     }
+    
 
     /**
      * Hitung ongkir berdasarkan Komship (GET request dengan query).
