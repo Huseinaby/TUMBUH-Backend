@@ -746,6 +746,7 @@ class transactionController extends Controller
                 'seller_id' => $request->seller_id,
                 'cached' => false,
                 'available_couriers' => $allServices,
+                'cost' => $cost
             ]);
 
         } catch (\Exception $e) {
