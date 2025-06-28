@@ -11,21 +11,24 @@ class RajaOngkirService
     public function __construct()
     {
         $this->key = config('services.rajaongkir.api_key');
-        $this->baseUrl = config('services.rajaongkir.base_url');
+        $this->baseUrl = rtrim(config('services.rajaongkir.base_url'), '/');
     }
 
+    /**
+     * Search destinasi tujuan dari Komship.
+     */
     public function searchDestination($search = '', $limit = 10, $offset = 0)
     {
         $client = new \GuzzleHttp\Client();
 
-        $response = $client->request('GET', "{$this->baseUrl}/destination/domestic-destination", [
+        $response = $client->request('GET', "{$this->baseUrl}/destination", [
             'query' => [
                 'search' => $search,
                 'limit' => $limit,
-                'offset' => $offset
+                'offset' => $offset,
             ],
             'headers' => [
-                'key' => $this->key,
+                'x-api-key' => $this->key,
                 'accept' => 'application/json',
             ],
         ]);
@@ -33,27 +36,27 @@ class RajaOngkirService
         return json_decode($response->getBody(), true);
     }
 
-    public function calculateDomesticCost($origin, $destination, $weight, $courier = 'jne', $price = 'lowest')
+    /**
+     * Hitung ongkir berdasarkan Komship (GET request dengan query).
+     */
+    public function calculateDomesticCost($shipperId, $receiverId, $weight, $itemValue = 0, $cod = 'no')
     {
         $client = new \GuzzleHttp\Client();
-        $response = $client->request('POST', 'https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost', [
-            'form_params' => [
-                'origin' => (string) $origin,
-                'destination' => (string) $destination,
-                'weight' => (int) $weight,
-                'courier' => (string) $courier,
-                'price' => (string) $price
+
+        $response = $client->request('GET', "{$this->baseUrl}/calculate", [
+            'query' => [
+                'shipper_destination_id' => $shipperId,
+                'receiver_destination_id' => $receiverId,
+                'weight' => $weight,
+                'item_value' => $itemValue,
+                'cod' => $cod,
             ],
             'headers' => [
+                'x-api-key' => $this->key,
                 'accept' => 'application/json',
-                'key' => config('services.rajaongkir.api_key'),
-                // Hapus content-type karena form_params akan mengatur otomatis
             ],
         ]);
+
         return json_decode($response->getBody(), true);
     }
-
-
-
-
 }

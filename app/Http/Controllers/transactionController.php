@@ -697,85 +697,63 @@ class transactionController extends Controller
         $destinationId = $userAddress->origin_id;
         $weight = $request->weight;
 
-        $couriers = ['jne', 'jnt', 'sicepat'];
-        $allServices = [];
-        $cached = true;
+        $rajaOngkirService = app(RajaOngkirService::class);
 
-        foreach ($couriers as $courier) {
-            $existing = ShippingCostDetail::where([
-                'origin_id' => $originId,
-                'destination_id' => $destinationId,
-                'weight' => $weight,
-                'code' => $courier,
-            ])->get();
+        try {
+            $cost = $rajaOngkirService->calculateDomesticCost(
+                $originId,
+                $destinationId,
+                $weight,
+                0,
+                'no'
+            );
 
-            if ($existing->count() > 0) {
-                $allServices[$courier] = $existing->map(function ($item) {
+            if (!isset($cost['data']) || !is_array($cost['data'])) {
+                return response()->json([
+                    'message' => 'No shipping options available.',
+                ], 502);
+            }
+
+            $allServices = [];
+
+            foreach ($cost['data'] as $courierEntry) {
+                $courierCode = $courierEntry['code'] ?? 'unknown';
+                $courierName = $courierEntry['name'] ?? 'Unknown Courier';
+
+                $services = collect($courierEntry['costs'] ?? [])->map(function ($service) use ($courierCode, $courierName) {
+                    if (strtolower($service['service']) === 'cod') {
+                        return null; // Skip COD service
+                    }
+
                     return [
-                        'name' => $item->name,
-                        'code' => $item->code,
-                        'service' => $item->service,
-                        'description' => $item->description,
-                        'cost' => $item->cost,
-                        'etd' => $item->etd,
+                        'name' => $courierName,
+                        'code' => $courierCode,
+                        'service' => $service['service'],
+                        'description' => $service['description'] ?? null,
+                        'cost' => $service['cost'][0]['value'] ?? 0,
+                        'etd' => $service['cost'][0]['etd'] ?? null,
                     ];
-                });
-            } else {
-                $cached = false;
-                $rajaOngkirService = app(RajaOngkirService::class);
+                })->filter()->values();
 
-                try {
-                    $cost = $rajaOngkirService->calculateDomesticCost(
-                        $originId,
-                        $destinationId,
-                        $weight,
-                        $courier
-                    );
-
-                    if (!isset($cost['data']) || !is_array($cost['data'])) {
-                        continue;
-                    }
-
-                    $services = [];
-
-                    foreach ($cost['data'] as $entry) {
-                        $services[] = [
-                            'name' => $entry['name'],
-                            'code' => $courier,
-                            'service' => $entry['service'],
-                            'description' => $entry['description'] ?? null,
-                            'cost' => $entry['cost'],
-                            'etd' => $entry['etd'] ?? null,
-                        ];
-
-                        ShippingCostDetail::updateOrCreate([
-                            'origin_id' => $originId,
-                            'destination_id' => $destinationId,
-                            'weight' => $weight,
-                            'code' => $courier,
-                            'service' => $entry['service'],
-                        ], [
-                            'name' => $entry['name'],
-                            'description' => $entry['description'] ?? null,
-                            'cost' => $entry['cost'],
-                            'etd' => $entry['etd'] ?? null,
-                        ]);
-                    }
-
-                    $allServices[$courier] = $services;
-
-                } catch (\Exception $e) {
-                    continue;
+                if ($services->isNotEmpty()) {
+                    $allServices[$courierCode] = $services;
                 }
             }
-        }
 
-        return response()->json([
-            'seller_id' => $request->seller_id,
-            'cached' => $cached,
-            'available_couriers' => $allServices,
-        ]);
+            return response()->json([
+                'seller_id' => $request->seller_id,
+                'cached' => false,
+                'available_couriers' => $allServices,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve shipping cost.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
+
 
 
     public function clearUserShippingCost($sellerId, $UserId)
