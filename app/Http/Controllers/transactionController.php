@@ -394,6 +394,7 @@ class transactionController extends Controller
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
+            // Kita tetap gunakan 'nullable' untuk menangani kasus jika produk tidak butuh pengiriman
             'shipping_name' => 'nullable|string',
             'shipping_service' => 'nullable|string',
             'shipping_cost' => 'nullable|numeric',
@@ -425,7 +426,7 @@ class transactionController extends Controller
 
         $productTotal = $product->price * $quantity;
 
-        // Platform fee tiers
+        // Perhitungan Biaya Platform
         if ($productTotal < 40000) {
             $platformFee = 4500;
         } elseif ($productTotal < 100000) {
@@ -434,35 +435,12 @@ class transactionController extends Controller
             $platformFee = round($productTotal * 0.05);
         }
 
-        $shippingCost = null;
-        $shippingName = null;
-        $shippingService = null;
+        // Langsung ambil data ongkir dari request, dengan nilai default jika tidak ada
+        $shippingName = $request->input('shipping_name'); // Akan menjadi null jika tidak dikirim
+        $shippingService = $request->input('shipping_service');
+        $shippingCost = $request->input('shipping_cost', 0); // Default ke 0 jika tidak dikirim
 
-        // Jika dikirim dari frontend
-        if ($request->filled(['shipping_name', 'shipping_service', 'shipping_cost'])) {
-            $shippingName = $request->shipping_name;
-            $shippingService = $request->shipping_service;
-            $shippingCost = $request->shipping_cost;
-        }
-        // Jika hanya courier, hit API
-        elseif ($request->filled('courier')) {
-            $shipping = $this->getCost(
-                app(RajaOngkirService::class),
-                $origin,
-                $destination,
-                $product->weight * $quantity,
-                $request->courier
-            );
-
-            if (is_array($shipping)) {
-                $shippingCost = $shipping['cost'] ?? 0;
-            }
-
-            $shippingName = $request->courier;
-            $shippingService = $shipping['service'] ?? null;
-        }
-
-        $grandTotal = $productTotal + ($shippingCost ?? 0) + $platformFee;
+        $grandTotal = $productTotal + $shippingCost + $platformFee;
         $totalWeight = $product->weight * $quantity;
 
         return response()->json([
@@ -499,7 +477,7 @@ class transactionController extends Controller
             ],
             'user' => [
                 'id' => $user->id,
-                'name' => $user->name,
+                'name' => $user->name, // Mungkin maksudnya username? sesuaikan jika perlu
                 'email' => $user->email,
             ],
             'address' => [
@@ -521,9 +499,6 @@ class transactionController extends Controller
             ]
         ]);
     }
-
-
-
     public function buyNow(Request $request)
     {
         $request->validate([
