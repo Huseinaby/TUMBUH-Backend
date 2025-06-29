@@ -762,20 +762,6 @@ class transactionController extends Controller
         ]);
     }
 
-    public function getCost(RajaOngkirService $rajaOngkirService, $origin, $destination, $weight, $courier)
-    {
-        $cost = $rajaOngkirService->calculateDomesticCost($origin, $destination, $weight, $courier);
-
-        if (isset($cost['error'])) {
-            return response()->json([
-                'message' => 'Error calculating cost',
-                'error' => $cost['error'],
-            ], 400);
-        }
-
-        return $cost;
-    }
-
     public function getCartGroupedBySeller(array $cartIds)
     {
         $cartItems = cartItem::with(['product.user.sellerDetail', 'product.user.userAddress'])
