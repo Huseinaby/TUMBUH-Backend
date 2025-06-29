@@ -71,7 +71,7 @@ class transactionController extends Controller
     {
         $user = Auth::user();
 
-        $transactions = transaction::with('seller', 'orderItems.product')
+        $transactions = transaction::with('seller', 'orderItems.product.images')
             ->where('user_id', $user->id)
             ->where('status', 'paid')
             ->get();
@@ -91,7 +91,7 @@ class transactionController extends Controller
     {
         $user = Auth::user();
 
-        $transactions = transaction::with('seller', 'orderItems.product')
+        $transactions = transaction::with('seller', 'orderItems.product.images')
             ->where('user_id', $user->id)
             ->where('status', 'pending')
             ->get();
@@ -111,7 +111,7 @@ class transactionController extends Controller
     {
         $user = Auth::user();
 
-        $transactions = transaction::with('seller', 'orderItems.product')
+        $transactions = transaction::with('seller', 'orderItems.product.images')
             ->where('user_id', $user->id)
             ->where('status', 'completed')
             ->get();
@@ -131,7 +131,7 @@ class transactionController extends Controller
     {
         $user = Auth::user();
 
-        $transactions = transaction::with('user', 'orderItems.product')
+        $transactions = transaction::with('user', 'orderItems.product.images')
             ->where('seller_id', $user->id)
             ->get();
 
