@@ -8,11 +8,9 @@ class ProductImage extends Model
 {
     protected $guarded = ['id'];
 
-    protected $appends = ['full_image_path'];
-
-    public function getFullImagePathAttribute()
+    public function getImagePathAttribute($value)
     {
-        return 'storage/' . $this->image_path;
+        return 'storage/' . $value;
     }
 
     public function product()
