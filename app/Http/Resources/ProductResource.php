@@ -47,7 +47,7 @@ class ProductResource extends JsonResource
             'images' => $this->images->map(function ($image) {
                 return [
                     'id' => $image->id,
-                    'image_path' => asset('storage/' . $image->image_path),
+                    'image_path' => asset($image->image_path),
                 ];
             }),
             'reviews' => $this->reviews->map(function ($review) {
