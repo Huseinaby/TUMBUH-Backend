@@ -241,6 +241,9 @@ class productController extends Controller
             'store' => [
                 'id' => $seller->id,
                 'store_name' => $sellerDetail->store_name ?? 'No Store Name',
+                'store_description' => $sellerDetail->store_description ?? 'No Store Description',
+                'store_address' => $sellerDetail->store_address ?? 'No Store Address',
+                'store_phone' => $sellerDetail->store_phone ?? 'No Store Phone',
                 'store_logo' => $sellerDetail && $sellerDetail->store_logo ? Storage::url($sellerDetail->store_logo) : null,
                 'store_banner' => $sellerDetail && $sellerDetail->store_banner ? Storage::url($sellerDetail->store_banner) : null,
                 'product_count' => $products->count(),
