@@ -1230,9 +1230,16 @@ class transactionController extends Controller
     public function shippingCostTest(Request $request){
         $rajaOngkirService = app(RajaOngkirService::class);
 
+        $sellerAddress = UserAddress::where('user_id', $request->seller_id)
+            ->where('is_default', true)
+            ->value('origin_id');
+        $userAddress = UserAddress::where('user_id', $request->user_id)
+            ->where('is_default', true)
+            ->value('origin_id');
+
         $cost = $rajaOngkirService->calculateDomesticCost(
-            $request->origin_id,
-            $request->destination_id,
+            $sellerAddress,
+            $userAddress,
             $request->weight,
             $request->product_total,
             'no'
