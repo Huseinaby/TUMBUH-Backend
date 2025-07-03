@@ -1253,6 +1253,8 @@ class transactionController extends Controller
 
         return response()->json([
             'available_services' => $cost['data'],
+            'origin_id' => $sellerAddress,
+            'destination_id' => $userAddress,
         ]);
     }
 }
