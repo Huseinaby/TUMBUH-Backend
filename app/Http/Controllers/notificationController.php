@@ -97,7 +97,7 @@ class notificationController extends Controller
             'created_at' => $notif->created_at->toISOString(),
             'data' => json_decode($notif->data, true),
         ];
-        
+
         if (!$notification) {
             return response()->json(['message' => 'Notification Not Found'], 404);
         }
@@ -106,5 +106,26 @@ class notificationController extends Controller
             'message' => 'Notification Found',
             'notification' => $notification,
         ]);
+    }
+
+    public function deleteNotifications(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:notifications,id',
+        ]);
+        $data = json_decode($request->getContent(), true);
+        $ids = $data['ids'] ?? [];
+
+        $user = Auth::user();
+
+        $deleted = Notification::whereIn('id', $ids)
+            ->where('user_id', $user->id)
+            ->delete();
+
+        return response()->json([
+            'message' => 'Notifications deleted successfully',
+            'deleted_count' => $deleted,
+        ], 200);
     }
 }
