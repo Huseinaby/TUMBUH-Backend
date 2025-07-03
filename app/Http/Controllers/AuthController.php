@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
@@ -330,5 +331,12 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Password berhasil diperbarui'
         ], 200);
+    }
+
+    public function requestAccountDeletion(Request $request)
+    {
+        $user = Auth::user();
+
+        
     }
 }

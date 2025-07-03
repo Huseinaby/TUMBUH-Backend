@@ -30,7 +30,13 @@ class User extends Authenticatable implements HasName, FilamentUser
         'gauth_id',
         'gauth_type',
         'photo',
-        'fcm_token'
+        'fcm_token',
+        'coins',
+        'scheduled_deletion_at',
+    ];
+
+    protected $dates = [
+        'scheduled_deletion_at',
     ];
 
     /**
