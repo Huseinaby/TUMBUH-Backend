@@ -1226,4 +1226,26 @@ class transactionController extends Controller
             'transaction' => $transaction,
         ]);
     }
+
+    public function shippingCostTest(Request $request){
+        $rajaOngkirService = app(RajaOngkirService::class);
+
+        $cost = $rajaOngkirService->calculateDomesticCost(
+            $request->origin_id,
+            $request->destination_id,
+            $request->weight,
+            $request->product_total,
+            'no'
+        );
+
+        if (!isset($cost['data']) || !is_array($cost['data'])) {
+            return response()->json([
+                'message' => 'No shipping options available.',
+            ], 502);
+        }
+
+        return response()->json([
+            'available_services' => $cost['data'],
+        ]);
+    }
 }
