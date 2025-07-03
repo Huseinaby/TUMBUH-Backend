@@ -42,6 +42,7 @@ Route::get('/reset-password/{token}', function (Request $request, $token) {
 })->name('password.reset');
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::post('/update-password', [AuthController::class, 'updatePassword'])->middleware('auth:sanctum');
+Route::get('/user/request-delete', [AuthController::class, 'requestAccountDeletion'])->middleware('auth:sanctum');
 
 //Modul
 Route::get('/modul', [modulController::class, 'index']);

@@ -333,10 +333,18 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function requestAccountDeletion(Request $request)
+    public function requestAccountDeletion()
     {
         $user = Auth::user();
 
-        
+        $user->update([
+            'scheduled_deletion_at' => now()->addDays(15),
+        ]);
+
+        $user->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Permintaan penghapusan akun telah diajukan. Akun Anda akan dihapus dalam 15 hari.'
+        ], 200);
     }
 }
