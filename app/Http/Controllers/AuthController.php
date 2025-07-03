@@ -307,4 +307,28 @@ class AuthController extends Controller
             'message' => 'Gagal mereset password'
         ], 500);
     }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $user = Auth::user();
+
+        if(!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'message' => 'Password saat ini tidak valid'
+            ], 401);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->new_password)
+        ]);
+
+        return response()->json([
+            'message' => 'Password berhasil diperbarui'
+        ], 200);
+    }
 }

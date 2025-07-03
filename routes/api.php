@@ -41,6 +41,7 @@ Route::get('/reset-password/{token}', function (Request $request, $token) {
     return redirect()->away("tumbuh://resetPassword?token={$token}&email=" . urlencode($request->email));
 })->name('password.reset');
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+Route::post('/update-password', [AuthController::class, 'updatePassword'])->middleware('auth:sanctum');
 
 //Modul
 Route::get('/modul', [modulController::class, 'index']);
