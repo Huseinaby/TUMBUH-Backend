@@ -128,4 +128,25 @@ class notificationController extends Controller
             'deleted_count' => $deleted,
         ], 200);
     }
+
+    public function readNotifications(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:notifications,id',
+        ]);
+        $data = json_decode($request->getContent(), true);
+        $ids = $data['ids'] ?? [];
+
+        $user = Auth::user();
+
+        $updated = Notification::whereIn('id', $ids)
+            ->where('user_id', $user->id)
+            ->update(['read' => true]);
+
+        return response()->json([
+            'message' => 'Notifications marked as read successfully',
+            'updated_count' => $updated,
+        ], 200);
+    }
 }

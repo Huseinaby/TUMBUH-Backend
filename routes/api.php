@@ -165,6 +165,7 @@ Route::post('/shipping/cost', [ShippingController::class, 'cost']);
 Route::get('/notification', [notificationController::class, 'getUserNotifications']);
 Route::post('/notification', [notificationController::class, 'store']);
 Route::delete('/notifications', [notificationController::class, 'deleteNotifications']);
+Route::post('/notifications/read', [notificationController::class, 'readNotifications']);
 Route::put('/notification/{id}/read', [notificationController::class, 'markAsRead']);
 Route::get('/notification/{id}', [notificationController::class, 'show']);
 
