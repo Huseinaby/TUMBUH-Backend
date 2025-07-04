@@ -11,7 +11,6 @@ use App\Models\cartItem;
 use App\Models\orderItem;
 use App\Models\Product;
 use App\Models\Review;
-use App\Models\ShippingCostDetail;
 use App\Models\UserAddress;
 use App\Services\BinderByteService;
 use App\Services\RajaOngkirService;
@@ -361,10 +360,7 @@ class transactionController extends Controller
                         'amount' => $finalPrice,
                         'screen' => 'invoice',
                     ]
-                );
-
-                // hapus shipping cache user setelah transaksi
-                $this->clearUserShippingCost($sellerId, $user->id);
+                );                
 
                 $transactions[] = [
                     'transaction_id' => $transaction->id,
@@ -731,35 +727,6 @@ class transactionController extends Controller
         }
     }
 
-    public function clearUserShippingCost($sellerId, $UserId)
-    {
-
-        $originId = UserAddress::where('user_id', $sellerId)
-            ->where('is_default', true)
-            ->value('origin_id');
-
-        $destinationId = UserAddress::where('user_id', $UserId)
-            ->where('is_default', true)
-            ->value('origin_id');
-
-        ShippingCostDetail::where('origin_id', $originId)
-            ->where('destination_id', $destinationId)
-            ->delete();
-    }
-
-    public function clearShippingCost(Request $request)
-    {
-        $request->validate([
-            'seller_id' => 'required|exists:users,id',
-            'user_id' => 'required|exists:users,id',
-        ]);
-
-        $this->clearUserShippingCost($request->seller_id, $request->user_id);
-
-        return response()->json([
-            'message' => 'Shipping costs cleared successfully',
-        ]);
-    }
 
     public function getCartGroupedBySeller(array $cartIds)
     {

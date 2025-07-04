@@ -120,7 +120,6 @@ Route::get('/transaction/{id}/confirm', [transactionController::class, 'confirmT
 Route::post('/transaction/{id}/cancel', [transactionController::class, 'cancelTransaction']);
 Route::get('/transaction/{id}', [transactionController::class, 'show']);
 
-Route::post('/shippingCost/clear', [transactionController::class, 'clearShippingCost']);
 Route::post('/shippingCost/test', [transactionController::class, 'shippingCostTest']);
 
 //review
