@@ -9,7 +9,7 @@ class NotificationService
 {
     protected $expoUrl = 'https://exp.host/--/api/v2/push/send';
 
-    public function sendToUser($user, $title, $body, $type, $data = [])
+    public function sendToUser($user, $title, $body, $data = [])
     {
         $token = $user->fcm_token;
 
@@ -21,8 +21,7 @@ class NotificationService
         Notification::create([
             'user_id' => $user->id,
             'title' => $title,
-            'body' => $body,
-            'type' => $type,
+            'body' => $body,            
             'data' => json_encode($data),
             'is_read' => false,
         ]);

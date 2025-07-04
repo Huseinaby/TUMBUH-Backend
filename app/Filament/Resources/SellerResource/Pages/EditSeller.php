@@ -29,10 +29,10 @@ class EditSeller extends EditRecord
                 app(NotificationService::class)->sendToUser(
                     $user,
                     'Akun Penjual Telah Diverifikasi',
-                    'Selamat! Akun penjual Anda telah diverifikasi dan Anda dapat mulai berjualan.',
-                    'success',
+                    'Selamat! Akun penjual Anda telah diverifikasi dan Anda dapat mulai berjualan.',                
                     [
-                        'screen' => 'dashboard', // atau ke halaman khusus penjual
+                        'type' => 'success',
+                        'screen' => 'dashboard', 
                     ]
                 );
             }
@@ -43,10 +43,10 @@ class EditSeller extends EditRecord
                 app(NotificationService::class)->sendToUser(
                     $user,
                     'Akun Penjual Ditolak',
-                    'Maaf, pengajuan akun penjual Anda ditolak. Silakan periksa kembali data Anda atau hubungi admin untuk informasi lebih lanjut.',
-                    'error',
+                    'Maaf, pengajuan akun penjual Anda ditolak. Silakan periksa kembali data Anda atau hubungi admin untuk informasi lebih lanjut.',                    
                     [
-                        'screen' => 'seller-application', // atau ke halaman pengajuan ulang
+                        'type' => 'error',
+                        'screen' => 'seller-application',
                     ]
 
                 );

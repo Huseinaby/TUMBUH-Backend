@@ -355,8 +355,8 @@ class transactionController extends Controller
                     $user,
                     'Transaksi Berhasil Dibuat',
                     'Silakan selesaikan pembayaran sebesar Rp' . number_format($finalPrice, 0, ',', '.'),
-                    'success',
                     [
+                        'type' => 'success',
                         'transaction_id' => $transaction->id,
                         'amount' => $finalPrice,
                         'screen' => 'invoice',
@@ -609,9 +609,8 @@ class transactionController extends Controller
                 $user,
                 'Transaksi Berhasil Dibuat',
                 'Silakan selesaikan pembayaran sebesar Rp' . number_format($finalPrice, 0, ',', '.'),
-                'success',
                 [
-
+                    'type' => 'success',
                     'transaction_id' => $transaction->id,
                     'amount' => $finalPrice,
                     'screen' => 'invoice',
@@ -881,9 +880,9 @@ class transactionController extends Controller
                 $notificationService->sendToUser(
                     $transaction->user,
                     'Pembayaran Berhasil',
-                    'Terima kasih, pembayaranmu telah berhasil.',
-                    'success',
+                    'Terima kasih, pembayaranmu telah berhasil.',                
                     [
+                        'type' => 'success',
                         'transaction_id' => $transaction->id,
                     ]
                 );
@@ -901,9 +900,9 @@ class transactionController extends Controller
                         $notificationService->sendToUser(
                             $seller,
                             'Produk Terjual!',
-                            "Salah satu produkmu baru saja terjual.",
-                            'success',
+                            "Salah satu produkmu baru saja terjual.",                        
                             [
+                                'type' => 'success',
                                 'transaction_id' => $transaction->id,
                                 'product_id' => $product->id,
                             ]
@@ -1227,7 +1226,8 @@ class transactionController extends Controller
         ]);
     }
 
-    public function shippingCostTest(Request $request){
+    public function shippingCostTest(Request $request)
+    {
         $rajaOngkirService = app(RajaOngkirService::class);
 
         $sellerAddress = UserAddress::where('user_id', $request->seller_id)
