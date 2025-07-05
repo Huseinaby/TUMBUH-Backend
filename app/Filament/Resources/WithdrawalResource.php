@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\WithdrawalResource\Pages;
 use App\Filament\Resources\WithdrawalResource\RelationManagers;
-use App\Models\Withdrawal;
+use App\Models\WithdrawRequest;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class WithdrawalResource extends Resource
 {
-    protected static ?string $model = Withdrawal::class;
+    protected static ?string $model = WithdrawRequest::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
 
