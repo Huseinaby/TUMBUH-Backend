@@ -133,7 +133,7 @@ Route::delete('/review/delete/{id}', [reviewController::class, 'deleteReview']);
 //withdraw
 Route::get('/wigthdraw', [withdrawController::class, 'listWithdraw']);
 Route::get('/withdraw/user/{userId}', [withdrawController::class, 'listWithdrawByUser']);
-Route::post('/wihdraw/request', [withdrawController::class, 'requestWithdraw']);
+Route::post('/withdraw/request', [withdrawController::class, 'requestWithdraw']);
 Route::post('/withdraw/{id}/handle', [withdrawController::class, 'handleWithdraw']);
 
 //seller
