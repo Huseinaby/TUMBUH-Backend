@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\WithdrawalResource\Pages;
 
 use App\Filament\Resources\WithdrawalResource;
+use App\Models\WithdrawRequest;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use App\Services\NotificationService;
@@ -24,6 +25,10 @@ class EditWithdrawal extends EditRecord
         $user = $withdrawal->user;
 
         if ($withdrawal->status === 'approved') {
+            $withdrawal->user->sellerDetail->decrement('saldo', $withdrawal->amount);
+            $withdrawal->approved_at = now();
+            $withdrawal->save();
+
             app(NotificationService::class)->sendToUser(
                 $user,
                 'Withdrawal Approved',
@@ -35,6 +40,8 @@ class EditWithdrawal extends EditRecord
                 ]
             );
         } elseif ($withdrawal->status === 'rejected') {
+            $withdrawal->rejected_at = now();
+            $withdrawal->save();
             app(NotificationService::class)->sendToUser(
                 $user,
                 'Withdrawal Rejected',
