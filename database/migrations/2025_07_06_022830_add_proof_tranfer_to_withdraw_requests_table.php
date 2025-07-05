@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('seller_details', function (Blueprint $table) {
-            // Remove the 'bank_name', 'account_number', and 'account_name' columns
-            $table->dropColumn(['bank_name', 'bank_account_number', 'bank_account_holder_name']);
-
-            // Add a new 'saldo' column with default value 0    
+        Schema::table('withdraw_requests', function (Blueprint $table) {
+            $table->string('proof_transfer')->nullable()->after('status');
         });
     }
 
@@ -24,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('seller_details', function (Blueprint $table) {
+        Schema::table('withdraw_requests', function (Blueprint $table) {
             //
         });
     }
