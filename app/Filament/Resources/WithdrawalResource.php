@@ -64,11 +64,12 @@ class WithdrawalResource extends Resource
                     ->label('Status')
                     ->required()
                     ->default('pending')
-                    ->options([
-                        'pending' => 'Pending',
-                        'approved' => 'Approved',
-                        'rejected' => 'Rejected',
-                    ]),
+                    ->color(fn(string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                        'rejected' => 'danger',
+                        default => 'secondary',
+                    }),
                 FileUpload::make('proof_transfer')
                     ->label('Proof of Transfer')
                     ->image()
