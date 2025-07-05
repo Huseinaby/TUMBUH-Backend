@@ -138,7 +138,7 @@ class SellerResource extends Resource
                     ->label('saldo')
                     ->sortable()
                     ->money('idr', true),
-                TextColumn::make('status')
+                Select::make('status')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'rejected' => 'danger',
