@@ -20,7 +20,13 @@ class WithdrawalResource extends Resource
 {
     protected static ?string $model = Withdrawal::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
+
+    protected static ?string $navigationLabel = 'Withdrawals';
+
+    protected static ?string $navigationGroup = 'Marketplace';
+    
+
 
     public static function form(Form $form): Form
     {
