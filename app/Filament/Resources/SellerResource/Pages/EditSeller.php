@@ -22,7 +22,8 @@ class EditSeller extends EditRecord
 
     protected function afterSave(): void
     {
-        if ($this->record->status === 'approved') {
+        $sellerDetail = $this->record;
+        if ($sellerDetail->status === 'approved') {
             $user = User::find($this->record->user_id);
 
             if ($user) {
@@ -32,20 +33,22 @@ class EditSeller extends EditRecord
                     'Selamat! Akun penjual Anda telah diverifikasi dan Anda dapat mulai berjualan.',                
                     [
                         'type' => 'success',
+                        'category' => 'marketplace',
                         'screen' => 'dashboard', 
                     ]
                 );
             }
-        } elseif ($this->record->status === 'rejected') {
+        } elseif ($sellerDetail->status === 'rejected') {
             $user = User::find($this->record->user_id);
 
             if ($user) {
                 app(NotificationService::class)->sendToUser(
                     $user,
                     'Akun Penjual Ditolak',
-                    'Maaf, pengajuan akun penjual Anda ditolak. Silakan periksa kembali data Anda atau hubungi admin untuk informasi lebih lanjut.',                    
+                    'Maaf, pengajuan akun penjual Anda ditolak. Silakan periksa kembali informasi yang Anda berikan dan coba lagi.',                    
                     [
                         'type' => 'error',
+                        'category' => 'marketplace',
                         'screen' => 'seller-application',
                     ]
 

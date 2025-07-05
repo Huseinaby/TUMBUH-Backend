@@ -357,6 +357,7 @@ class transactionController extends Controller
                     [
                         'type' => 'success',
                         'transaction_id' => $transaction->id,
+                        'category' => 'marketplace',
                         'amount' => $finalPrice,
                         'screen' => 'invoice',
                     ]
@@ -607,6 +608,7 @@ class transactionController extends Controller
                 'Silakan selesaikan pembayaran sebesar Rp' . number_format($finalPrice, 0, ',', '.'),
                 [
                     'type' => 'success',
+                    'category' => 'marketplace',
                     'transaction_id' => $transaction->id,
                     'amount' => $finalPrice,
                     'screen' => 'invoice',
