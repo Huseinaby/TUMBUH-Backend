@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('gauth_id')->nullable();
             $table->string('gauth_type')->nullable();
             $table->string('fcm_token')->nullable();
+            $table->string('scheduled_deletion_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
