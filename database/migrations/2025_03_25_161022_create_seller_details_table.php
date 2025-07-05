@@ -20,9 +20,6 @@ return new class extends Migration
             $table->char('store_phone', 15);
             $table->string('store_logo')->nullable();
             $table->string('store_banner')->nullable();
-            $table->string('bank_name')->nullable();
-            $table->string('bank_account_number')->nullable();
-            $table->string('bank_account_holder_name')->nullable();
             $table->string('nomor_induk_kependudukan', 16)->nullable();
             $table->string('foto_ktp')->nullable();
             $table->integer('saldo')->default(0);

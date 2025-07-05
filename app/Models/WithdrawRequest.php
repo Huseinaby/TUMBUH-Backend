@@ -11,6 +11,11 @@ class WithdrawRequest extends Model
         'amount',
         'status',
         'note',
+        'bank_name',
+        'account_number',
+        'account_name',
+        'approved_at',
+        'rejected_at',
     ];
 
     public function user()

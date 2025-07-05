@@ -15,8 +15,13 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->integer('amount');
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->string('bank_name');
+            $table->string('account_number');
+            $table->string('account_name');
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');            
             $table->text('note')->nullable();
+            $table->timestamp('approved_at')->nullable();
+            $table->timestamp('rejected_at')->nullable();
             $table->timestamps();
         });
     }
