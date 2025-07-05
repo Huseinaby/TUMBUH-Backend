@@ -88,18 +88,6 @@ class SellerResource extends Resource
                     ->maxSize(2048) // 2MB
                     ->disk('public')
                     ->directory('store_banners'),
-                TextInput::make('bank_name')
-                    ->label('Nama Bank')
-                    ->maxLength(50)
-                    ->placeholder('Bank Central Asia'),
-                TextInput::make('bank_account_number')
-                    ->label('Nomor Rekening Bank')
-                    ->maxLength(20)
-                    ->placeholder('1234567890'),
-                TextInput::make('bank_account_holder_name')
-                    ->label('Nama Pemilik Rekening')
-                    ->maxLength(50)
-                    ->placeholder('John Doe'),
                 TextInput::make('nomor_induk_kependudukan')
                     ->label('NIK')
                     ->maxLength(16)
