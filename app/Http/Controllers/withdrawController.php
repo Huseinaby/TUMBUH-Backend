@@ -41,6 +41,12 @@ class withdrawController extends Controller
             ], 401);
         }
 
+        if($user->sellerDetail->saldo < $request->amount) {
+            return response()->json([
+                'message' => 'Insufficient balance'
+            ], 400);
+        }
+
         $withdraw = WithdrawRequest::create([
             'user_id' => $user->id,
             'amount' => $request->amount,
