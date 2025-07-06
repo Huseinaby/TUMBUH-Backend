@@ -63,14 +63,12 @@ class WithdrawalResource extends Resource
                     ->placeholder('Optional note for the withdrawal request'),
                 Select::make('status')
                     ->label('Status')
-                    ->required()
                     ->default('pending')
-                    ->color(fn(string $state): string => match ($state) {
-                        'pending' => 'warning',
-                        'approved' => 'success',
-                        'rejected' => 'danger',
-                        default => 'secondary',
-                    }),
+                    ->options([
+                        'pending' => 'Pending',
+                        'approved' => 'Approved',
+                        'rejected' => 'Rejected',
+                    ]),
                 FileUpload::make('proof_transfer')
                     ->label('Proof of Transfer')
                     ->image()
