@@ -128,7 +128,7 @@ class SellerResource extends Resource
                     ->searchable(),
                 TextColumn::make('user.email')
                     ->icon('heroicon-o-envelope')
-                    ->iconColor('primary')
+                    ->icon    ('primary')
                     ->label('Email')
                     ->copyable()
                     ->copyMessage('Email telah disalin ke clipboard')

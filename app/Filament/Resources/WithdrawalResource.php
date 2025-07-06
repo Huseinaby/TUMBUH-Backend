@@ -7,6 +7,7 @@ use App\Filament\Resources\WithdrawalResource\RelationManagers;
 use App\Models\WithdrawRequest;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -60,7 +61,7 @@ class WithdrawalResource extends Resource
                     ->label('Note')
                     ->maxLength(500)
                     ->placeholder('Optional note for the withdrawal request'),
-                TextInput::make('status')
+                Select::make('status')
                     ->label('Status')
                     ->required()
                     ->default('pending')
