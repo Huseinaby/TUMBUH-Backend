@@ -20,23 +20,24 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class WithdrawalResource extends Resource
 {
     protected static ?string $model = WithdrawRequest::class;
-
+    protected static ?string $label = 'Withdrawal Request';
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
 
     protected static ?string $navigationLabel = 'Withdrawals';
 
     protected static ?string $navigationGroup = 'Marketplace';
-    
+
 
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('user.username')
+                Select::make('user_id')
                     ->label('User')
-                    ->required()
-                    ->maxLength(255)
+                    ->relationship('user', 'username')
+                    ->searchable()
+                    ->preload()
                     ->disabled(),
                 TextInput::make('amount')
                     ->label('Amount')
@@ -74,8 +75,9 @@ class WithdrawalResource extends Resource
                     ->image()
                     ->required()
                     ->maxSize(1024) // 1MB
-                    ->acceptedFileTypes(['image/*'])
-                    ->columnSpanFull(),
+                    ->disk('public')
+                    ->directory('withdrawal_proofs')
+                    ->placeholder('Upload proof of transfer'),
             ]);
     }
 
@@ -93,18 +95,21 @@ class WithdrawalResource extends Resource
                     ->searchable(),
                 TextColumn::make('amount')
                     ->label('Amount')
+                    ->money('IDR')
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('status')->badge()->colors([
-                    'pending' => 'warning',
-                    'approved' => 'success',
-                    'rejected' => 'danger',
-                ])->sortable()->searchable(),
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'rejected' => 'danger',
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                    }),
                 TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime()
                     ->sortable()
-                    ->searchable(),            
+                    ->searchable(),
             ])
             ->filters([
                 //

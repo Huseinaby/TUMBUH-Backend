@@ -43,7 +43,7 @@ class withdrawController extends Controller
 
         if($user->sellerDetail->saldo < $request->amount) {
             return response()->json([
-                'message' => 'Insufficient balance'
+                'message' => 'Insufficient balance for withdrawal',
             ], 400);
         }
 

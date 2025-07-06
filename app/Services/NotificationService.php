@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use App\Models\Notification;
+use Log;
 
 class NotificationService
 {
@@ -13,15 +14,16 @@ class NotificationService
     {
         $token = $user->fcm_token;
 
-        if (!$token)
+        if (!$token) {
+            Log::error('No FCM token found for user: ' . $user->id);
             return false;
-
+        }
 
         // Simpan ke database
         Notification::create([
             'user_id' => $user->id,
             'title' => $title,
-            'body' => $body,            
+            'body' => $body,
             'data' => json_encode($data),
             'is_read' => false,
         ]);
