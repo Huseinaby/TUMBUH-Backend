@@ -3,11 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\SellerResource\Pages;
-use App\Filament\Resources\SellerResource\RelationManagers;
 use App\Models\SellerDetail;
 use App\Models\User;
-use Dom\Text;
-use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -17,11 +14,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Table;
-use Filament\Tables\Columns\IconColumn;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+
 
 class SellerResource extends Resource
 {
@@ -40,16 +34,31 @@ class SellerResource extends Resource
             ->schema([
                 Select::make('user_id')
                     ->label('User')
-                    ->options(User::whereDoesntHave('sellerDetail')
-                        ->pluck('username', 'id'))
-                    ->required()
+                    ->options(function (?SellerDetail $record) {
+                        $query = User::query();
+
+                        // Jika sedang edit
+                        if ($record && $record->exists) {
+                            $query->where(function ($q) use ($record) {
+                                $q->whereDoesntHave('sellerDetail')
+                                    ->orWhere('id', $record->user_id); // tetap munculkan user yang sudah dipilih
+                            });
+                        } else {
+                            // Saat create: hanya tampilkan user yang belum punya sellerDetail
+                            $query->whereDoesntHave('sellerDetail');
+                        }
+
+                        return $query->pluck('username', 'id');
+                    })
                     ->searchable()
                     ->preload()
+                    ->required()
                     ->columnSpan(2)
                     ->placeholder('Pilih user'),
+
                 TextInput::make('saldo')
                     ->label('saldo')
-                    ->disabled()                
+                    ->disabled()
                     ->nullable(),
                 TextInput::make('store_name')
                     ->label('Nama Toko')
