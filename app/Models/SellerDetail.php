@@ -31,7 +31,7 @@ class SellerDetail extends Model
     public function getStoreLogoAttribute($value)
     {
         if ($value) {
-            return Storage::url($value); // Menggunakan Storage::url()
+            return 'storage/' . $value;
         }
         return null;
     }
@@ -39,7 +39,7 @@ class SellerDetail extends Model
     public function getStoreBannerAttribute($value)
     {
         if ($value) {
-            return Storage::url($value); // Menggunakan Storage::url()
+            return 'storage/' . $value;
         }
         return null;
     }
@@ -48,7 +48,7 @@ class SellerDetail extends Model
     public function getFotoKtpAttribute($value)
     {
         if ($value) {
-            return Storage::url($value); // Menggunakan Storage::url()
+            return 'storage/' . $value;
         }
         return null;
     }
