@@ -73,26 +73,26 @@ class articleController extends Controller
     {
         $googleApiKey = env('GOOGLE_API_KEY');
         $googleCx = env('GOOGLE_CSE_ID');
-    
+
         $articleKeywords = [
             'pengertian',
             'menanam',
             'merawat',
             'ide bisnis',
         ];
-    
+
         $result = [];
-    
+
         foreach ($articleKeywords as $keyword) {
             $relevantArticles = collect();
             $start = 1;
             $maxArticles = 4;
             $attemptLimit = 5; // Max 5 page attempt (Google CSE paginasi)
             $attemptCount = 0;
-    
+
             while ($relevantArticles->count() < $maxArticles && $attemptCount < $attemptLimit) {
                 $query = $keyword . ' tanaman ' . $title . ' -filetype:pdf -filetype:doc -filetype:docx -site:researchgate.net -site:jstor.org';
-    
+
                 $searchResponse = Http::get('https://www.googleapis.com/customsearch/v1', [
                     'key' => $googleApiKey,
                     'cx' => $googleCx,
@@ -100,12 +100,12 @@ class articleController extends Controller
                     'num' => 4,
                     'start' => $start,
                 ]);
-    
+
                 if (!$searchResponse->successful()) {
                     $result[$keyword] = ['error' => 'Failed to fetch articles: ' . $keyword];
                     break; // Stop trying for this keyword
                 }
-    
+
                 $articlesRaw = collect($searchResponse['items'])->filter(function ($item) {
                     $link = strtolower($item['link']);
                     $title = strtolower($item['title']);
@@ -117,6 +117,8 @@ class articleController extends Controller
                         && !str_contains($link, 'youtube.com')
                         && !str_contains($title, 'jurnal')
                         && !str_contains($title, 'journal');
+                })->filter(function ($item) {
+                    return isset($item['title'], $item['link'], $item['snippet']);
                 })->map(function ($item) {
                     return [
                         'title' => $item['title'],
@@ -124,12 +126,13 @@ class articleController extends Controller
                         'snippet' => $item['snippet'],
                     ];
                 });
-    
+
+
                 foreach ($articlesRaw as $article) {
                     if ($relevantArticles->count() >= $maxArticles) {
                         break;
                     }
-    
+
                     $isRelevant = $this->isArticleRelevant(
                         $article['title'],
                         $article['snippet'],
@@ -137,7 +140,7 @@ class articleController extends Controller
                         $keyword,
                         $title
                     );
-    
+
                     if ($isRelevant) {
                         // Save to DB
                         Article::create([
@@ -149,7 +152,7 @@ class articleController extends Controller
                             'keyword' => $keyword . ' tanaman ' . $title,
                             'start' => $start,
                         ]);
-    
+
                         $relevantArticles->push($article);
                     } else {
                         // Optional: log artikel yang ditolak
@@ -159,29 +162,29 @@ class articleController extends Controller
                         ]);
                     }
                 }
-    
+
                 // Move to next page if needed
                 $start += 4;
                 $attemptCount++;
             }
-    
+
             $result[$keyword] = [
                 'articles' => $relevantArticles->values(),
                 'start' => $start,
                 'keyword' => $keyword . ' tanaman ' . $title,
             ];
         }
-    
+
         return $result;
     }
 
-    
-    public function isArticleRelevant($title, $snippet, $link, $keyword, $tanamanTitle)
-{
-    $geminiKey = env('GEMINI_API_KEY');
-    $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$geminiKey}";
 
-    $prompt = <<<EOT
+    public function isArticleRelevant($title, $snippet, $link, $keyword, $tanamanTitle)
+    {
+        $geminiKey = env('GEMINI_API_KEY');
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$geminiKey}";
+
+        $prompt = <<<EOT
 Berikut adalah sebuah artikel hasil pencarian:
 
 Judul: {$title}
@@ -201,55 +204,55 @@ Jawab HANYA dalam format JSON valid berikut:
 
 EOT;
 
-    // Kirim permintaan ke Gemini API
-    $response = Http::post($url, [
-        'contents' => [
-            'parts' => [
-                ['text' => $prompt]
+        // Kirim permintaan ke Gemini API
+        $response = Http::post($url, [
+            'contents' => [
+                'parts' => [
+                    ['text' => $prompt]
+                ]
             ]
-        ]
-    ]);
+        ]);
 
-    try {
-        $text = $response['candidates'][0]['content']['parts'][0]['text'] ?? '';
+        try {
+            $text = $response['candidates'][0]['content']['parts'][0]['text'] ?? '';
 
-        // Bersihkan ```json
-        $cleaned = trim($text);
+            // Bersihkan ```json
+            $cleaned = trim($text);
 
-        if (str_starts_with($cleaned, '```json')) {
-            $cleaned = preg_replace('/^```json\s*/', '', $cleaned);
-            $cleaned = preg_replace('/\s*```$/', '', $cleaned);
-        }
+            if (str_starts_with($cleaned, '```json')) {
+                $cleaned = preg_replace('/^```json\s*/', '', $cleaned);
+                $cleaned = preg_replace('/\s*```$/', '', $cleaned);
+            }
 
-        $parsed = json_decode($cleaned, true);
+            $parsed = json_decode($cleaned, true);
 
-        // Debug jika gagal
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            Log::error('Gagal parse JSON dari Gemini (Relevance Check)', [
-                'error' => json_last_error_msg(),
-                'original_text' => $text,
-                'cleaned_text' => $cleaned,
-            ]);
-            return false; // Anggap tidak relevan kalau parsing gagal
-        }
+            // Debug jika gagal
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error('Gagal parse JSON dari Gemini (Relevance Check)', [
+                    'error' => json_last_error_msg(),
+                    'original_text' => $text,
+                    'cleaned_text' => $cleaned,
+                ]);
+                return false; // Anggap tidak relevan kalau parsing gagal
+            }
 
-        if (isset($parsed['relevance'])) {
-            $relevance = strtolower($parsed['relevance']);
-            return $relevance === 'relevan';
-        } else {
-            Log::warning('Field relevance tidak ditemukan pada response Gemini', [
-                'text' => $text,
-                'cleaned' => $cleaned,
-                'parsed' => $parsed,
-            ]);
+            if (isset($parsed['relevance'])) {
+                $relevance = strtolower($parsed['relevance']);
+                return $relevance === 'relevan';
+            } else {
+                Log::warning('Field relevance tidak ditemukan pada response Gemini', [
+                    'text' => $text,
+                    'cleaned' => $cleaned,
+                    'parsed' => $parsed,
+                ]);
+                return false;
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error checking article relevance: ' . $e->getMessage());
             return false;
         }
-
-    } catch (\Exception $e) {
-        Log::error('Error checking article relevance: ' . $e->getMessage());
-        return false;
     }
-}
 
 
 
