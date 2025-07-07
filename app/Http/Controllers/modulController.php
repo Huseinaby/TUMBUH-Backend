@@ -197,6 +197,12 @@ class modulController extends Controller
 
         $userId = Auth::user()->id;
 
+        if(!$userId){
+            return response()->json([
+                'message' => 'User not authenticated',
+            ], 401);
+        }
+
         $geminiKey = env('GEMINI_API_KEY');
 
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$geminiKey}";
