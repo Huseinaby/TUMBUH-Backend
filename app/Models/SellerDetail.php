@@ -27,6 +27,11 @@ class SellerDetail extends Model
         'status',
     ];
 
+    public function getImagePathAttribute($value)
+    {
+        return 'storage/' . $value;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
