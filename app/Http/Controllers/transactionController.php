@@ -411,6 +411,12 @@ class transactionController extends Controller
             ->where('is_default', true)
             ->first();
 
+        if(!$address) {
+            $address = UserAddress::with(['province', 'kabupaten', 'kecamatan'])
+                ->where('user_id', $seller->id)                
+                ->first();
+        }
+
         if (!$address) {
             return response()->json([
                 'message' => 'No default address found for the user',
