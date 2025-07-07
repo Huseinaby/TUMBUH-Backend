@@ -36,6 +36,14 @@ class SellerDetail extends Model
         return null;
     }
 
+    public function getStoreBannerAttribute($value)
+    {
+        if ($value) {
+            return Storage::url($value); // Menggunakan Storage::url()
+        }
+        return null;
+    }
+
     // Accessor untuk foto_ktp
     public function getFotoKtpAttribute($value)
     {
