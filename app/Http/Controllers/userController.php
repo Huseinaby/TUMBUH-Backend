@@ -11,30 +11,37 @@ class userController extends Controller
 {
 
     public function update(Request $request)
-    {
-        $request->validate([
-            'username' => 'required|string|max:50',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
+{
+    $request->validate([
+        'username' => 'required|string|max:50',
+        'photo' => 'nullable', // bisa file atau URL
+    ]);
 
-        $user = Auth::user();
-        if (!$user) {
-
-        }
-        $user->update($request->only('username'));
-
-        if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('profile_photos', 'public');
-            $user->photo = 'storage/' . $path;
-            $user->save();
-        }
-
-        return response()->json([
-            'message' => 'Profile updated successfully',
-            'user' => $user,
-        ]);
-
+    $user = Auth::user();
+    if (!$user) {
+        return response()->json(['message' => 'Unauthorized'], 401);
     }
+
+    $user->update($request->only('username'));
+
+    if ($request->hasFile('photo')) {
+        // Jika file diupload
+        $path = $request->file('photo')->store('profile_photos', 'public');
+        $user->photo = 'storage/' . $path;
+        $user->save();
+    } elseif ($request->filled('photo') && filter_var($request->photo, FILTER_VALIDATE_URL)) {
+        // Jika input adalah URL valid
+        $user->photo = $request->photo;
+        $user->save();
+    }
+
+    return response()->json([
+        'message' => 'Profile updated successfully',
+        'user' => $user,
+    ]);
+}
+
+
     public function becomeSeller(Request $request)
     {
         $request->validate([
