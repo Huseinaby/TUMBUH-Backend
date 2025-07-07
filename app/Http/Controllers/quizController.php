@@ -195,7 +195,10 @@ class quizController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Error generating quiz: ' . $e->getMessage());
-            return [];
+            return response()->json([
+                'message' => 'Error generating quiz',
+                'error' => $e->getMessage()
+            ], 500);            
         }
     }
 
