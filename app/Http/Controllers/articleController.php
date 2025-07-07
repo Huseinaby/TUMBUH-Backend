@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Article;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Illuminate\Http\Client\RequestException;
 
 class articleController extends Controller
 {
@@ -179,16 +181,27 @@ class articleController extends Controller
     }
 
 
-    public function isArticleRelevant($title, $snippet, $link, $keyword, $tanamanTitle)
+    public function isArticleRelevant(string $title, string $snippet, string $link, string $keyword, string $tanamanTitle): bool
     {
+        // Pastikan API Key tersedia
         $geminiKey = env('GEMINI_API_KEY');
+        if (empty($geminiKey)) {
+            Log::error('GEMINI_API_KEY tidak ditemukan di environment.');
+            return false;
+        }
+
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$geminiKey}";
+
+        // Batasi panjang snippet dan title untuk menghindari melebihi batas token
+        // Sesuaikan angka ini berdasarkan pengujian dan batasan Gemini
+        $limitedTitle = Str::limit($title, 200, '...');
+        $limitedSnippet = Str::limit($snippet, 800, '...');
 
         $prompt = <<<EOT
 Berikut adalah sebuah artikel hasil pencarian:
 
-Judul: {$title}
-Snippet: {$snippet}
+Judul: {$limitedTitle}
+Snippet: {$limitedSnippet}
 Link: {$link}
 
 Tanaman yang sedang dibahas: {$tanamanTitle}
@@ -196,64 +209,117 @@ Kategori pencarian: {$keyword}
 
 Apakah artikel ini RELEVAN untuk aplikasi Tumbuh (aplikasi edukasi tanaman untuk masyarakat umum, bukan jurnal akademik atau artikel yang sulit diakses)? 
 
-Jawab HANYA dalam format JSON valid berikut:
-
-{
-    "relevance": "RELEVAN" atau "TIDAK RELEVAN"
-}
-
+Jawab HANYA dalam format JSON valid seperti ini:
+{"relevance": "RELEVAN" atau "TIDAK RELEVAN"}
 EOT;
 
-        // Kirim permintaan ke Gemini API
-        $response = Http::post($url, [
-            'contents' => [
-                'parts' => [
-                    ['text' => $prompt]
-                ]
-            ]
-        ]);
-
         try {
-            $text = $response['candidates'][0]['content']['parts'][0]['text'] ?? '';
+            // Mengirim permintaan ke Gemini API dengan retry logic dan timeout
+            $response = Http::timeout(10) // Set timeout 10 detik
+                            ->retry(3, 100) // Coba 3 kali, dengan delay 100ms antar percobaan
+                            ->post($url, [
+                                'contents' => [
+                                    'parts' => [
+                                        ['text' => $prompt]
+                                    ]
+                                ]
+                            ]);
 
-            // Bersihkan ```json
+            // Cek apakah permintaan HTTP berhasil (status code 2xx)
+            if (!$response->successful()) {
+                Log::error('Gemini API request gagal untuk pengecekan relevansi.', [
+                    'status' => $response->status(),
+                    'response_body' => $response->body(), // Log body respons untuk debugging
+                    'title' => $title,
+                    'link' => $link,
+                    'keyword' => $keyword,
+                    'tanaman_title' => $tanamanTitle,
+                    'prompt_sent' => $prompt // Log prompt yang dikirim
+                ]);
+                return false; // Anggap tidak relevan jika request API gagal
+            }
+
+            // Mengambil teks dari respons Gemini
+            $responseData = $response->json();
+
+            // Pastikan struktur respons yang diharapkan ada
+            $text = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
+
+            // Log raw response dari Gemini untuk debugging
+            Log::info('Respons mentah Gemini (Relevance Check):', [
+                'text' => $text,
+                'title' => $title,
+                'link' => $link
+            ]);
+
+            // Membersihkan teks dari triple backtick dan label ```json
             $cleaned = trim($text);
-
-            if (str_starts_with($cleaned, '```json')) {
+            if (Str::startsWith($cleaned, '```json')) {
                 $cleaned = preg_replace('/^```json\s*/', '', $cleaned);
                 $cleaned = preg_replace('/\s*```$/', '', $cleaned);
             }
 
+            // Log cleaned text untuk debugging
+            Log::info('Teks bersih Gemini (Relevance Check):', [
+                'cleaned_text' => $cleaned,
+                'title' => $title,
+                'link' => $link
+            ]);
+
+            // Decode JSON
             $parsed = json_decode($cleaned, true);
 
-            // Debug jika gagal
+            // Periksa jika ada error saat decode JSON
             if (json_last_error() !== JSON_ERROR_NONE) {
-                Log::error('Gagal parse JSON dari Gemini (Relevance Check)', [
+                Log::error('Gagal parse JSON dari Gemini (Relevance Check): Syntax Error.', [
                     'error' => json_last_error_msg(),
                     'original_text' => $text,
                     'cleaned_text' => $cleaned,
+                    'prompt_sent' => $prompt, // Penting: log prompt yang dikirim
+                    'title' => $title,
+                    'link' => $link
                 ]);
-                return false; // Anggap tidak relevan kalau parsing gagal
+                return false; // Anggap tidak relevan jika parsing gagal
             }
 
+            // Periksa apakah field 'relevance' ada dan nilainya sesuai
             if (isset($parsed['relevance'])) {
                 $relevance = strtolower($parsed['relevance']);
                 return $relevance === 'relevan';
             } else {
-                Log::warning('Field relevance tidak ditemukan pada response Gemini', [
-                    'text' => $text,
-                    'cleaned' => $cleaned,
-                    'parsed' => $parsed,
+                Log::warning('Field "relevance" tidak ditemukan pada respons Gemini atau format tidak sesuai.', [
+                    'parsed_response' => $parsed,
+                    'original_text' => $text,
+                    'cleaned_text' => $cleaned,
+                    'prompt_sent' => $prompt,
+                    'title' => $title,
+                    'link' => $link
                 ]);
-                return false;
+                return false; // Anggap tidak relevan jika format tidak sesuai
             }
 
+        } catch (RequestException $e) {
+            // Tangani error spesifik dari HTTP client (misal: 4xx, 5xx responses)
+            Log::error('Kesalahan permintaan HTTP API Gemini (Relevance Check): ' . $e->getMessage(), [
+                'status' => $e->response->status(),
+                'response_body' => $e->response->body(),
+                'title' => $title,
+                'link' => $link,
+                'prompt_sent' => $prompt,
+                'exception_trace' => $e->getTraceAsString()
+            ]);
+            return false;
         } catch (\Exception $e) {
-            Log::error('Error checking article relevance: ' . $e->getMessage());
+            // Tangani error umum lainnya
+            Log::error('Terjadi kesalahan saat memeriksa relevansi artikel: ' . $e->getMessage(), [
+                'title' => $title,
+                'link' => $link,
+                'prompt_sent' => $prompt,
+                'exception_trace' => $e->getTraceAsString() // Sertakan stack trace
+            ]);
             return false;
         }
     }
-
 
 
     public function generateMoreArticle(Request $request)
