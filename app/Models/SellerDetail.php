@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class SellerDetail extends Model
 {
@@ -27,9 +28,21 @@ class SellerDetail extends Model
         'status',
     ];
 
-    public function getImagePathAttribute($value)
+    public function getStoreLogoAttribute($value)
     {
-        return 'storage/' . $value;
+        if ($value) {
+            return Storage::url($value); // Menggunakan Storage::url()
+        }
+        return null;
+    }
+
+    // Accessor untuk foto_ktp
+    public function getFotoKtpAttribute($value)
+    {
+        if ($value) {
+            return Storage::url($value); // Menggunakan Storage::url()
+        }
+        return null;
     }
 
     public function user()
