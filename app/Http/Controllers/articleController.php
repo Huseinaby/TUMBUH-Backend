@@ -86,13 +86,13 @@ class articleController extends Controller
         $result = [];
 
         foreach ($articleKeywords as $keyword) {
-            $relevantArticles = collect();
+            $foundArticles = collect();
             $start = 1;
             $maxArticles = 4;
-            $attemptLimit = 5; // Max 5 page attempt (Google CSE paginasi)
+            $attemptLimit = 5;
             $attemptCount = 0;
 
-            while ($relevantArticles->count() < $maxArticles && $attemptCount < $attemptLimit) {
+            while ($foundArticles->count() < $maxArticles && $attemptCount < $attemptLimit) {
                 $query = $keyword . ' tanaman ' . $title . ' -filetype:pdf -filetype:doc -filetype:docx -site:researchgate.net -site:jstor.org';
 
                 $searchResponse = Http::get('https://www.googleapis.com/customsearch/v1', [
@@ -105,7 +105,7 @@ class articleController extends Controller
 
                 if (!$searchResponse->successful()) {
                     $result[$keyword] = ['error' => 'Failed to fetch articles: ' . $keyword];
-                    break; // Stop trying for this keyword
+                    break;
                 }
 
                 $articlesRaw = collect($searchResponse['items'])->filter(function ($item) {
@@ -129,49 +129,30 @@ class articleController extends Controller
                     ];
                 });
 
-
                 foreach ($articlesRaw as $article) {
-                    if ($relevantArticles->count() >= $maxArticles) {
+                    if ($foundArticles->count() >= $maxArticles) {
                         break;
                     }
 
-                    $isRelevant = $this->isArticleRelevant(
-                        $article['title'],
-                        $article['snippet'],
-                        $article['link'],
-                        $keyword,
-                        $title
-                    );
+                    Article::create([
+                        'modul_id' => $modulId,
+                        'title' => $article['title'],
+                        'link' => $article['link'],
+                        'snippet' => $article['snippet'],
+                        'category' => $keyword,
+                        'keyword' => $keyword . ' tanaman ' . $title,
+                        'start' => $start,
+                    ]);
 
-                    if ($isRelevant) {
-                        // Save to DB
-                        Article::create([
-                            'modul_id' => $modulId,
-                            'title' => $article['title'],
-                            'link' => $article['link'],
-                            'snippet' => $article['snippet'],
-                            'category' => $keyword,
-                            'keyword' => $keyword . ' tanaman ' . $title,
-                            'start' => $start,
-                        ]);
-
-                        $relevantArticles->push($article);
-                    } else {
-                        // Optional: log artikel yang ditolak
-                        Log::info('Artikel tidak relevan, discarding', [
-                            'title' => $article['title'],
-                            'link' => $article['link']
-                        ]);
-                    }
+                    $foundArticles->push($article);
                 }
 
-                // Move to next page if needed
                 $start += 4;
                 $attemptCount++;
             }
 
             $result[$keyword] = [
-                'articles' => $relevantArticles->values(),
+                'articles' => $foundArticles->values(),
                 'start' => $start,
                 'keyword' => $keyword . ' tanaman ' . $title,
             ];
@@ -216,14 +197,14 @@ EOT;
         try {
             // Mengirim permintaan ke Gemini API dengan retry logic dan timeout
             $response = Http::timeout(10) // Set timeout 10 detik
-                            ->retry(3, 100) // Coba 3 kali, dengan delay 100ms antar percobaan
-                            ->post($url, [
-                                'contents' => [
-                                    'parts' => [
-                                        ['text' => $prompt]
-                                    ]
-                                ]
-                            ]);
+                ->retry(3, 100) // Coba 3 kali, dengan delay 100ms antar percobaan
+                ->post($url, [
+                    'contents' => [
+                        'parts' => [
+                            ['text' => $prompt]
+                        ]
+                    ]
+                ]);
 
             // Cek apakah permintaan HTTP berhasil (status code 2xx)
             if (!$response->successful()) {
