@@ -28,7 +28,7 @@ class SellerDetail extends Model
         'status',
     ];
 
-    public function getStoreLogoAttribute($value)
+    public function getStoreLogoUrlAttribute($value)
     {
         if ($value) {
             return 'storage/' . $value;
@@ -36,7 +36,7 @@ class SellerDetail extends Model
         return null;
     }
 
-    public function getStoreBannerAttribute($value)
+    public function getStoreBannerUrlAttribute($value)
     {
         if ($value) {
             return 'storage/' . $value;
@@ -45,7 +45,7 @@ class SellerDetail extends Model
     }
 
     // Accessor untuk foto_ktp
-    public function getFotoKtpAttribute($value)
+    public function getFotoKtpUrlAttribute($value)
     {
         if ($value) {
             return 'storage/' . $value;
