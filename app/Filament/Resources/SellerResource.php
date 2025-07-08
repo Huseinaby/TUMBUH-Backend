@@ -118,8 +118,7 @@ class SellerResource extends Resource
                         'approved' => 'Approved',
                         'rejected' => 'Rejected',
                     ])
-                    ->default('pending')
-                    ->disabled(),
+                    ->default('pending'),
             ]);
     }
 
