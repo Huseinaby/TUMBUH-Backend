@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\ProductResource;
+use App\Models\ProductCategories;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\ProductImage;
@@ -258,6 +259,15 @@ class productController extends Controller
                 'categories' => $categories,
                 'reviews' => $allReviews, // bisa diisi nanti dengan review terbaru jika dibutuhkan
             ]
+        ]);
+    }
+
+    public function getCategory(){
+        $categories = ProductCategories::all();
+
+        return response()->json([
+            'message' => 'Product categories retrieved successfully',
+            'categories' => $categories,
         ]);
     }
 

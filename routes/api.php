@@ -81,6 +81,7 @@ Route::get('/quiz/progress/{userId}', [QuizController::class, 'getProgress']);
 
 //product
 Route::get('/product', [productController::class, 'index']);
+Route::get('/product/category', [productController::class, 'getCategory']);
 Route::get('/product/{id}', [productController::class, 'show']);
 Route::post('/product', [productController::class, 'store']);
 Route::put('/product/{id}', [productController::class, 'update']);
