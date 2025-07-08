@@ -52,7 +52,7 @@ class SellerResource extends Resource
                     })
                     ->searchable()
                     ->preload()
-                    ->required()
+                    ->disabled()
                     ->columnSpan(2)
                     ->placeholder('Pilih user'),
 
@@ -62,30 +62,34 @@ class SellerResource extends Resource
                     ->nullable(),
                 TextInput::make('store_name')
                     ->label('Nama Toko')
-                    ->required()
+                    ->disabled()
                     ->maxLength(100),
                 TextInput::make('store_phone')
                     ->label('Telepon Toko')
-                    ->required()
+                    ->disabled()
                     ->maxLength(15)
                     ->tel()
                     ->placeholder('08123456789'),
                 TextArea::make('store_description')
                     ->label('Deskripsi Toko')
-                    ->required()
+                    ->disabled()
                     ->maxLength(500)
                     ->rows(3),
                 TextArea::make('store_address')
                     ->label('Alamat Toko')
-                    ->required()
+                    ->disabled()
                     ->maxLength(150)
                     ->rows(2),
+                TextInput::make('nomor_induk_kependudukan')
+                    ->label('NIK')
+                    ->maxLength(16)
+                    ->placeholder('1234567890123456'),
                 FileUpload::make('store_logo')
                     ->label('Logo Toko')
                     ->image()
                     ->openable()
                     ->downloadable()
-                    ->required()
+                    ->disabled()
                     ->maxSize(1024) // 1MB
                     ->disk('public')
                     ->directory('seller_logos'),
@@ -97,16 +101,12 @@ class SellerResource extends Resource
                     ->maxSize(2048) // 2MB
                     ->disk('public')
                     ->directory('seller_banners'),
-                TextInput::make('nomor_induk_kependudukan')
-                    ->label('NIK')
-                    ->maxLength(16)
-                    ->placeholder('1234567890123456'),
                 FileUpload::make('foto_ktp')
                     ->label('Foto KTP')
                     ->image()
                     ->openable()
                     ->columnSpan(2)
-                    ->required()
+                    ->disabled()
                     ->maxSize(2048) // 2MB
                     ->disk('public')
                     ->directory('seller_ktps'),
@@ -118,7 +118,7 @@ class SellerResource extends Resource
                         'rejected' => 'Rejected',
                     ])
                     ->default('pending')
-                    ->required(),
+                    ->disabled(),
             ]);
     }
 
