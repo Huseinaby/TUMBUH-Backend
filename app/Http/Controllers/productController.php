@@ -154,7 +154,7 @@ class productController extends Controller
 
     public function show($id)
     {
-        $product = Product::with(['productCategories', 'user', 'reviews'])->findOrFail($id);
+        $product = Product::with(['productCategories', 'user.sellerDetail', 'reviews'])->findOrFail($id);
 
         return ProductResource::make($product)->resolve();
     }
