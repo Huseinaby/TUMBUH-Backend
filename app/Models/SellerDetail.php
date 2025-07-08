@@ -30,13 +30,16 @@ class SellerDetail extends Model
         'status',
     ];
 
-    public function getStoreLogoUrlAttribute($value)
+    
+
+    public function getStoreLogoUrlAttribute()
     {
-        if ($value) {
-            return 'storage/' . $value;
+        if ($this->store_logo) {
+            return asset('storage/' . $this->store_logo);
         }
         return null;
     }
+
 
     public function getStoreBannerUrlAttribute($value)
     {
