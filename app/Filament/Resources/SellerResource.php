@@ -58,8 +58,7 @@ class SellerResource extends Resource
 
                 TextInput::make('saldo')
                     ->label('saldo')
-                    ->disabled()
-                    ->nullable(),
+                    ->disabled(),
                 TextInput::make('store_name')
                     ->label('Nama Toko')
                     ->disabled()
@@ -83,6 +82,7 @@ class SellerResource extends Resource
                 TextInput::make('nomor_induk_kependudukan')
                     ->label('NIK')
                     ->maxLength(16)
+                    ->disabled()
                     ->placeholder('1234567890123456'),
                 FileUpload::make('store_logo')
                     ->label('Logo Toko')
@@ -98,6 +98,7 @@ class SellerResource extends Resource
                     ->image()
                     ->openable()
                     ->downloadable()
+                    ->disabled()
                     ->maxSize(2048) // 2MB
                     ->disk('public')
                     ->directory('seller_banners'),
