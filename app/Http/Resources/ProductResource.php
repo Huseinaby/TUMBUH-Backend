@@ -39,10 +39,12 @@ class ProductResource extends JsonResource
             ] : null,
             'user' => [
                 'id' => $this->user->id,
-                'name' => $this->user->name,
-                'email' => $this->user->email,
-                'role' => $this->user->role,
-                'photo' => $this->user->photo,
+                'seller_id' => $this->user->sellerDetail ? $this->user->sellerDetail->id : null,
+                'store_name' => $this->user->sellerDetail ? $this->user->sellerDetail->store_name : null,
+                'store_description' => $this->user->sellerDetail ? $this->user->sellerDetail->store_description : null,
+                'store_address' => $this->user->sellerDetail ? $this->user->sellerDetail->store_address : null,
+                'store_phone' => $this->user->sellerDetail ? $this->user->sellerDetail->store_phone : null,
+                'store_logo' => $this->user->sellerDetail ? asset($this->user->sellerDetail->store_logo) : null,                
             ],
             'images' => $this->images->map(function ($image) {
                 return [
