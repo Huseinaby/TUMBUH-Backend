@@ -88,7 +88,7 @@ class SellerResource extends Resource
                     ->required()
                     ->maxSize(1024) // 1MB
                     ->disk('public')
-                    ->directory('store_logos'),
+                    ->directory('seller_logos'),
                 FileUpload::make('store_banner')
                     ->label('Banner Toko')
                     ->image()
@@ -96,7 +96,7 @@ class SellerResource extends Resource
                     ->downloadable()
                     ->maxSize(2048) // 2MB
                     ->disk('public')
-                    ->directory('store_banners'),
+                    ->directory('seller_banners'),
                 TextInput::make('nomor_induk_kependudukan')
                     ->label('NIK')
                     ->maxLength(16)

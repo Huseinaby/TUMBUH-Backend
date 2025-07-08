@@ -31,6 +31,12 @@ class sellerController extends Controller
             ], 404);
         }
 
+        foreach (['store_logo', 'store_banner', 'foto_ktp'] as $field) {
+            if ($sellerDetail->$field) {
+                $sellerDetail->$field = 'storage/' . $sellerDetail->$field;
+            }
+        }
+
         return response()->json([
             'message' => 'Seller details retrieved successfully.',
             'seller_detail' => $sellerDetail->load([

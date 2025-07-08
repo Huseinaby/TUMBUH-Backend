@@ -11,8 +11,6 @@ class SellerDetail extends Model
 
     protected $table = 'seller_details';
 
-    protected $appends = ['store_logo_url'];
-
     protected $fillable = [
         'user_id',
         'store_name',
@@ -29,34 +27,6 @@ class SellerDetail extends Model
         'saldo',
         'status',
     ];
-
-    
-
-    public function getStoreLogoUrlAttribute()
-    {
-        if ($this->store_logo) {
-            return asset('storage/' . $this->store_logo);
-        }
-        return null;
-    }
-
-
-    public function getStoreBannerUrlAttribute($value)
-    {
-        if ($value) {
-            return 'storage/' . $value;
-        }
-        return null;
-    }
-
-    // Accessor untuk foto_ktp
-    public function getFotoKtpUrlAttribute($value)
-    {
-        if ($value) {
-            return 'storage/' . $value;
-        }
-        return null;
-    }
 
     public function user()
     {
