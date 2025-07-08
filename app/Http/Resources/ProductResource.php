@@ -44,7 +44,7 @@ class ProductResource extends JsonResource
                 'store_description' => $this->user->sellerDetail ? $this->user->sellerDetail->store_description : null,
                 'store_address' => $this->user->sellerDetail ? $this->user->sellerDetail->store_address : null,
                 'store_phone' => $this->user->sellerDetail ? $this->user->sellerDetail->store_phone : null,
-                'store_logo' => $this->user->sellerDetail ? asset($this->user->sellerDetail->store_logo) : null,                
+                'store_logo' => $this->user->sellerDetail ? asset('storage/' . $this->user->sellerDetail->store_logo) : null,                
             ],
             'images' => $this->images->map(function ($image) {
                 return [
