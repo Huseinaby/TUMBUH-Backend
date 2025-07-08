@@ -109,7 +109,7 @@ class SellerResource extends Resource
                     ->required()
                     ->maxSize(2048) // 2MB
                     ->disk('public')
-                    ->directory('ktp_photos'),
+                    ->directory('seller_ktp'),
                 Select::make('status')
                     ->label('Status')
                     ->options([
