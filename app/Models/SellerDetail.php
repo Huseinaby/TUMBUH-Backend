@@ -11,6 +11,8 @@ class SellerDetail extends Model
 
     protected $table = 'seller_details';
 
+    protected $appends = ['store_logo_url'];
+
     protected $fillable = [
         'user_id',
         'store_name',
