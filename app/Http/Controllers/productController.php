@@ -206,6 +206,7 @@ class productController extends Controller
                 'id' => $product->id,
                 'name' => $product->name,
                 'price' => $product->price,
+                'stock' => $product->stock,
                 'image' => $product->images->first()->image_path ?? null,
                 'categories' => $product->productCategories->name ?? 'No Category',
                 'rating' => round($product->reviews_avg_rating ?? 0, 1),
