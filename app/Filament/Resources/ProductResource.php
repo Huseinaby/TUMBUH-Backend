@@ -35,11 +35,9 @@ class ProductResource extends Resource
             ->schema([
                 Select::make('user_id')
                     ->label('Penjual')
-                    ->options(User::whereHas('sellerDetail')
-                        ->pluck('username', 'id'))
                     ->disabled()
-                    ->preload()
-                    ->columnSpan(2),
+                    ->columnSpan(2)
+                    ->relationship('user', 'username'),
                 TextInput::make('name')
                     ->label('Nama Produk')
                     ->disabled(),
@@ -53,7 +51,7 @@ class ProductResource extends Resource
                     ->label('Deskripsi Produk')
                     ->disabled()
                     ->columnSpanFull()
-                    ->rows(5),
+                    ->rows(10),
                 TextInput::make('price')
                     ->label('Harga')
                     ->disabled(),
@@ -79,7 +77,7 @@ class ProductResource extends Resource
                             ->columnSpanFull(),
                     ])
                     ->maxItems(4)
-                    ->minItems(1)                    
+                    ->minItems(1)
                     ->collapsible()
                     ->columnSpanFull(),
             ]);
