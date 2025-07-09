@@ -37,50 +37,36 @@ class ProductResource extends Resource
                     ->label('Penjual')
                     ->options(User::whereHas('sellerDetail')
                         ->pluck('username', 'id'))
-                    ->required()
-                    ->searchable()
+                    ->disabled()
                     ->preload()
-                    ->columnSpan(2)
-                    ->placeholder('Pilih penjual'),
+                    ->columnSpan(2),
                 TextInput::make('name')
                     ->label('Nama Produk')
-                    ->required()
-                    ->maxLength(100),
+                    ->disabled(),
                 Select::make('product_category_id')
                     ->label('Kategori Produk')
                     ->relationship('productCategories', 'name')
-                    ->required()
+                    ->disabled()
                     ->searchable()
-                    ->preload()
-                    ->placeholder('Pilih kategori produk'),
+                    ->preload(),
                 Textarea::make('description')
                     ->label('Deskripsi Produk')
-                    ->required()
+                    ->disabled()
                     ->columnSpanFull()
                     ->rows(5),
                 TextInput::make('price')
                     ->label('Harga')
-                    ->required()
-                    ->numeric()
-                    ->minValue(0)
-                    ->placeholder('Masukkan harga produk'),
+                    ->disabled(),
                 TextInput::make('weight')
                     ->label('Berat (gram)')
-                    ->required()
-                    ->numeric()
-                    ->minValue(0)
-                    ->default(0)
-                    ->placeholder('Masukkan berat produk'),
+                    ->disabled(),
                 TextInput::make('stock')
                     ->label('Stok')
-                    ->required()
-                    ->numeric()
-                    ->minValue(0)
-                    ->default(0)
-                    ->placeholder('Masukkan jumlah stok produk'),
+                    ->disabled(),
                 Repeater::make('images')
                     ->label('Gambar Produk')
                     ->relationship()
+                    ->disabled()
                     ->schema([
                         FileUpload::make('image_path')
                             ->label('Gambar')
@@ -88,13 +74,12 @@ class ProductResource extends Resource
                             ->openable()
                             ->required()
                             ->disk('public')
-                            ->directory('products')                        
+                            ->directory('products')
                             ->maxSize(1024)
                             ->columnSpanFull(),
                     ])
                     ->maxItems(4)
-                    ->minItems(1)
-                    ->addActionLabel('Tambah Gambar')
+                    ->minItems(1)                    
                     ->collapsible()
                     ->columnSpanFull(),
             ]);
@@ -133,7 +118,7 @@ class ProductResource extends Resource
                     ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable()
-                    ->searchable(),                
+                    ->searchable(),
             ])
             ->filters([
                 //
@@ -168,5 +153,10 @@ class ProductResource extends Resource
             'create' => Pages\CreateProduct::route('/create'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
     }
 }
