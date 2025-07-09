@@ -186,7 +186,7 @@ class SellerResource extends Resource
         ];
     }
 
-    public function canCreate(): bool
+    public static function canCreate(): bool
     {
         return false;
     }
