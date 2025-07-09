@@ -185,4 +185,9 @@ class SellerResource extends Resource
             'edit' => Pages\EditSeller::route('/{record}/edit'),
         ];
     }
+
+    public function canCreate(): bool
+    {
+        return false;
+    }
 }
