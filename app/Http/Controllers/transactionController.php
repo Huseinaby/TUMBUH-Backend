@@ -190,6 +190,13 @@ class transactionController extends Controller
             $sellerId = $group['seller']['id'];
             $items = $group['items'];
 
+            $items = collect($items)->map(function ($item) {
+                if (!str_starts_with($item['image'], 'storage/')) {
+                    $item['image'] = 'storage/' . ltrim($item['image'], '/');
+                }
+                return $item;
+            })->toArray();
+
             $subTotal = collect($items)->sum('subTotal');
 
             $totalWeight = collect($items)->sum(function ($item) {
@@ -361,7 +368,7 @@ class transactionController extends Controller
                         'amount' => $finalPrice,
                         'screen' => 'invoice',
                     ]
-                );                
+                );
 
                 $transactions[] = [
                     'transaction_id' => $transaction->id,
@@ -411,9 +418,9 @@ class transactionController extends Controller
             ->where('is_default', true)
             ->first();
 
-        if(!$address) {
+        if (!$address) {
             $address = UserAddress::with(['province', 'kabupaten', 'kecamatan'])
-                ->where('user_id', $seller->id)                
+                ->where('user_id', $seller->id)
                 ->first();
         }
 
@@ -855,7 +862,7 @@ class transactionController extends Controller
                 $notificationService->sendToUser(
                     $transaction->user,
                     'Pembayaran Berhasil',
-                    'Terima kasih, pembayaranmu telah berhasil.',                
+                    'Terima kasih, pembayaranmu telah berhasil.',
                     [
                         'type' => 'success',
                         'transaction_id' => $transaction->id,
@@ -875,7 +882,7 @@ class transactionController extends Controller
                         $notificationService->sendToUser(
                             $seller,
                             'Produk Terjual!',
-                            "Salah satu produkmu baru saja terjual.",                        
+                            "Salah satu produkmu baru saja terjual.",
                             [
                                 'type' => 'success',
                                 'transaction_id' => $transaction->id,
