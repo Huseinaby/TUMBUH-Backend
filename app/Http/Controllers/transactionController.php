@@ -403,7 +403,8 @@ class transactionController extends Controller
         $product = Product::with(['images', 'user.sellerDetail', 'user.userAddress'])
             ->findOrFail($request->product_id);
 
-        $image = 'storage/' . $product->images()->first();
+        $getImage = $product->images()->first();
+        $image = 'storage/' . $getImage;
         $seller = $product->user;
 
         $address = UserAddress::with(['province', 'kabupaten', 'kecamatan'])
