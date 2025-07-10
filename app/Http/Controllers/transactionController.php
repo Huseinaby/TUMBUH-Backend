@@ -1205,16 +1205,9 @@ class transactionController extends Controller
     {
         $rajaOngkirService = app(RajaOngkirService::class);
 
-        $sellerAddress = UserAddress::where('user_id', $request->seller_id)
-            ->where('is_default', true)
-            ->value('origin_id');
-        $userAddress = UserAddress::where('user_id', $request->user_id)
-            ->where('is_default', true)
-            ->value('origin_id');
-
         $cost = $rajaOngkirService->calculateDomesticCost(
-            $sellerAddress,
-            $userAddress,
+            $request->origin_id,
+            $request->destination_id,
             $request->weight,
             $request->product_total,
             'no'
@@ -1228,8 +1221,8 @@ class transactionController extends Controller
 
         return response()->json([
             'available_services' => $cost['data'],
-            'origin_id' => $sellerAddress,
-            'destination_id' => $userAddress,
+            'origin_id' => $request->origin_id,
+            'destination_id' => $request->destination_id,
         ]);
     }
 }
