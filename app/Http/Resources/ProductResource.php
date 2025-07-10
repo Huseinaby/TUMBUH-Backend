@@ -37,7 +37,7 @@ class ProductResource extends JsonResource
                 'id' => $this->province->id,
                 'name' => $this->province->name,
             ] : null,
-            'user' => [
+            'seller' => [
                 'id' => $this->user->id,
                 'seller_id' => $this->user->sellerDetail ? $this->user->sellerDetail->id : null,
                 'store_name' => $this->user->sellerDetail ? $this->user->sellerDetail->store_name : null,
