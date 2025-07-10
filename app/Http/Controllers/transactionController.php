@@ -681,7 +681,7 @@ class transactionController extends Controller
 
         $originId = $sellerAddress->origin_id;
         $destinationId = $userAddress->origin_id;
-        $weight = $request->weight;
+        $weight = $request->weight / 1000;
         $productTotal = $request->product_total;
 
         $rajaOngkirService = app(RajaOngkirService::class);
@@ -718,12 +718,12 @@ class transactionController extends Controller
                         'service_name' => $service['service_name'] ?? null,
                         'weight' => $service['weight'] ?? 0,
                         'is_cod' => $service['is_cod'] ?? false,
-                        'shipping_cost' => isset($service['shipping_cost']) ? round($service['shipping_cost'] / 100) : 0,
-                        'shipping_cashback' => isset($service['shipping_cashback']) ? round($service['shipping_cashback'] / 100) : 0,
-                        'shipping_cost_net' => isset($service['shipping_cost_net']) ? round($service['shipping_cost_net'] / 100) : 0,
-                        'grandtotal' => isset($service['grandtotal']) ? round($service['grandtotal'] / 100) : 0,
-                        'service_fee' => isset($service['service_fee']) ? round($service['service_fee'] / 100) : 0,
-                        'net_income' => isset($service['net_income']) ? round($service['net_income'] / 100) : 0,
+                        'shipping_cost' => $service['shipping_cost'] ?? 0,
+                        'shipping_cashback' => $service['shipping_cashback'] ?? 0,
+                        'shipping_cost_net' => $service['shipping_cost_net'] ?? 0,
+                        'grandtotal' => $service['grandtotal'] ?? 0,
+                        'service_fee' => $service['service_fee'] ?? 0,
+                        'net_income' => $service['net_income'] ?? 0,
                         'etd' => $service['etd'] ?? '-',
                     ];
                 });
