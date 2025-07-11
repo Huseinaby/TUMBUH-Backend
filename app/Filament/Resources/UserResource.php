@@ -98,9 +98,10 @@ class UserResource extends Resource
                     ->label('Role')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
-                        'admin' => 'primary',
-                        'seller' => 'success',
+                        'admin' => 'success',
+                        'seller' => 'primay',
                         'moderator' => 'warning',
+                        'user' => 'info',
                         default => 'secondary',
                     })
                     ->sortable()
