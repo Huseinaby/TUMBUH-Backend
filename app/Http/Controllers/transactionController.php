@@ -193,7 +193,7 @@ class transactionController extends Controller
 
             $items = collect($items)->map(function ($item) {
                 if (!str_starts_with($item['image'], 'storage/')) {
-                    $item['image'] = 'storage/' . ltrim($item['image'], '/');
+                    $item['image'] = asset('storage/' . $item['image']);
                 }
                 return $item;
             })->toArray();
@@ -467,7 +467,7 @@ class transactionController extends Controller
                         [
                             'product_id' => $product->id,
                             'quantity' => $quantity,
-                            'image' => $image ? 'storage/' . $image->image_path : null,
+                            'image' => $image ? asset('storage/' . $image->image_path) : null,
                             'subTotal' => $product->price,
                             'total_weight' => $totalWeight,
                             'product' => [
