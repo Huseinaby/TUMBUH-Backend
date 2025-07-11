@@ -136,7 +136,7 @@ class transactionController extends Controller
             ->get();
 
         return response()->json([
-            'transactions' => $transactions,
+            'transactions' => TransactionResource::collection($transactions)->resolve(),
         ]);
     }
 
