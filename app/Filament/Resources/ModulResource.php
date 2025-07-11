@@ -82,7 +82,30 @@ class ModulResource extends Resource
                     ->maxItems(5)
                     ->minItems(1)
                     ->collapsible()
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
+                Repeater::make('article')
+                    ->label('Artikel')
+                    ->relationship()
+                    ->schema([
+                        TextInput::make('title')
+                            ->label('Judul Artikel')
+                            ->required()
+                            ->maxLength(255),
+                        TextInput::make('link')
+                            ->label('Link Artikel')
+                            ->required()
+                            ->url(),
+                        Textarea::make('snippet')
+                            ->label('Cuplikan Artikel')
+                            ->required()
+                            ->maxLength(65535)
+                            ->rows(3),
+                        TextInput::make('category')
+                            ->label('Kategori Artikel')
+                            ->required()
+                            ->maxLength(100),
+                    ])
+                    ->collapsible()
             ]);
     }
 
