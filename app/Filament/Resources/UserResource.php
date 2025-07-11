@@ -111,9 +111,7 @@ class UserResource extends Resource
                     ->label('Email Verified At')
                     ->dateTime()
                     ->sortable()
-                    ->searchable(),
-                
-                
+                    ->searchable(),                
             ])
             ->filters([
                 //
