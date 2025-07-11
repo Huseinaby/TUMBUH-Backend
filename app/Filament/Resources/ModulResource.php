@@ -43,7 +43,7 @@ class ModulResource extends Resource
                 Select::make('user_id')
                     ->label('Pengguna')
                     ->relationship('user', 'username')
-                    ->required()
+                    ->disabled()
                     ->searchable()
                     ->preload()
                     ->placeholder('Pilih pengguna'),
@@ -106,6 +106,27 @@ class ModulResource extends Resource
                             ->maxLength(100),
                     ])
                     ->collapsible()
+                    ->columnSpanFull(),
+                Repeater::make('videos')
+                    ->label('Video')
+                    ->relationship()
+                    ->schema([
+                        TextInput::make('title')
+                            ->label('Judul Video')
+                            ->required()
+                            ->maxLength(255),
+                        TextInput::make('link')
+                            ->label('Link Video')
+                            ->required()
+                            ->url(),
+                        Textarea::make('description')
+                            ->label('Deskripsi Video')
+                            ->required()
+                            ->maxLength(65535)
+                            ->rows(3),
+                    ])
+                    ->collapsible()
+                    ->columnSpanFull(),
             ]);
     }
 
