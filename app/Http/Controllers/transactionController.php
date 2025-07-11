@@ -83,7 +83,7 @@ class transactionController extends Controller
         }
 
         return response()->json([
-            'transactions' => $transactions,
+            'transactions' => TransactionResource::collection($transactions)->resolve(),
         ]);
     }
 
@@ -103,7 +103,7 @@ class transactionController extends Controller
         }
 
         return response()->json([
-            'transactions' => $transactions,
+            'transactions' => TransactionResource::collection($transactions)->resolve(),
         ]);
     }
 
@@ -123,7 +123,7 @@ class transactionController extends Controller
         }
 
         return response()->json([
-            'transactions' => $transactions,
+            'transactions' => TransactionResource::collection($transactions)->resolve(),
         ]);
     }
 
