@@ -460,7 +460,7 @@ class transactionController extends Controller
                     'seller' => [
                         'id' => $seller->id,
                         'storeName' => $seller->sellerDetail->store_name ?? $seller->username,
-                        'logo' => $storeLogo ? 'storage/' . $storeLogo : null,
+                        'logo' => $storeLogo ? asset('storage/' . $storeLogo) : null,
                         'origin_id' => $origin,
                     ],
                     'items' => [
@@ -765,7 +765,7 @@ class transactionController extends Controller
                 'seller' => [
                     'id' => $sellerId,
                     'storeName' => $sellerDetail?->store_name ?? $user->username,
-                    'logo' => $sellerDetail?->store_logo ? 'storage/' . $sellerDetail->store_logo : null,
+                    'logo' => $sellerDetail?->store_logo ? asset('storage/' . $sellerDetail->store_logo) : null,
                     'origin_id' => $userAddress?->firstWhere('is_default', true)->origin_id ?? null,
                 ],
                 'items' => $items->map(function ($item) {
