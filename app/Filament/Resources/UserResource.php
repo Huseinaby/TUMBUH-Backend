@@ -51,7 +51,6 @@ class UserResource extends Resource
                     ->default('user'),
                 TextInput::make('email_verified_at')
                     ->label('Email Verified At')
-                    ->dateTime()
                     ->nullable()
                     ->columnSpanFull(),
                 TextInput::make('photo')
@@ -109,7 +108,6 @@ class UserResource extends Resource
                     ->searchable(),
                 TextColumn::make('email_verified_at')
                     ->label('Email Verified At')
-                    ->dateTime()
                     ->sortable()
                     ->searchable(),                
             ])
