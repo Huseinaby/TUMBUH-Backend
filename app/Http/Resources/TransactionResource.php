@@ -39,12 +39,14 @@ class TransactionResource extends JsonResource
                 'store_description' => $this->seller->sellerDetail->store_description ?? null,
                 'store_address' => $this->seller->sellerDetail->store_address ?? null,
                 'store_phone' => $this->seller->sellerDetail->store_phone ?? null,
-                'store_logo' => $this->seller->sellerDetail->store_logo ? asset('storage/' . $this->seller->sellerDetail->store_logo) : null,                
+                'store_logo' => $this->seller->sellerDetail->store_logo ? asset('storage/' . $this->seller->sellerDetail->store_logo) : null,
             ],
-            'images' => [
-                'id' => $this->images->id ?? null,
-                'image_path' => $this->images->image_path ? asset('storage/' . $this->images->image_path) : null,
-            ],
+            'images' => $this->images ? $this->images->map(function ($img) {
+                return [
+                    'id' => $img->id,
+                    'image_path' => $img->image_path ? asset('storage/' . $img->image_path) : null,
+                ];
+            }) : [],
             'reviews' => [
                 'id' => $this->reviews->id ?? null,
                 'rating' => $this->reviews->rating ?? null,
