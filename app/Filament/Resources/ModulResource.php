@@ -107,7 +107,7 @@ class ModulResource extends Resource
                     ])
                     ->collapsible()
                     ->columnSpanFull(),
-                Repeater::make('videos')
+                Repeater::make('video')
                     ->label('Video')
                     ->relationship()
                     ->schema([
