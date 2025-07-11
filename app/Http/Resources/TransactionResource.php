@@ -47,12 +47,14 @@ class TransactionResource extends JsonResource
                     'image_path' => $img->image_path ? asset('storage/' . $img->image_path) : null,
                 ];
             }) : [],
-            'reviews' => [
-                'id' => $this->reviews->id ?? null,
-                'rating' => $this->reviews->rating ?? null,
-                'comment' => $this->reviews->comment ?? null,
-                'created_at' => $this->reviews->created_at ? $this->reviews->created_at->format('Y-m-d H:i:s') : null,
-            ],
+            'reviews' => $this->reviews ? $this->reviews->map(function ($review) {
+                return [
+                    'id' => $review->id,
+                    'rating' => $review->rating,
+                    'comment' => $review->comment,
+                    'created_at' => $review->created_at ? $review->created_at->format('Y-m-d H:i:s') : null,
+                ];
+            }) : [],
         ];
     }
 }
