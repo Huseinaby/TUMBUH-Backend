@@ -99,7 +99,7 @@ class UserResource extends Resource
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'admin' => 'success',
-                        'seller' => 'primay',
+                        'seller' => 'primary',
                         'moderator' => 'warning',
                         'user' => 'info',
                         default => 'secondary',
