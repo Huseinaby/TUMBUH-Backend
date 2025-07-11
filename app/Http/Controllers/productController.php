@@ -224,7 +224,7 @@ class productController extends Controller
                     'product_id' => $product->id,
                     'product_name' => $product->name,
                     'username' => $review->user->username ?? 'Unknown',
-                    'imageUser' => $review->user->photo ? Storage::url($review->user->photo) : null,
+                    'imageUser' => $review->user->photo ? asset($review->user->photo) : null,
                     'rating' => $review->rating,
                     'comment' => $review->comment,
                     'date' => $review->created_at->format('Y-m-d'),
