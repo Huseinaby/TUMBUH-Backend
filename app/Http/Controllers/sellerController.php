@@ -33,7 +33,7 @@ class sellerController extends Controller
 
         foreach (['store_logo', 'store_banner', 'foto_ktp'] as $field) {
             if ($sellerDetail->$field) {
-                $sellerDetail->$field = 'storage/' . $sellerDetail->$field;
+                $sellerDetail->$field = asset('storage/' . $sellerDetail->$field);
             }
         }
 
