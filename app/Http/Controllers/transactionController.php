@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\OrderCreated;
 use App\Events\UserNotification;
+use App\Http\Resources\TransactionResource;
 use App\Models\transaction;
 use App\Models\WalletHistory;
 use Illuminate\Http\Request;
@@ -62,7 +63,7 @@ class transactionController extends Controller
         }
 
         return response()->json([
-            'transactions' => $transactions,
+            'transactions' => TransactionResource::collection($transactions)->resolve(),
         ]);
     }
 
