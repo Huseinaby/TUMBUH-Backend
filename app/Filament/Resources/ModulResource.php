@@ -103,8 +103,7 @@ class ModulResource extends Resource
                         TextInput::make('category')
                             ->label('Kategori Artikel')
                             ->required()
-                            ->maxLength(100),
-                        ,
+                            ->maxLength(100),                    
                     ])
                     ->collapsible()
                     ->columnSpanFull(),
