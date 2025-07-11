@@ -81,8 +81,7 @@ class UserResource extends Resource
                 ImageColumn::make('photo')
                     ->label('Photo')
                     ->circular()
-                    ->size(50)
-                    ->defaultIcon('heroicon-o-user-circle'),
+                    ->size(50),
                 TextColumn::make('username')
                     ->label('Username')
                     ->searchable()
