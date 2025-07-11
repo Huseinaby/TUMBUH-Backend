@@ -17,7 +17,12 @@ class CartGroupResource extends JsonResource
         return [
             'seller' => [
                 'id' => $this->seller->id,
-                'storeName' => $this->seller->sellerDetail->store_name ?? $this->seller->username,
+                'seller_id' => $this->seller->sellerDetail->id ?? null,
+                'store_name' => $this->seller->sellerDetail->store_name ?? null,
+                'store_description' => $this->seller->sellerDetail->store_description ?? null,
+                'store_address' => $this->seller->sellerDetail->store_address ?? null,
+                'store_phone' => $this->seller->sellerDetail->store_phone ?? null,
+                'store_logo' => $this->seller->sellerDetail->store_logo ? asset('storage/' . $this->seller->sellerDetail->store_logo) : null,
             ],
             'items' => CartItemResource::collection($this->items),
         ];

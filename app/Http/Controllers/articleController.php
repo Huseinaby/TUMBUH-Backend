@@ -157,7 +157,6 @@ class articleController extends Controller
                 'keyword' => $keyword . ' tanaman ' . $title,
             ];
         }
-
         return $result;
     }
 
