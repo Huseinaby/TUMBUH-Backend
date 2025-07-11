@@ -135,9 +135,9 @@ class ModulResource extends Resource
                             ->url(),
                         Placeholder::make('thumbnail_preview')
                             ->label('Preview Thumbnail')
-                            ->visible(fn(Get $get): bool => filled($get('url')))
+                            ->visible(fn(Get $get): bool => filled($get('thumbnail')))
                             ->content(function (Get $get): ?HtmlString {
-                                $url = $get('url');
+                                $url = $get('thumbnail');
                                 if (!$url) {
                                     return null;
                                 }
