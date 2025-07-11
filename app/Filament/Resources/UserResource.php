@@ -12,6 +12,8 @@ use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -46,13 +48,7 @@ class UserResource extends Resource
                     ->required()
                     ->maxLength(50)
                     ->columnSpanFull()
-                    ->default('user')
-                    ->options([
-                        'user' => 'User',
-                        'admin' => 'Admin',
-                        'seller' => 'Seller',
-                        'moderator' => 'Moderator',
-                    ]),
+                    ->default('user'),
                 TextInput::make('email_verified_at')
                     ->label('Email Verified At')
                     ->dateTime()
@@ -83,7 +79,41 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                //
+                ImageColumn::make('photo')
+                    ->label('Photo')
+                    ->circular()
+                    ->size(50)
+                    ->defaultIcon('heroicon-o-user-circle'),
+                TextColumn::make('username')
+                    ->label('Username')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('email')
+                    ->label('Email')
+                    ->icon('heroicon-o-envelope')
+                    ->iconColor('primary')
+                    ->copyable()
+                    ->copyMessage('Email telah disalin ke clipboard')
+                    ->copyMessageDuration(1500)
+                    ->searchable(), 
+                TextColumn::make('role')
+                    ->label('Role')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'admin' => 'primary',
+                        'seller' => 'success',
+                        'moderator' => 'warning',
+                        default => 'secondary',
+                    })
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('email_verified_at')
+                    ->label('Email Verified At')
+                    ->dateTime()
+                    ->sortable()
+                    ->searchable(),
+                
+                
             ])
             ->filters([
                 //
