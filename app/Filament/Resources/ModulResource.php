@@ -104,23 +104,7 @@ class ModulResource extends Resource
                             ->label('Kategori Artikel')
                             ->required()
                             ->maxLength(100),
-                        TextInput::make('thumbnail')
-                            ->label('URL thumbnail')
-                            ->live(onBlur: true) // <-- Membuat form bereaksi saat input ini berubah
-                            ->required()
-                            ->url(),
-                        Placeholder::make('thumbnail_preview')
-                            ->label('Preview Thumbnail')
-                            ->visible(fn(Get $get): bool => filled($get('url')))
-                            ->content(function (Get $get): ?HtmlString {
-                                $url = $get('url');
-                                if (!$url) {
-                                    return null;
-                                }
-
-                                // Kita membuat tag <img> secara langsung di sini
-                                return new HtmlString('<img src="' . e($url) . '" style="max-height: 250px; width: auto; margin-top: 10px;" class="rounded-lg border" />');
-                            }),
+                        ,
                     ])
                     ->collapsible()
                     ->columnSpanFull(),
@@ -145,6 +129,23 @@ class ModulResource extends Resource
                             ->label('Kategori Video')
                             ->required()
                             ->maxLength(20),
+                        TextInput::make('thumbnail')
+                            ->label('URL thumbnail')
+                            ->live(onBlur: true) // <-- Membuat form bereaksi saat input ini berubah
+                            ->required()
+                            ->url(),
+                        Placeholder::make('thumbnail_preview')
+                            ->label('Preview Thumbnail')
+                            ->visible(fn(Get $get): bool => filled($get('url')))
+                            ->content(function (Get $get): ?HtmlString {
+                                $url = $get('url');
+                                if (!$url) {
+                                    return null;
+                                }
+
+                                // Kita membuat tag <img> secara langsung di sini
+                                return new HtmlString('<img src="' . e($url) . '" style="max-height: 250px; width: auto; margin-top: 10px;" class="rounded-lg border" />');
+                            }),
 
                     ])
                     ->collapsible()
