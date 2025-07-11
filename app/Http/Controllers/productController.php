@@ -208,7 +208,9 @@ class productController extends Controller
                 'name' => $product->name,
                 'price' => $product->price,
                 'stock' => $product->stock,
-                'image' => asset($product->images->first()->image_path) ?? null,
+                'image' => $product->images->first()
+                    ? asset('storage/' . $product->images->first()->image_path)
+                    : null,
                 'categories' => $product->productCategories->name ?? 'No Category',
                 'rating' => round($product->reviews_avg_rating ?? 0, 1),
                 'rating_count' => $product->reviews_count,
@@ -222,7 +224,7 @@ class productController extends Controller
                     'product_id' => $product->id,
                     'product_name' => $product->name,
                     'username' => $review->user->username ?? 'Unknown',
-                    'imageUser' => $review->user->photo ? asset($review->user->photo) : null,
+                    'imageUser' => $review->user->photo ? asset(('storage/' . $review->user->photo)) : null,
                     'rating' => $review->rating,
                     'comment' => $review->comment,
                     'date' => $review->created_at->format('Y-m-d'),
@@ -262,7 +264,8 @@ class productController extends Controller
         ]);
     }
 
-    public function getCategory(){
+    public function getCategory()
+    {
         $categories = ProductCategories::all();
 
         return response()->json([
