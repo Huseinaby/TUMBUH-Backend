@@ -48,8 +48,16 @@ class TransactionResource extends JsonResource
                     'quantity' => $orderItem->quantity,
                     'price' => $orderItem->price,
                     'subtotal' => $orderItem->subtotal,
-                    'product_name' => $orderItem->product->name,
-                    'product_image' => $orderItem->product->images->first() ? asset('storage/' . $orderItem->product->images->first()->image_path) : null,
+                    'product' => [
+                        'id' => $orderItem->product->id,
+                        'name' => $orderItem->product->name,
+                        'product_category_id' => $orderItem->product->product_category_id,
+                        'description' => $orderItem->product->description,
+                        'price' => $orderItem->product->price,
+                        'weight' => $orderItem->product->weight,
+                        'stock' => $orderItem->product->stock,
+                        'image_path' => $orderItem->product->images->first() ? asset('storage/' . $orderItem->product->images->first()->image_path) : null,
+                    ]
                 ];
             }) : [],
             'images' => $this->orderItems ? $this->orderItems->map(function ($orderItems) {
