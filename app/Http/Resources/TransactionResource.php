@@ -32,6 +32,7 @@ class TransactionResource extends JsonResource
             'paid_at' => $this->paid_at,
             'resi_number' => $this->resi_number,
             'shipping_status' => $this->shipping_status,
+            'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,
             'seller' => [
                 'id' => $this->seller->id,
                 'seller_id' => $this->seller->sellerDetail->id ?? null,
