@@ -59,17 +59,19 @@ class UserResource extends Resource
                     ->nullable()
                     ->maxLength(255)
                     ->columnSpanFull(),
-                Placeholder::make('photo')
+                Placeholder::make('photo_preview')
                     ->label('Photo Preview')
                     ->visible(fn(Get $get): bool => filled($get('photo')))
                     ->content(function (Get $get): ?HtmlString {
-                        $url = $get('photo');
-                        if (!$url) {
+                        $path = $get('photo');
+                        if (!$path) {
                             return null;
                         }
-
-                        // Kita membuat tag <img> secara langsung di sini
-                        return new HtmlString('<img src="' . e($url) . '" style="max-height: 250px; width: auto; margin-top: 10px;" class="rounded-lg border" />');
+                        $url = asset($path);
+            
+                        return new HtmlString(
+                            '<img src="' . e($url) . '" style="max-height: 250px; width: auto; margin-top: 10px;" class="rounded-lg border" />'
+                        );
                     }),
             ]);
     }
