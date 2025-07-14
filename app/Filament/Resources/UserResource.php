@@ -93,7 +93,7 @@ class UserResource extends Resource
                     ->copyable()
                     ->copyMessage('Email telah disalin ke clipboard')
                     ->copyMessageDuration(1500)
-                    ->searchable(), 
+                    ->searchable(),
                 TextColumn::make('role')
                     ->label('Role')
                     ->badge()
@@ -109,12 +109,18 @@ class UserResource extends Resource
                 TextColumn::make('email_verified_at')
                     ->label('Email Verified At')
                     ->sortable()
-                    ->searchable(),                
+                    ->searchable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
+                Tables\Actions\DeleteAction::make()
+                    ->requiresConfirmation()
+                    ->action(function (User $record) {
+                        $record->delete();
+                    })
+                    ->icon('heroicon-o-trash'),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
