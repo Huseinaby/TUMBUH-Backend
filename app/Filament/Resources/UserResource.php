@@ -68,7 +68,7 @@ class UserResource extends Resource
                             return null;
                         }
                         $url = asset($path);
-            
+
                         return new HtmlString(
                             '<img src="' . e($url) . '" style="max-height: 250px; width: auto; margin-top: 10px;" class="rounded-lg border" />'
                         );
@@ -83,7 +83,8 @@ class UserResource extends Resource
                 ImageColumn::make('photo')
                     ->label('Photo')
                     ->circular()
-                    ->size(50),
+                    ->size(50)
+                    ->getStateUsing(fn($record) => asset($record->photo)),
                 TextColumn::make('username')
                     ->label('Username')
                     ->searchable()
