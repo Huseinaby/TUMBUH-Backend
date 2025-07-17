@@ -27,7 +27,13 @@ class ModulResource extends JsonResource
             'video_count' => $this->video->count(),
             'user' => $this->user,
             'images' => $this->modulImage,
-            
+            'meta' => [
+                'current_page' => $this->currentPage(),
+                'next_page_url' => $this->nextPageUrl(),
+                'last_page' => $this->lastPage(),
+                'per_page' => $this->perPage(),
+                'total' => $this->total(),
+            ]
         ];
     }
 }
