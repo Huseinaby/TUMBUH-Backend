@@ -129,9 +129,8 @@ class modulController extends Controller
             ->withCount('quiz', 'article', 'video')
             ->paginate(5);
 
-        return response()->json([
+        return ModulResource::collection($moduls)->additional([
             'message' => 'Modul by user',
-            'data' => ModulResource::collection($moduls)
         ]);
     }
 
@@ -197,7 +196,7 @@ class modulController extends Controller
 
         $userId = Auth::user()->id;
 
-        if(!$userId){
+        if (!$userId) {
             return response()->json([
                 'message' => 'User not authenticated',
             ], 401);

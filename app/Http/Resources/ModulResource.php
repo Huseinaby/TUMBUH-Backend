@@ -27,6 +27,7 @@ class ModulResource extends JsonResource
             'video_count' => $this->video->count(),
             'user' => $this->user,
             'images' => $this->modulImage,
+            
         ];
     }
 }
