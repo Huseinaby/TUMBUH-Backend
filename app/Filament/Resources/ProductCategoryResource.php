@@ -61,17 +61,19 @@ class ProductCategoryResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->requiresConfirmation()
+                    ->action(function (ProductCategories $record) {
+                        $record->delete();
+                        return redirect(ProductCategoryResource::getUrl('index'));
+                    })->icon('heroicon-o-trash'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+        ;
     }
 
     public static function getRelations(): array
