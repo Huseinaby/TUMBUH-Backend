@@ -150,9 +150,7 @@ Route::get('/seller/saldo-history/{userId}', [wallateHistoryController::class, '
 //location
 Route::get('/location/province', [locationController::class, 'getProvince']);
 Route::get('/location/province/sync', [locationController::class, 'syncProvince']);
-Route::post('/location/kabupaten', [locationController::class, 'getKabupaten']);
-Route::post('/location/kecamatan', [locationController::class, 'getKecamatan']);
-Route::get('/location/origin-id', [locationController::class, 'getOriginByKecamatan']);
+Route::get('/location/origin-id', [locationController::class, 'getOrigin']);
 
 //address
 Route::get('/address', [userAddressController::class, 'getAddress']);

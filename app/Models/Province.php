@@ -19,8 +19,4 @@ class Province extends Model
         return $this->hasMany(Product::class);
     }
 
-    public function kabupatens()
-    {
-        return $this->hasMany(kabupaten::class, 'province_id', 'id');
-    }
 }

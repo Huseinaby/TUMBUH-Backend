@@ -17,14 +17,4 @@ class UserAddress extends Model
     {
         return $this->belongsTo(Province::class, 'province_id');
     }
-
-    public function kabupaten()
-    {
-        return $this->belongsTo(kabupaten::class, 'kabupaten_id');
-    }
-
-    public function kecamatan()
-    {
-        return $this->belongsTo(kecamatan::class, 'kecamatan_id');
-    }
 }

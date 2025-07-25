@@ -13,7 +13,6 @@ class userAddressController extends Controller
     public function getAddress(){
         $user = Auth::user();
         $alamat = UserAddress::where('user_id', $user->id)
-            ->with(['province', 'kabupaten', 'kecamatan'])
             ->get();
 
         return response()->json([
@@ -28,9 +27,6 @@ class userAddressController extends Controller
             'nama_lengkap' => 'required|string|max:255',
             'nomor_telepon' => 'required|string|max:15',
             'alamat_lengkap' => 'required|string',
-            'province_id' => 'required|exists:provinces,id',
-            'kabupaten_id' => 'required|exists:kabupatens,id',
-            'kecamatan_id' => 'required|exists:kecamatans,id',
             'origin_id' => 'required|string|max:255',
             'kode_pos' => 'nullable|string|max:10',
             'label' => 'nullable|string|max:255',
@@ -50,9 +46,6 @@ class userAddressController extends Controller
                 'nama_lengkap' => $request->nama_lengkap,
                 'nomor_telepon' => $request->nomor_telepon,
                 'alamat_lengkap' => $request->alamat_lengkap,
-                'province_id' => $request->province_id,
-                'kabupaten_id' => $request->kabupaten_id,
-                'kecamatan_id' => $request->kecamatan_id,
                 'origin_id' => $request->origin_id,
                 'kode_pos' => $request->kode_pos,
                 'label' => $request->label,
@@ -63,7 +56,7 @@ class userAddressController extends Controller
 
             return response()->json([
                 'message' => 'Address added successfully',
-                'data' => $alamat->load(['province', 'kabupaten', 'kecamatan']),
+                'data' => $alamat,
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -79,9 +72,6 @@ class userAddressController extends Controller
             'nama_lengkap' => 'sometimes|string|max:255',
             'nomor_telepon' => 'sometimes|string|max:15',
             'alamat_lengkap' => 'sometimes|string',
-            'province_id' => 'sometimes|exists:provinces,id',
-            'kabupaten_id' => 'sometimes|exists:kabupatens,id',
-            'kecamatan_id' => 'sometimes|exists:kecamatans,id',
             'origin_id' => 'sometimes|string|max:255',
             'kode_pos' => 'sometimes|string|max:10',
             'label' => 'sometimes|string|max:255',
@@ -108,9 +98,6 @@ class userAddressController extends Controller
                 'nama_lengkap' => $request->nama_lengkap ?? $alamat->nama_lengkap,
                 'nomor_telepon' => $request->nomor_telepon ?? $alamat->nomor_telepon,
                 'alamat_lengkap' => $request->alamat_lengkap ?? $alamat->alamat_lengkap,
-                'province_id' => $request->province_id ?? $alamat->province_id,
-                'kabupaten_id' => $request->kabupaten_id ?? $alamat->kabupaten_id,
-                'kecamatan_id' => $request->kecamatan_id ?? $alamat->kecamatan_id,
                 'origin_id' => $request->origin_id ?? $alamat->origin_id,
                 'kode_pos' => $request->kode_pos ?? $alamat->kode_pos,
                 'label' => $request->label ?? $alamat->label,
@@ -121,7 +108,7 @@ class userAddressController extends Controller
 
             return response()->json([
                 'message' => 'Address updated successfully',
-                'data' => $alamat->load(['province', 'kabupaten', 'kecamatan']),
+                'data' => $alamat,
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();

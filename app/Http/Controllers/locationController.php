@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\kabupaten;
-use App\Models\kecamatan;
 use App\Models\Province;
 use Illuminate\Http\Request;
 use App\Services\RajaOngkirService;
@@ -50,100 +48,7 @@ class locationController extends Controller
         ], 500);
     }
 
-    public function getKabupaten(Request $request)
-    {
-        $province_code = $request->input('province_code');
-
-        $kabupaten = kabupaten::where('province_id', $province_code)->get();
-
-        if ($kabupaten->isNotEmpty()) {
-            return response()->json([
-                'status' => 'Kabupaten already exists',
-                'data' => $kabupaten,
-            ], 200);
-        }
-
-        if (!$province_code) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Province Code is required.',
-            ], 400);
-        }
-
-        $response = Http::get('https://api.binderbyte.com/wilayah/kabupaten', [
-            'api_key' => env('BINDERBYTE_API_KEY'),
-            'id_provinsi' => $province_code,
-        ]);
-
-        if ($response->successful()) {
-            foreach ($response['value'] as $item) {
-                kabupaten::updateOrCreate([
-                    'id' => str_replace('.', '', $item['id']),
-                ], [
-                    'name' => $item['name'],
-                    'province_id' => $province_code,
-                    'code' => $item['id'],
-                ]);
-            }
-        }
-
-        $kabupatens = kabupaten::where('province_id', $province_code)->get();
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $kabupatens,
-        ], 200);
-    }
-
-    public function getKecamatan(Request $request)
-    {
-        $kabupatenId = $request->input('kabupaten_code');
-
-        $kabupaten_code = (int) str_replace('.', '', $kabupatenId);
-
-        $kecamatan = kecamatan::where('kabupaten_id', $kabupaten_code)->get();
-
-        if ($kecamatan->isNotEmpty()) {
-            return response()->json([
-                'status' => 'kecamatan already exists',
-                'data' => $kecamatan,
-            ], 200);
-        }
-
-        $response = Http::get('https://api.binderbyte.com/wilayah/kecamatan', [
-            'api_key' => env('BINDERBYTE_API_KEY'),
-            'id_kabupaten' => $kabupatenId,
-        ]);
-
-        if ($response->successful()) {
-            foreach ($response['value'] as $item) {
-                $id = str_replace('.', '', $item['id']);
-                kecamatan::updateOrCreate(
-                    ['id' => $id],
-                    [
-                        'name' => $item['name'],
-                        'kabupaten_id' => $kabupaten_code,
-                        'code' => $item['id']
-                    ]
-                );
-            }
-
-
-            $kecamatan = kecamatan::where('kabupaten_id', $kabupaten_code)->get();
-
-            return response()->json([
-                'status' => 'success',
-                'data' => $kecamatan,
-            ], 200);
-        }
-
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Failed to retrieve kecamatan data.',
-        ], 500);
-    }
-
-    public function getOriginByKecamatan()
+    public function getOrigin()
     {
         $keyword = request()->input('search', '');
 

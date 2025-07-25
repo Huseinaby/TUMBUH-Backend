@@ -18,8 +18,6 @@ return new class extends Migration
             $table->string('nomor_telepon');
             $table->text('alamat_lengkap');
             $table->foreignId('province_id')->constrained('provinces')->onDelete('cascade');
-            $table->foreignId('kabupaten_id')->constrained('kabupatens')->onDelete('cascade');
-            $table->foreignId('kecamatan_id')->constrained('kecamatans')->onDelete('cascade');
             $table->string('origin_id');
             $table->string('kode_pos')->nullable();
             $table->string('label')->nullable();

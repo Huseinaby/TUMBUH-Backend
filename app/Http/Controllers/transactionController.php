@@ -159,8 +159,7 @@ class transactionController extends Controller
             ], 404);
         }
 
-        $address = UserAddress::with(['province', 'kabupaten', 'kecamatan'])
-            ->where('user_id', $user->id)
+        $address = UserAddress::where('user_id', $user->id)
             ->where('is_default', true)
             ->first();
 
@@ -175,9 +174,6 @@ class transactionController extends Controller
             'full_name' => $address->nama_lengkap,
             'full_address' => $address->alamat_lengkap,
             'phone' => $address->nomor_telepon,
-            'province' => $address->province ? $address->province->name : null,
-            'city' => $address->kabupaten ? $address->kabupaten->name : null,
-            'district' => $address->kecamatan ? $address->kecamatan->name : null,
             'postal_code' => $address->kode_pos,
             'origin_id' => $address->origin_id,
         ];
@@ -414,14 +410,12 @@ class transactionController extends Controller
         $image = $product->images()->first();
         $seller = $product->user;
 
-        $address = UserAddress::with(['province', 'kabupaten', 'kecamatan'])
-            ->where('user_id', $user->id)
+        $address = UserAddress::where('user_id', $user->id)
             ->where('is_default', true)
             ->first();
 
         if (!$address) {
-            $address = UserAddress::with(['province', 'kabupaten', 'kecamatan'])
-                ->where('user_id', $seller->id)
+            $address = UserAddress::where('user_id', $seller->id)
                 ->first();
         }
 
@@ -496,9 +490,6 @@ class transactionController extends Controller
                 'full_name' => $address->nama_lengkap,
                 'full_address' => $address->alamat_lengkap,
                 'phone' => $address->nomor_telepon,
-                'province' => optional($address->province)->name,
-                'city' => optional($address->kabupaten)->name,
-                'district' => optional($address->kecamatan)->name,
                 'postal_code' => $address->kode_pos,
                 'origin_id' => $address->origin_id,
             ],
