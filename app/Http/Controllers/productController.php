@@ -180,7 +180,7 @@ class productController extends Controller
             ->withAvg('reviews', 'rating')
             ->where('user_id', $userId)
             ->latest()
-            ->get();
+            ->paginate(6);
 
 
         // Kategori
@@ -258,6 +258,13 @@ class productController extends Controller
             ],
             'tabs' => [
                 'products' => $productList,
+                'meta' => [
+                    'current_page' => $products->currentPage(),
+                    'next_page_url' => $products->nextPageUrl(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                ],
                 'categories' => $categories,
                 'reviews' => $allReviews, // bisa diisi nanti dengan review terbaru jika dibutuhkan
             ]
