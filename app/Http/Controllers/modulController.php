@@ -17,6 +17,7 @@ class modulController extends Controller
     {
         $moduls = Modul::with(['modulImage', 'user'])
             ->withCount('quiz', 'article', 'video')
+            ->latest()
             ->paginate(5);
 
         return response()->json([
@@ -127,6 +128,7 @@ class modulController extends Controller
         $moduls = Modul::where('user_id', $userId)
             ->with(['modulImage'])
             ->withCount('quiz', 'article', 'video')
+            ->latest()
             ->paginate(5);
 
         return response()->json([
@@ -147,6 +149,7 @@ class modulController extends Controller
         $moduls = Modul::where('user_id', '!=', $userId)
             ->with(['modulImage'])
             ->withCount('quiz', 'article', 'video')
+            ->latest()
             ->paginate(5);
 
         return response()->json([
@@ -168,6 +171,7 @@ class modulController extends Controller
         $moduls = Modul::with(['modulImage', 'user'])
             ->withCount('favoriteModul')
             ->orderBy('favorite_modul_count', 'desc')
+            ->latest()
             ->paginate(5);
 
 
