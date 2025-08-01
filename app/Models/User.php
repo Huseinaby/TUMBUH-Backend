@@ -130,4 +130,26 @@ class User extends Authenticatable implements HasName, FilamentUser
     {
         return $this->hasMany(WalletHistory::class);
     }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    public function postComments()
+    {
+        return $this->hasMany(PostComment::class);
+    }
+
+    public function groupMember()
+    {
+        return $this->hasMany(GroupMember::class);
+    }
+
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'group_members')
+            ->withPivot('role', 'joined_at')
+            ->withTimestamps();
+    }
 }

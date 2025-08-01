@@ -18,4 +18,9 @@ class Group extends Model
     {
         return $this->hasMany(GroupMember::class);
     }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }
