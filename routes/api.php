@@ -177,6 +177,8 @@ Route::post('/group', [GroupController::class, 'store']);
 Route::get('/group/{id}', [GroupController::class, 'show']);
 Route::put('/group/{id}', [GroupController::class, 'update']);
 Route::delete('/group/{id}', [GroupController::class, 'destroy']);
+Route::post('/group/{id}/join', [GroupController::class, 'join']);
+Route::post('/group/{id}/leave', [GroupController::class, 'leave']);
 
 
 //test generate quiz

@@ -136,4 +136,55 @@ class GroupController extends Controller
             'message' => 'Group deleted successfully.',
         ]);
     }
+
+    public function join($id)
+    {
+        $group = Group::findOrFail($id);
+
+        if ($group->members()->where('user_id', Auth::id())->exists()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You are already a member of this group.',
+            ], 400);
+        }
+
+        $group->members()->create([
+            'user_id' => Auth::id(),
+            'role' => 'member', // Default role for new members
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'You have joined the group successfully.',
+            'data' => GroupResource::make($group),
+        ]);
+    }
+
+    public function leave($id){
+        $group = Group::findOrFail($id);
+
+        $member = $group->members()->where('user_id', Auth::id())->first();
+
+        if (!$member) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You are not a member of this group.',
+            ], 400);
+        }
+
+        // Prevent the creator from leaving the group
+        if ($group->created_by === Auth::id()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'The group creator cannot leave the group.',
+            ], 403);
+        }
+
+        $member->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'You have left the group successfully.',
+        ]);
+    }
 }
