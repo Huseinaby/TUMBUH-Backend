@@ -54,6 +54,4 @@ class GroupController extends Controller
             'data' => GroupResource::make($group),
         ]);
     }
-
-    
 }
