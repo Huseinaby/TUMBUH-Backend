@@ -175,6 +175,8 @@ Route::get('/notification/{id}', [notificationController::class, 'show']);
 Route::get('/group', [GroupController::class, 'index']);
 Route::post('/group', [GroupController::class, 'store']);
 Route::get('/group/{id}', [GroupController::class, 'show']);
+Route::put('/group/{id}', [GroupController::class, 'update']);
+Route::delete('/group/{id}', [GroupController::class, 'destroy']);
 
 
 //test generate quiz

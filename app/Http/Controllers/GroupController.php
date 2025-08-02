@@ -33,8 +33,9 @@ class GroupController extends Controller
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+        $validateData['city'] = Str::title($validateData['city'] ?? '');
         $validateData['slug'] = Str::slug($validateData['name']);
-        $validateData['created_by'] = Auth::id();
+        $validateData['created_by'] = Auth::id();        
 
         if($request->hasFile('cover_image')) {
             $imagePath = $request->file('cover_image')->store('group_covers', 'public');
@@ -52,6 +53,87 @@ class GroupController extends Controller
             'status' => 'success',
             'message' => 'Group created successfully.',
             'data' => GroupResource::make($group),
+        ]);
+    }
+
+    public function show($id)
+    {
+        $group = Group::with(['createdBy'])
+            ->findOrFail($id);
+
+        if(!$group) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Group not found.',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => GroupResource::make($group),
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $group = Group::findOrFail($id);
+
+        if ($group->created_by !== Auth::id()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You are not authorized to update this group.',
+            ], 403);
+        }
+
+        $validateData = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'description' => 'sometimes|string',
+            'city' => 'sometimes|string|max:100',
+            'cover_image' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        if(isset($validateData['city'])) {
+            $validateData['city'] = Str::title($validateData['city']);
+        }
+
+        if (isset($validateData['name'])) {
+            $validateData['slug'] = Str::slug($validateData['name']);
+        }
+
+        if ($request->hasFile('cover_image')) {
+            // Delete old cover image if exists
+            if ($group->cover_image) {
+                \Storage::disk('public')->delete($group->cover_image);
+            }
+            $imagePath = $request->file('cover_image')->store('group_covers', 'public');
+            $validateData['cover_image'] = $imagePath;
+        }
+
+        $group->update($validateData);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Group updated successfully.',
+            'data' => GroupResource::make($group),
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $group = Group::findOrFail($id);
+
+        if ($group->created_by !== Auth::id()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You are not authorized to delete this group.',
+            ], 403);
+        }
+
+        $group->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Group deleted successfully.',
         ]);
     }
 }

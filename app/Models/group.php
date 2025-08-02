@@ -10,6 +10,7 @@ class Group extends Model
         'name',
         'slug',
         'description',
+        'city',
         'cover_image',
         'created_by',
     ];
