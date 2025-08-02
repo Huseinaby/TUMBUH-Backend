@@ -8,6 +8,7 @@ use App\Models\GroupMember;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Storage;
 
 class GroupController extends Controller
 {
@@ -78,6 +79,13 @@ class GroupController extends Controller
     {
         $group = Group::findOrFail($id);
 
+        if(!$group) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Group not found.',
+            ], 404);
+        }
+
         if ($group->created_by !== Auth::id()) {
             return response()->json([
                 'status' => 'error',
@@ -103,7 +111,7 @@ class GroupController extends Controller
         if ($request->hasFile('cover_image')) {
             // Delete old cover image if exists
             if ($group->cover_image) {
-                \Storage::disk('public')->delete($group->cover_image);
+                Storage::disk('public')->delete($group->cover_image);
             }
             $imagePath = $request->file('cover_image')->store('group_covers', 'public');
             $validateData['cover_image'] = $imagePath;
@@ -127,6 +135,11 @@ class GroupController extends Controller
                 'status' => 'error',
                 'message' => 'You are not authorized to delete this group.',
             ], 403);
+        }
+
+        if($group->cover_image) {
+            // Delete cover image if exists
+            Storage::disk('public')->delete($group->cover_image);
         }
 
         $group->delete();
