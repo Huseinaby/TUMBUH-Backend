@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
+            $table->string('city')->nullable(); 
             $table->string('cover_image')->nullable();
             $table->foreignId('created_by')
                 ->constrained('users')

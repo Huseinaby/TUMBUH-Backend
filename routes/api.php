@@ -3,6 +3,7 @@
 use App\Http\Controllers\articleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\cartController;
+use App\Http\Controllers\GroupController;
 use App\Http\Controllers\locationController;
 use App\Http\Controllers\modulController;
 use App\Http\Controllers\notificationController;
@@ -169,6 +170,12 @@ Route::delete('/notifications', [notificationController::class, 'deleteNotificat
 Route::put('/notifications/read', [notificationController::class, 'readNotifications']);
 Route::put('/notification/{id}/read', [notificationController::class, 'markAsRead']);
 Route::get('/notification/{id}', [notificationController::class, 'show']);
+
+//group
+Route::get('/group', [GroupController::class, 'index']);
+Route::post('/group', [GroupController::class, 'store']);
+Route::get('/group/{id}', [GroupController::class, 'show']);
+
 
 //test generate quiz
 Route::post('/quiz/generate', [QuizController::class, 'generateQuiz']);
