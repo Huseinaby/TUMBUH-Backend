@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\GroupResource;
 use App\Models\Group;
 use App\Models\GroupMember;
 use Auth;
@@ -19,7 +20,7 @@ class GroupController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $groups,
+            'data' => GroupResource::collection($groups),
         ]);
     }
 
@@ -50,7 +51,9 @@ class GroupController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Group created successfully.',
-            'data' => $group->load('createdBy', 'members'),
+            'data' => GroupResource::make($group),
         ]);
     }
+
+    
 }
