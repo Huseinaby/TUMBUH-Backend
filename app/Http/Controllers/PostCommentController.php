@@ -31,6 +31,10 @@ class PostCommentController extends Controller
 
         $post = PostComment::find($postId);
 
+        if (!$post) {
+            return response()->json(['message' => 'Post not found'], 404);
+        }
+
         $comment = $post->comments()->create([
             'user_id' => auth()->id(),
             'comment' => $request->comment,
