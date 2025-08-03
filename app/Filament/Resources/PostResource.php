@@ -88,10 +88,6 @@ class PostResource extends Resource
                     ->limit(50)
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('image')
-                    ->label('Image')
-                    ->formatStateUsing(fn ($state) => $state ? asset('storage/' . $state) : 'No Image')
-                    ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime()
