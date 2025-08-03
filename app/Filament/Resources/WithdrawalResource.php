@@ -139,4 +139,9 @@ class WithdrawalResource extends Resource
             'edit' => Pages\EditWithdrawal::route('/{record}/edit'),
         ];
     }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 }
