@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Auth;
 use Illuminate\Http\Request;
@@ -9,16 +10,16 @@ use Storage;
 
 class PostController extends Controller
 {
-    public function index()
+    public function index($groupId)
     {
-        $post = Post::where('group_id', 1)
+        $posts = Post::where('group_id', $groupId)
             ->with(['user'])
             ->latest()
             ->get();
         
         return response()->json([
             'status' => 'success',
-            'data' => $post,
+            'data' => PostResource::collection($posts),
         ]);
     }
 
@@ -42,7 +43,7 @@ class PostController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $post,
+            'data' => PostResource::make($post),
         ]);
     }
 
@@ -59,7 +60,7 @@ class PostController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $post,
+            'data' => PostResource::make($post),
         ]);
     }
 
@@ -100,7 +101,7 @@ class PostController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $post,
+            'data' => PostResource::make($post),
         ]);
     }
 
