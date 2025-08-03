@@ -192,8 +192,9 @@ Route::delete('/post/{id}', [PostController::class, 'destroy']);
 Route::get('/post/{id}/like', [PostController::class, 'toggleLikePost']);
 
 //post comment
-Route::get('/post/{postId}/comment', [PostCommentController::class, 'show']);
+Route::get('/post/{postId}/comment', [PostCommentController::class, 'index']);
 Route::post('/post/{postId}/comment', [PostCommentController::class, 'store']);
+Route::get('/comment/{commentId}', [PostCommentController::class, 'show']);
 Route::put('/comment/{commentId}', [PostCommentController::class, 'update']);
 Route::delete('/comment/{commentId}', [PostCommentController::class, 'destroy']);
 

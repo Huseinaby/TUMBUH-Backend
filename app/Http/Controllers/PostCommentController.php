@@ -50,6 +50,11 @@ class PostCommentController extends Controller
     public function show($commentId)
     {
         $comment = PostComment::with('user')->findOrFail($commentId);
+
+        if (!$comment) {
+            return response()->json(['message' => 'Comment not found'], 404);
+        }
+
         return response()->json([
             'message' => 'Comment retrieved successfully',
             'comment' => CommentResource::make($comment),
