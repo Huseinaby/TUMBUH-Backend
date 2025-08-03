@@ -22,6 +22,7 @@ class PostResource extends JsonResource
             'content' => $this->content,
             'image' => $this->image ? asset('storage/' . $this->image) : null,
             'liked_count' => $this->likedBy->count(),
+            'comments_count' => $this->comments->count(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'user' => [
