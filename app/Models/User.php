@@ -136,7 +136,7 @@ class User extends Authenticatable implements HasName, FilamentUser
         return $this->hasMany(Post::class);
     }
 
-    public function postComments()
+    public function comments()
     {
         return $this->hasMany(PostComment::class);
     }
