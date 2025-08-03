@@ -82,4 +82,8 @@ class TransactionResource extends Resource
             ->with(['orderItems.product.user']);
     }
 
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 }
