@@ -21,7 +21,7 @@ class CommentResource extends JsonResource
             'user' => [
                 'id' => $this->user->id,
                 'username' => $this->user->username,
-                'photo' => $this->user->photo,
+                'photo' => $this->user->photo ? asset('storage/' . $this->user->photo) : null,
             ],
         ];
     }

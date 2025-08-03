@@ -28,6 +28,7 @@ class PostResource extends JsonResource
                 'id' => $this->user->id,
                 'name' => $this->user->username,
                 'email' => $this->user->email,
+                'photo' => $this->user->photo ? asset('storage/' . $this->user->photo) : null,
             ],
         ];
     }
