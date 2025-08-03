@@ -152,4 +152,10 @@ class User extends Authenticatable implements HasName, FilamentUser
             ->withPivot('role', 'joined_at')
             ->withTimestamps();
     }
+
+    public function likedPosts()
+    {
+        return $this->belongsToMany(Post::class, 'post_likes')
+            ->withTimestamps();
+    }
 }

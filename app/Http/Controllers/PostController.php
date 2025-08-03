@@ -15,9 +15,10 @@ class PostController extends Controller
     {
         $posts = Post::where('group_id', $groupId)
             ->with(['user'])
+            ->withCount('likedBy')
             ->latest()
             ->get();
-        
+
         return response()->json([
             'status' => 'success',
             'data' => PostResource::collection($posts),
@@ -28,7 +29,7 @@ class PostController extends Controller
     {
         $group = Group::findOrFail($groupId);
         $isMember = $group->members()->where('user_id', Auth::id())->exists();
-        
+
         if (!$isMember) {
             return response()->json([
                 'status' => 'error',
@@ -45,7 +46,7 @@ class PostController extends Controller
         $validateData['user_id'] = Auth::id();
         $validateData['group_id'] = $groupId;
 
-        if($request->hasFile('image')) {
+        if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('post_images', 'public');
             $validateData['image'] = $imagePath;
         }
@@ -60,7 +61,9 @@ class PostController extends Controller
 
     public function show($id)
     {
-        $post = Post::with(['user'])->findOrFail($id);
+        $post = Post::with(['user'])
+            ->withCount('likedBy')
+            ->findOrFail($id);
 
         if (!$post) {
             return response()->json([
@@ -144,6 +147,46 @@ class PostController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Post deleted successfully',
+        ]);
+    }
+
+    public function likePost($postId)
+    {
+        $user = Auth::user();
+        $post = Post::findOrFail($postId);
+
+        if ($user->likedPosts()->where('post_id', $postId)->exists()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You have already liked this post',
+            ], 400);
+        }
+
+        $user->likedPosts()->attach($postId);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Post liked successfully',
+        ]);
+    }
+
+    public function unlikePost($postId)
+    {
+        $user = Auth::user();
+        $post = Post::findOrFail($postId);
+
+        if (!$user->likedPosts()->where('post_id', $postId)->exists()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You have not liked this post yet',
+            ], 400);
+        }
+
+        $user->likedPosts()->detach($postId);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Post unliked successfully',
         ]);
     }
 }
