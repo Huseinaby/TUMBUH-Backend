@@ -50,8 +50,7 @@ class PostResource extends Resource
                     ->label('Content')
                     ->required()
                     ->maxLength(5000)
-                    ->placeholder('Enter post content')
-                    ->rows(5),
+                    ->placeholder('Enter post content'),
                 FileUpload::make('image')
                     ->label('Image')
                     ->image()
