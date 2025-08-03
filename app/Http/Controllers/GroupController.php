@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\GroupResource;
+use App\Http\Resources\UserResource;
 use App\Models\Group;
 use App\Models\GroupMember;
 use Auth;
@@ -198,6 +199,18 @@ class GroupController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'You have left the group successfully.',
+        ]);
+    }
+
+    public function members($id)
+    {
+        $group = Group::findOrFail($id);
+
+        $members = $group->members()->with('user')->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => UserResource::collection($members->pluck('user')),
         ]);
     }
 }
