@@ -26,10 +26,15 @@ class PostController extends Controller
 
     public function store(Request $request, $groupId)
     {
-        $user = Auth::user();
         $group = Group::findOrFail($groupId);
+        $isMember = $group->members()->where('user_id', Auth::id())->exists();
         
-        
+        if (!$isMember) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You are not a member of this group',
+            ], 403);
+        }
 
         $validateData = $request->validate([
             'title' => 'required|string|max:255',
