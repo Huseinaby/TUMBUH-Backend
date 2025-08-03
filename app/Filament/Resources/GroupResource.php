@@ -43,8 +43,7 @@ class GroupResource extends Resource
                     ->maxLength(255)
                     ->placeholder('Enter group slug'),
                 TextInput::make('city')
-                    ->label('City')
-                    ->nullable()
+                    ->label('City')                
                     ->maxLength(100)
                     ->placeholder('Enter city name'),
                 FileUpload::make('cover_image')
