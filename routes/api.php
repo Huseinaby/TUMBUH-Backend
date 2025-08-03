@@ -7,6 +7,7 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\locationController;
 use App\Http\Controllers\modulController;
 use App\Http\Controllers\notificationController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\productController;
 use App\Http\Controllers\quizController;
 use App\Http\Controllers\reviewController;
@@ -179,6 +180,14 @@ Route::put('/group/{id}', [GroupController::class, 'update']);
 Route::delete('/group/{id}', [GroupController::class, 'destroy']);
 Route::post('/group/{id}/join', [GroupController::class, 'join']);
 Route::post('/group/{id}/leave', [GroupController::class, 'leave']);
+
+//post
+Route::get('/group/{id}/post', [PostController::class, 'index']);
+Route::post('/group/{id}/post', [PostController::class, 'store']);
+Route::get('/post/{id}', [PostController::class, 'show']);
+Route::put('/post/{id}', [PostController::class, 'update']);
+Route::delete('/post/{id}', [PostController::class, 'destroy']);
+
 
 
 //test generate quiz
