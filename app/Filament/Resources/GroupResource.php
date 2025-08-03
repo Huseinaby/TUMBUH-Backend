@@ -6,6 +6,7 @@ use App\Filament\Resources\GroupResource\Pages;
 use App\Filament\Resources\GroupResource\RelationManagers;
 use App\Models\Group;
 use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -40,7 +41,20 @@ class GroupResource extends Resource
                     ->label('Slug')
                     ->required()
                     ->maxLength(255)
-                    ->placeholder('Enter group slug'),                
+                    ->placeholder('Enter group slug'),
+                TextInput::make('city')
+                    ->label('City')
+                    ->nullable()
+                    ->maxLength(100)
+                    ->placeholder('Enter city name'),
+                FileUpload::make('cover_image')
+                    ->label('Cover Image')
+                    ->image()
+                    ->disk('public')
+                    ->directory('group_covers')
+                    ->nullable()
+                    ->maxSize(1024) // 1MB
+                    ->placeholder('Upload a cover image'),
             ]);
     }
 
@@ -54,10 +68,10 @@ class GroupResource extends Resource
                     ->sortable(),
                 TextColumn::make('description')
                     ->limit(50),
-                TextColumn::make('slug')
-                    ->label('Slug')
-                    ->searchable()
-                    ->sortable(),
+                TextColumn::make('city')
+                    ->label('City')
+                    ->nullable()
+                    ->sortable(),            
                 TextColumn::make('members_count')
                     ->label('Members Count')
                     ->counts('members')
