@@ -188,6 +188,7 @@ Route::post('/group/{groupId}/post', [PostController::class, 'store']);
 Route::get('/post/{id}', [PostController::class, 'show']);
 Route::put('/post/{id}', [PostController::class, 'update']);
 Route::delete('/post/{id}', [PostController::class, 'destroy']);
+Route::get('/post/{id}/like', [PostController::class, 'toggleLikePost']);
 
 
 

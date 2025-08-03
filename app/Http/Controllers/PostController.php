@@ -150,43 +150,26 @@ class PostController extends Controller
         ]);
     }
 
-    public function likePost($postId)
+    public function toggleLikePost($postId)
     {
         $user = Auth::user();
         $post = Post::findOrFail($postId);
 
-        if ($user->likedPosts()->where('post_id', $postId)->exists()) {
+        $alreadyLiked = $post->likedBy()->where('user_id', $user->id)->exists();
+
+        if($alreadyLiked) {
+            $post->likedBy()->detach($user->id);
             return response()->json([
-                'status' => 'error',
-                'message' => 'You have already liked this post',
-            ], 400);
-        }
+                'status' => 'success',
+                'message' => 'Post unliked successfully',
+            ]);
 
-        $user->likedPosts()->attach($postId);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Post liked successfully',
-        ]);
-    }
-
-    public function unlikePost($postId)
-    {
-        $user = Auth::user();
-        $post = Post::findOrFail($postId);
-
-        if (!$user->likedPosts()->where('post_id', $postId)->exists()) {
+        } else {
+            $post->likedBy()->attach($user->id);
             return response()->json([
-                'status' => 'error',
-                'message' => 'You have not liked this post yet',
-            ], 400);
+                'status' => 'success',
+                'message' => 'Post liked successfully',
+            ]);
         }
-
-        $user->likedPosts()->detach($postId);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Post unliked successfully',
-        ]);
     }
 }
