@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\CommentResource;
+use App\Models\Post;
 use App\Models\PostComment;
 use Illuminate\Http\Request;
 
@@ -29,7 +30,7 @@ class PostCommentController extends Controller
             'comment' => 'required|string|max:1000',
         ]);
 
-        $post = PostComment::find($postId);
+        $post = Post::find($postId);
 
         if (!$post) {
             return response()->json(['message' => 'Post not found'], 404);
