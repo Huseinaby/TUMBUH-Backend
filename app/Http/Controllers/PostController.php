@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\PostResource;
+use App\Models\Group;
 use App\Models\Post;
 use Auth;
 use Illuminate\Http\Request;
@@ -26,14 +27,9 @@ class PostController extends Controller
     public function store(Request $request, $groupId)
     {
         $user = Auth::user();
-
-        if(!$user->isMemberOfGroup($groupId)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'You are not a member of this group',
-            ], 403);
-        }
-
+        $group = Group::findOrFail($groupId);
+        
+        
 
         $validateData = $request->validate([
             'title' => 'required|string|max:255',
