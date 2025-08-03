@@ -7,6 +7,7 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\locationController;
 use App\Http\Controllers\modulController;
 use App\Http\Controllers\notificationController;
+use App\Http\Controllers\PostCommentController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\productController;
 use App\Http\Controllers\quizController;
@@ -189,6 +190,12 @@ Route::get('/post/{id}', [PostController::class, 'show']);
 Route::put('/post/{id}', [PostController::class, 'update']);
 Route::delete('/post/{id}', [PostController::class, 'destroy']);
 Route::get('/post/{id}/like', [PostController::class, 'toggleLikePost']);
+
+//post comment
+Route::get('/post/{postId}/comment', [PostCommentController::class, 'show']);
+Route::post('/post/{postId}/comment', [PostCommentController::class, 'store']);
+Route::put('/comment/{commentId}', [PostCommentController::class, 'update']);
+Route::delete('/comment/{commentId}', [PostCommentController::class, 'destroy']);
 
 
 
