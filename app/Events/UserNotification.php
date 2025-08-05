@@ -33,7 +33,7 @@ class UserNotification implements ShouldBroadcast
             'user_id' => $this->userId,
             'message' => $this->message,
             'type' => $this->type,
-            'read' => false, // Default to unread
+            'read' => false,
         ]);
 
 

@@ -25,12 +25,10 @@ class userController extends Controller
         $user->update($request->only('username'));
 
         if ($request->hasFile('photo')) {
-            // Jika file diupload
             $path = $request->file('photo')->store('profile_photos', 'public');
             $user->photo = 'storage/' . $path;
             $user->save();
         } elseif ($request->filled('photo') && filter_var($request->photo, FILTER_VALIDATE_URL)) {
-            // Jika input adalah URL valid
             $user->photo = $request->photo;
             $user->save();
         }

@@ -36,15 +36,13 @@ class SellerResource extends Resource
                     ->label('User')
                     ->options(function (?SellerDetail $record) {
                         $query = User::query();
-
-                        // Jika sedang edit
+                        
                         if ($record && $record->exists) {
                             $query->where(function ($q) use ($record) {
                                 $q->whereDoesntHave('sellerDetail')
-                                    ->orWhere('id', $record->user_id); // tetap munculkan user yang sudah dipilih
+                                    ->orWhere('id', $record->user_id); 
                             });
-                        } else {
-                            // Saat create: hanya tampilkan user yang belum punya sellerDetail
+                        } else {                            
                             $query->whereDoesntHave('sellerDetail');
                         }
 

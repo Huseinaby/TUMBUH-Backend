@@ -9,10 +9,9 @@ Route::get('/', function () {
 });
 
 Route::get('/broadcast', function () {
-    $userId = 4; // Example seller ID
+    $userId = 4; // contoh ID pengguna yang akan menerima notifikasi
     $message = 'New order received!';
 
-    // Dispatch the event
     event(new UserNotification($userId, $message, 'info'));
 
     return 'Event broadcasted successfully!';

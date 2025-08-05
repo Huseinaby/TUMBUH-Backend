@@ -48,7 +48,7 @@ class GroupController extends Controller
 
         $group->members()->create([
             'user_id' => Auth::id(),    
-            'role' => 'admin', // Default role for the creator
+            'role' => 'admin', 
         ]);
 
         return response()->json([
@@ -110,7 +110,6 @@ class GroupController extends Controller
         }
 
         if ($request->hasFile('cover_image')) {
-            // Delete old cover image if exists
             if ($group->cover_image) {
                 Storage::disk('public')->delete($group->cover_image);
             }
@@ -138,8 +137,7 @@ class GroupController extends Controller
             ], 403);
         }
 
-        if($group->cover_image) {
-            // Delete cover image if exists
+        if($group->cover_image) {            
             Storage::disk('public')->delete($group->cover_image);
         }
 
@@ -164,7 +162,7 @@ class GroupController extends Controller
 
         $group->members()->create([
             'user_id' => Auth::id(),
-            'role' => 'member', // Default role for new members
+            'role' => 'member', 
         ]);
 
         return response()->json([
@@ -186,7 +184,7 @@ class GroupController extends Controller
             ], 400);
         }
 
-        // Prevent the creator from leaving the group
+        //mencegah creator group keluar        
         if ($group->created_by === Auth::id()) {
             return response()->json([
                 'status' => 'error',

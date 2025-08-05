@@ -63,7 +63,7 @@ class ModulResource extends Resource
                     ->schema([
                         TextInput::make('url')
                             ->label('URL Gambar dari Google')
-                            ->live(onBlur: true) // <-- Membuat form bereaksi saat input ini berubah
+                            ->live(onBlur: true) 
                             ->required()
                             ->url(),
                         Placeholder::make('image_preview')
@@ -74,8 +74,7 @@ class ModulResource extends Resource
                                 if (!$url) {
                                     return null;
                                 }
-
-                                // Kita membuat tag <img> secara langsung di sini
+                            
                                 return new HtmlString('<img src="' . e($url) . '" style="max-height: 250px; width: auto; margin-top: 10px;" class="rounded-lg border" />');
                             }),
                     ])
@@ -130,7 +129,7 @@ class ModulResource extends Resource
                             ->maxLength(20),
                         TextInput::make('thumbnail')
                             ->label('URL thumbnail')
-                            ->live(onBlur: true) // <-- Membuat form bereaksi saat input ini berubah
+                            ->live(onBlur: true) 
                             ->required()
                             ->url(),
                         Placeholder::make('thumbnail_preview')
@@ -140,9 +139,7 @@ class ModulResource extends Resource
                                 $url = $get('thumbnail');
                                 if (!$url) {
                                     return null;
-                                }
-
-                                // Kita membuat tag <img> secara langsung di sini
+                                }                                
                                 return new HtmlString('<img src="' . e($url) . '" style="max-height: 250px; width: auto; margin-top: 10px;" class="rounded-lg border" />');
                             }),
 

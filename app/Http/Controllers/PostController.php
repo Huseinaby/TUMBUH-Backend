@@ -40,7 +40,7 @@ class PostController extends Controller
         $validateData = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'image' => 'nullable|image|max:2048', // Optional image validation
+            'image' => 'nullable|image|max:2048', 
         ]);
 
         $validateData['user_id'] = Auth::id();
@@ -99,11 +99,10 @@ class PostController extends Controller
         $validateData = $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'content' => 'sometimes|required|string',
-            'image' => 'nullable|image|max:2048', // Optional image validation
+            'image' => 'nullable|image|max:2048',
         ]);
 
-        if ($request->hasFile('image')) {
-            // Delete the old image if it exists
+        if ($request->hasFile('image')) {            
             if ($post->image) {
                 Storage::disk('public')->delete($post->image);
             }
@@ -136,8 +135,7 @@ class PostController extends Controller
                 'message' => 'Unauthorized action',
             ], 403);
         }
-
-        // Delete the image if it exists
+    
         if ($post->image) {
             Storage::disk('public')->delete($post->image);
         }

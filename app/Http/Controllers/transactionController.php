@@ -395,7 +395,6 @@ class transactionController extends Controller
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
-            // Kita tetap gunakan 'nullable' untuk menangani kasus jika produk tidak butuh pengiriman
             'shipping_name' => 'nullable|string',
             'shipping_service' => 'nullable|string',
             'shipping_cost' => 'nullable|numeric',
@@ -441,9 +440,9 @@ class transactionController extends Controller
         }
 
         // Langsung ambil data ongkir dari request, dengan nilai default jika tidak ada
-        $shippingName = $request->input('shipping_name'); // Akan menjadi null jika tidak dikirim
+        $shippingName = $request->input('shipping_name'); 
         $shippingService = $request->input('shipping_service');
-        $shippingCost = $request->input('shipping_cost', 0); // Default ke 0 jika tidak dikirim
+        $shippingCost = $request->input('shipping_cost', 0); 
 
         $grandTotal = $productTotal + $shippingCost + $platformFee;
         $totalWeight = $product->weight * $quantity;
@@ -525,7 +524,7 @@ class transactionController extends Controller
         $seller = $product->user;
         $subtotal = $product->price * $quantity;
 
-        // 💰 Hitung platform fee tier
+        // Hitung platform fee tier
         if ($subtotal < 40000) {
             $platformFee = 4500;
         } elseif ($subtotal < 100000) {
@@ -540,7 +539,6 @@ class transactionController extends Controller
         DB::beginTransaction();
 
         try {
-            // 🔃 Simpan transaksi
             $transaction = transaction::create([
                 'user_id' => $user->id,
                 'seller_id' => $seller->id,
@@ -553,7 +551,6 @@ class transactionController extends Controller
                 'payment_method' => $request->payment_method,
             ]);
 
-            // 🛒 Simpan order item
             orderItem::create([
                 'transaction_id' => $transaction->id,
                 'product_id' => $product->id,
@@ -562,7 +559,6 @@ class transactionController extends Controller
                 'subtotal' => $subtotal,
             ]);
 
-            // 📦 Order ID & Midtrans
             $orderId = 'TUMBUH-' . $transaction->id . '-' . now()->timestamp;
 
             $itemDetails = [
@@ -701,10 +697,9 @@ class transactionController extends Controller
                     return [];
                 }
 
-                // Gunakan map lagi untuk memformat setiap service di dalam kategori
+
                 return collect($servicesInCategory)->map(function ($service) {
-                    // Asumsi nilai biaya dalam 'sen' atau unit terkecil, bagi 100 untuk mendapatkan Rupiah.
-                    // Jika nilai sudah dalam Rupiah, hapus pembagian dengan 100.
+
                     return [
                         'shipping_name' => $service['shipping_name'] ?? null,
                         'service_name' => $service['service_name'] ?? null,

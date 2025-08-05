@@ -19,7 +19,6 @@ class NotificationService
             return false;
         }
 
-        // Simpan ke database
         Notification::create([
             'user_id' => $user->id,
             'title' => $title,

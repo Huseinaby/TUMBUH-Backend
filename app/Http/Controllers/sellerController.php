@@ -166,8 +166,7 @@ class sellerController extends Controller
             'nomor_induk_kependudukan',
         ]);
 
-        if ($request->hasFile('store_logo')) {
-            // Delete old logo if exists
+        if ($request->hasFile('store_logo')) {            
             if ($sellerDetail->store_logo) {
                 Storage::disk('public')->delete($sellerDetail->store_logo);
             }
@@ -176,7 +175,6 @@ class sellerController extends Controller
         }
 
         if ($request->hasFile('store_banner')) {
-            // Delete old banner if exists
             if ($sellerDetail->store_banner) {
                 Storage::disk('public')->delete($sellerDetail->store_banner);
             }
@@ -185,14 +183,12 @@ class sellerController extends Controller
         }
 
         if ($request->hasFile('foto_ktp')) {
-            // Delete old KTP photo if exists
             if ($sellerDetail->foto_ktp) {
                 Storage::disk('public')->delete($sellerDetail->foto_ktp);
             }
 
             $data['foto_ktp'] = $request->file('foto_ktp')->store('seller_ktps', 'public');
         }
-        // Update the seller detail
         $sellerDetail->update($data);
         return response()->json([
             'message' => 'Seller details updated successfully.',
@@ -232,7 +228,6 @@ class sellerController extends Controller
             Storage::disk('public')->delete($sellerDetail->foto_ktp);
         }
 
-        // Delete the seller detail
         $sellerDetail->delete();
 
         return response()->json([
