@@ -106,21 +106,27 @@ class PostController extends Controller
             ], 403);
         }
 
-        $validateData = $request->validate([
+        $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'content' => 'sometimes|required|string',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|array',
+            'image.*' => 'image|max:2048',
         ]);
 
-        if ($request->hasFile('image')) {            
-            if ($post->image) {
-                Storage::disk('public')->delete($post->image);
-            }
-            $imagePath = $request->file('image')->store('post_images', 'public');
-            $validateData['image'] = $imagePath;
-        }
+        $data = $request->only(['title', 'content']);
 
-        $post->update($validateData);
+        $post->update($data);
+
+        if($request->hasFile('image')) {
+            foreach($request->file('image') as $image) {
+                $imagePath = $image->store('post_images', 'public');
+                
+                PostImages::create([
+                    'post_id' => $post->id,
+                    'image_path' => $imagePath,
+                ]);
+            }
+        }
 
         return response()->json([
             'status' => 'success',
