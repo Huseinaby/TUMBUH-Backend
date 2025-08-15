@@ -24,10 +24,11 @@ class PostResource extends JsonResource
             'comments_count' => $this->comments->count(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'images' => $this->whenLoaded('images', function () {
-                return $this->images->map(function ($image) {
-                    return asset('storage/' . $image->path);
-                });
+            'images' => $this->images->map(function ($image) {
+                return [
+                    'id' => $image->id,
+                    'image_path' => asset('storage/' . $image->image_path),
+                ];
             }),
             'user' => [
                 'id' => $this->user->id,
