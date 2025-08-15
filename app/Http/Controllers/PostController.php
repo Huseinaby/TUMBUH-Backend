@@ -134,6 +134,33 @@ class PostController extends Controller
         ]);
     }
 
+    public function destroyImage($id){
+        $image = PostImages::findOrFail($id);
+
+        if (!$image) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Image not found',
+            ], 404);
+        }
+
+        if ($image->post->user_id !== Auth::id()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized action',
+            ], 403);
+        }
+
+        Storage::disk('public')->delete($image->image_path);
+        $image->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Image deleted successfully',
+        ]);
+
+    }
+
     public function destroy($id)
     {
         $post = Post::findOrFail($id);

@@ -190,6 +190,7 @@ Route::get('/post/{id}', [PostController::class, 'show']);
 Route::put('/post/{id}', [PostController::class, 'update']);
 Route::delete('/post/{id}', [PostController::class, 'destroy']);
 Route::get('/post/{id}/like', [PostController::class, 'toggleLikePost']);
+Route::delete('/post/image/{id}', [PostController::class, 'destroyImage']);
 
 //post comment
 Route::get('/post/{postId}/comment', [PostCommentController::class, 'index']);
