@@ -19,12 +19,16 @@ class PostResource extends JsonResource
             'user_id' => $this->user_id,
             'group_id' => $this->group_id,
             'title' => $this->title,
-            'content' => $this->content,
-            'image' => $this->image ? asset('storage/' . $this->image) : null,
+            'content' => $this->content,            
             'liked_count' => $this->likedBy->count(),
             'comments_count' => $this->comments->count(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'images' => $this->whenLoaded('images', function () {
+                return $this->images->map(function ($image) {
+                    return asset('storage/' . $image->path);
+                });
+            }),
             'user' => [
                 'id' => $this->user->id,
                 'name' => $this->user->username,

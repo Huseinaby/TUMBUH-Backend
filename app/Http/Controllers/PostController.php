@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\PostResource;
 use App\Models\Group;
 use App\Models\Post;
+use App\Models\PostImages;
 use Auth;
 use Illuminate\Http\Request;
 use Storage;
@@ -37,21 +38,30 @@ class PostController extends Controller
             ], 403);
         }
 
-        $validateData = $request->validate([
+        $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'image' => 'nullable|image|max:2048', 
+            'image' => 'nullable|array', 
+            'image.*' => 'image|max:2048', 
         ]);
 
-        $validateData['user_id'] = Auth::id();
-        $validateData['group_id'] = $groupId;
+        $post = Post::create([
+            'user_id' => Auth::id(),
+            'group_id' => $groupId,
+            'title' => $request->title,
+            'content' => $request->get('content'),
+        ]);
 
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('post_images', 'public');
-            $validateData['image'] = $imagePath;
+        if($request->hasFile('image')) {
+            foreach($request->file('image') as $image) {
+                $imagePath = $image->store('post_images', 'public');
+                
+                PostImages::create([
+                    'post_id' => $post->id,
+                    'image' => $imagePath,
+                ]);
+            }
         }
-
-        $post = Post::create($validateData);
 
         return response()->json([
             'status' => 'success',
