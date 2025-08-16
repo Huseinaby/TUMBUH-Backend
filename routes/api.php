@@ -184,13 +184,13 @@ Route::post('/group/{id}/join', [GroupController::class, 'join']);
 Route::post('/group/{id}/leave', [GroupController::class, 'leave']);
 
 //post
-Route::delete('/post/image/{id}', [PostController::class, 'destroyImage']);
 Route::get('/group/{groupId}/post', [PostController::class, 'index']);
 Route::post('/group/{groupId}/post', [PostController::class, 'store']);
 Route::get('/post/{id}', [PostController::class, 'show']);
 Route::put('/post/{id}', [PostController::class, 'update']);
 Route::delete('/post/{id}', [PostController::class, 'destroy']);
 Route::get('/post/{id}/like', [PostController::class, 'toggleLikePost']);
+Route::delete('/post/image/{id}', [PostController::class, 'destroyImage']);
 
 //post comment
 Route::get('/post/{postId}/comment', [PostCommentController::class, 'index']);
