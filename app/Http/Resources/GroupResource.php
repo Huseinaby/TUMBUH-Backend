@@ -18,9 +18,16 @@ class GroupResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
-            'description' => $this->description,
-            'city' => $this->city,
+            'description' => $this->description,        
             'cover_image' => $this->cover_image ? asset('storage/' . $this->cover_image) : null,
+            'province' => $this->province ? [
+                'id' => $this->province->id,
+                'name' => $this->province->name,
+            ] : null,
+            'city' => $this->city ? [
+                'id' => $this->city->id,
+                'name' => $this->city->name,
+            ] : null,
             'created_by' => $this->createdBy ? [
                 'id' => $this->createdBy->id,
                 'name' => $this->createdBy->username,

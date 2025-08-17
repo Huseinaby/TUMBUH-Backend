@@ -29,13 +29,13 @@ class GroupController extends Controller
     public function store(Request $request)
     {
         $validateData = $request->validate([
+            'province_id' => 'required|integer|exists:provinces,id',
+            'city_id' => 'required|integer|exists:cities,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'city' => 'nullable|string|max:100',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-
-        $validateData['city'] = Str::title($validateData['city'] ?? '');
+        
         $validateData['slug'] = Str::slug($validateData['name']);
         $validateData['created_by'] = Auth::id();        
 
@@ -95,6 +95,8 @@ class GroupController extends Controller
         }
 
         $validateData = $request->validate([
+            'province_id' => 'sometimes|integer|exists:provinces,id',
+            'city_id' => 'sometimes|integer|exists:cities,id',
             'name' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
             'city' => 'sometimes|string|max:100',
