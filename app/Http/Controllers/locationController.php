@@ -13,6 +13,13 @@ class locationController extends Controller
     {
         $provinces = Province::all();
 
+        if ($provinces->isEmpty()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No provinces found.',
+            ], 404);
+        }
+
         return response()->json([
             'status' => 'success',
             'data' => $provinces,
