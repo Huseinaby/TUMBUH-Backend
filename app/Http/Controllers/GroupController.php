@@ -20,6 +20,14 @@ class GroupController extends Controller
             ->latest()
             ->get();
 
+        if( $groups->isEmpty()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'No groups found.',
+                'data' => [],
+            ]);
+        }
+
         return response()->json([
             'status' => 'success',
             'data' => GroupResource::collection($groups),
