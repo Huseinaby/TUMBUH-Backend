@@ -17,6 +17,7 @@ class locationController extends Controller
         if($provinces->isNotEmpty()) {
             return response()->json([
                 'status' => 'success',
+                'source' => 'database',
                 'data' => $provinces,
             ], 200);
         }
@@ -36,7 +37,7 @@ class locationController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Provinces synchronized successfully.',
+                'source' => 'api',
                 'data' => Province::all(),
             ], 200);
         }
@@ -54,6 +55,7 @@ class locationController extends Controller
         if($cities->isNotEmpty()) {
             return response()->json([
                 'status' => 'success',
+                'source' => 'database',
                 'data' => $cities,
             ], 200);
         }
@@ -76,7 +78,7 @@ class locationController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Cities synchronized successfully.',
+                'source' => 'api',
                 'data' => City::where('province_id', $provinceId)->get(),
             ], 200);
         }
