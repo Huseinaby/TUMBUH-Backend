@@ -16,6 +16,7 @@ class Group extends Model
         'cover_image',
         'created_by',
     ];
+    
 
     public function members()
     {
