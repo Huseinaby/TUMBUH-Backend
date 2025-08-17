@@ -23,6 +23,7 @@ class ProfileResource extends JsonResource
                     'id' => $group->id,
                     'name' => $group->name,
                     'description' => $group->description,
+                    'cover_image' => $group->cover_image ? asset('storage/' . $group->cover_image) : null,
                     'created_at' => $group->created_at->format('Y-m-d H:i:s'),
                 ];
             }),
@@ -31,6 +32,7 @@ class ProfileResource extends JsonResource
                     'id' => $post->id,
                     'title' => $post->title,
                     'content' => $post->content,
+                    'image' => $post->images->isNotEmpty() ? asset('storage/' . $post->images->first()->image_path) : null,
                     'created_at' => $post->created_at->format('Y-m-d H:i:s'),
                 ];
             }),
