@@ -29,6 +29,7 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 Route::put('/user', [userController::class, 'update'])->middleware('auth:sanctum');
+Route::get('/user/profile', [userController::class, 'getProfile'])->middleware('auth:sanctum');
 Route::post('/user/fcm-token', [userController::class, 'storeFcmToken'])->middleware('auth:sanctum');
 Route::get('/user/test-notif/{userId}', [userController::class, 'sendNotifToUser']);
 

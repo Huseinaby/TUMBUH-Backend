@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ProfileResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -9,6 +10,20 @@ use App\Services\FirebaseNotificationService;
 
 class userController extends Controller
 {
+
+    public function getProfile()
+    {
+        $userId = Auth::id();
+        if (!$userId) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $profile = User::find($userId)->with(['posts', 'groups'])->first();
+
+        return response()->json([
+            'profile' => ProfileResource::make($profile),
+        ]);
+    }
 
     public function update(Request $request)
     {
