@@ -159,6 +159,28 @@ class GroupController extends Controller
         ]);
     }
 
+    public function getPopularGroups()
+    {
+        $groups = Group::withCount('members')
+            ->with('createdBy')
+            ->orderBy('members_count', 'desc')
+            ->take(5)
+            ->get();
+
+        if($groups->isEmpty()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'No popular groups found.',
+                'data' => [],
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => GroupResource::collection($groups),
+        ]);
+    }
+
     public function join($id)
     {
         $group = Group::findOrFail($id);

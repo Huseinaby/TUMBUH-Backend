@@ -176,6 +176,7 @@ Route::get('/notification/{id}', [notificationController::class, 'show']);
 //group
 Route::get('/group', [GroupController::class, 'index']);
 Route::post('/group', [GroupController::class, 'store']);
+Route::get('/group/popular', [GroupController::class, 'getPopularGroups']);
 Route::get('/group/{id}', [GroupController::class, 'show']);
 Route::put('/group/{id}', [GroupController::class, 'update']);
 Route::delete('/group/{id}', [GroupController::class, 'destroy']);
