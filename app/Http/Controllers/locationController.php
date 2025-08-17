@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\City;
 use App\Models\Province;
 use Illuminate\Http\Request;
 use App\Services\RajaOngkirService;
@@ -13,25 +14,16 @@ class locationController extends Controller
     {
         $provinces = Province::all();
 
-        if ($provinces->isEmpty()) {
+        if($provinces->isNotEmpty()) {
             return response()->json([
-                'status' => 'error',
-                'message' => 'No provinces found.',
-            ], 404);
+                'status' => 'success',
+                'data' => $provinces,
+            ], 200);
         }
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $provinces,
-        ], 200);
-    }
-
-    public function syncProvince()
-    {
-        $response = Http::get('https://api.binderbyte.com/wilayah/provinsi', [
+        $response = Http::get('http://api.binderbyte.com/wilayah/provinsi', [
             'api_key' => env('BINDERBYTE_API_KEY'),
         ]);
-
 
         if ($response->successful()) {
             foreach ($response['value'] as $item) {
@@ -51,7 +43,47 @@ class locationController extends Controller
 
         return response()->json([
             'status' => 'error',
-            'message' => 'Failed to synchronize provinces.',
+            'message' => 'Failed to retrieve provinces.',
+        ], 500);
+    }
+
+    public function getCities($provinceId)
+    {
+        $cities = City::where('province_id', $provinceId)->get();
+
+        if($cities->isNotEmpty()) {
+            return response()->json([
+                'status' => 'success',
+                'data' => $cities,
+            ], 200);
+        }
+
+        $response = Http::get('https://api.binderbyte.com/wilayah/kabupaten', [
+            'api_key' => env('BINDERBYTE_API_KEY'),
+            'id_provinsi' => $provinceId,
+        ]);
+
+        if($response->successful()){
+            $data = $response->json();
+
+            foreach($data['value'] as $item) {
+                City::create([
+                    'province_id' => $provinceId,
+                    'name' => $item['name'],
+                    'code' => $item['id'],
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Cities synchronized successfully.',
+                'data' => City::where('province_id', $provinceId)->get(),
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to retrieve cities.',
         ], 500);
     }
 

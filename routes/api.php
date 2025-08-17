@@ -152,8 +152,8 @@ Route::get('/seller/saldo-history/{userId}', [wallateHistoryController::class, '
 
 //location
 Route::get('/location/province', [locationController::class, 'getProvince']);
-Route::get('/location/province/sync', [locationController::class, 'syncProvince']);
 Route::get('/location/origin-id', [locationController::class, 'getOrigin']);
+Route::get('/location/city/{provinceId}', [locationController::class, 'getCities']);
 
 //address
 Route::get('/address', [userAddressController::class, 'getAddress']);
