@@ -12,6 +12,8 @@ return new class extends Migration {
     {
         Schema::create('groups', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('province_id')->constrained('provinces')->onDelete('cascade');
+            $table->foreignId('city_id')->constrained('cities')->onDelete('cascade');
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();

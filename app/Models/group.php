@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Group extends Model
 {
     protected $fillable = [
+        'province_id',
+        'city_id',
         'name',
         'slug',
         'description',
@@ -28,5 +30,15 @@ class Group extends Model
     public function posts()
     {
         return $this->hasMany(Post::class);
+    }
+
+    public function province()
+    {
+        return $this->belongsTo(Province::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
     }
 }

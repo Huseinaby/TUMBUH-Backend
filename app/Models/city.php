@@ -17,4 +17,9 @@ class City extends Model
         return $this->belongsTo(Province::class);
     }
 
+    public function groups()
+    {
+        return $this->hasMany(Group::class);
+    }
+    
 }
