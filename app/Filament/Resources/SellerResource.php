@@ -27,6 +27,7 @@ class SellerResource extends Resource
 
     protected static ?string $navigationLabel = 'Detail Penjual';
     protected static ?string $navigationGroup = 'Users';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {

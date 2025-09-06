@@ -22,6 +22,7 @@ class GroupResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationGroup = 'Forum';
+    protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
     {

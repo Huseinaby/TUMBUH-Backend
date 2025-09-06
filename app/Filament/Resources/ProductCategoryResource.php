@@ -22,6 +22,7 @@ class ProductCategoryResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-tag';
     protected static ?string $navigationLabel = 'Kategori Produk';
     protected static ?string $navigationGroup = 'Marketplace';
+    protected static ?int $navigationSort = 3;
     protected static ?string $label = 'Kategori Produk';
 
     public static function form(Form $form): Form

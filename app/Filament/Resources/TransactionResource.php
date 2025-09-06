@@ -23,6 +23,7 @@ class TransactionResource extends Resource
     protected static ?string $label = 'Transaksi';
     protected static ?string $navigationLabel = 'Transaksi';
     protected static ?string $navigationGroup = 'Marketplace';
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {

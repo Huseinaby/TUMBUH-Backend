@@ -24,8 +24,8 @@ class WithdrawalResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
 
     protected static ?string $navigationLabel = 'Withdrawals';
-
     protected static ?string $navigationGroup = 'Marketplace';
+    protected static ?int $navigationSort = 3;
 
 
 
