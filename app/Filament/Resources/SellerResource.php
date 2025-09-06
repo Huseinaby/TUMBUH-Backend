@@ -26,7 +26,7 @@ class SellerResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
 
     protected static ?string $navigationLabel = 'Detail Penjual';
-    protected static ?string $navigationGroup = 'Marketplace';
+    protected static ?string $navigationGroup = 'Users';
 
     public static function form(Form $form): Form
     {
