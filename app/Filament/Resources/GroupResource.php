@@ -7,6 +7,7 @@ use App\Filament\Resources\GroupResource\RelationManagers;
 use App\Models\Group;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -43,10 +44,12 @@ class GroupResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->placeholder('Enter group slug'),
-                TextInput::make('city')
+                Select::make('city_id')
                     ->label('City')
-                    ->nullable()
-                    ->maxLength(100)
+                    ->relationship('city', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->nullable()                    
                     ->placeholder('Enter city name'),
                 FileUpload::make('cover_image')
                     ->label('Cover Image')
@@ -69,8 +72,9 @@ class GroupResource extends Resource
                     ->sortable(),
                 TextColumn::make('description')
                     ->limit(50),
-                TextColumn::make('city')
-                    ->label('City')                    
+                TextColumn::make('city_id')
+                    ->label('City')
+                    ->getStateUsing(fn (Group $record) => $record->city ? $record->city->name : 'N/A')               
                     ->sortable(),            
                 TextColumn::make('members_count')
                     ->label('Members Count')
