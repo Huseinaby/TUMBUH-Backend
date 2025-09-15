@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Product;
-use App\Models\productCategories;
+use App\Models\ProductCategories;
 use App\Models\Province;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -43,7 +43,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($productCategories as $category) {
-            productCategories::create([
+            ProductCategories::create([
                 'name' => $category,
             ]);
         }
