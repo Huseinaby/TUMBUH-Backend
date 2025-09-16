@@ -81,7 +81,7 @@ Route::get('/quiz', [QuizController::class, 'index']);
 Route::get('/quiz/{id}', [QuizController::class, 'show']);
 Route::delete('/quiz/{id}', [quizController::class, 'destroy']);
 Route::get('/quiz/modul/{modulId}', [QuizController::class, 'getByModul']);
-Route::get('/quiz/articles/{modulId}', [QuizController::class, 'createQuiz']);
+Route::get('/quiz/create/{modulId}', [QuizController::class, 'createQuiz']);
 Route::post('/quiz/progress', [QuizController::class, 'updateProgress']);
 Route::get('/quiz/progress/{userId}', [QuizController::class, 'getProgress']);
 
