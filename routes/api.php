@@ -56,6 +56,7 @@ Route::put('/modul/{id}', [modulController::class, 'update']);
 Route::delete('/modul/{id}', [modulController::class, 'destroy']);
 Route::get('/modul/{userId}/user', [modulController::class, 'getExceptByUser']);
 Route::post('/modul/generate', [modulController::class, 'generateContent']);
+Route::post('/modul/create', [modulController::class, 'createContent']);
 Route::get('/modul/user/{userId}', [modulController::class, 'getModulByUser']);
 Route::get('/modul/favorite/list', [modulController::class, 'getFavoriteModul']);
 Route::get('/modul/favorite/most', [modulController::class, 'getMostFavoriteModul']);
@@ -80,6 +81,7 @@ Route::get('/quiz', [QuizController::class, 'index']);
 Route::get('/quiz/{id}', [QuizController::class, 'show']);
 Route::delete('/quiz/{id}', [quizController::class, 'destroy']);
 Route::get('/quiz/modul/{modulId}', [QuizController::class, 'getByModul']);
+Route::get('/quiz/articles/{modulId}', [QuizController::class, 'createQuiz']);
 Route::post('/quiz/progress', [QuizController::class, 'updateProgress']);
 Route::get('/quiz/progress/{userId}', [QuizController::class, 'getProgress']);
 
