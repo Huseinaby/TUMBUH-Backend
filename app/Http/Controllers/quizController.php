@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\modul;
-use Illuminate\support\Facades\Http;
+use Illuminate\Support\Facades\Http;
 use App\Models\Quiz;
 use App\Models\QuizProgress;
 use App\Models\User;
