@@ -204,19 +204,3 @@ Route::put('/comment/{commentId}', [PostCommentController::class, 'update']);
 Route::delete('/comment/{commentId}', [PostCommentController::class, 'destroy']);
 
 
-
-//test generate quiz
-Route::post('/quiz/generate', [QuizController::class, 'generateQuiz']);
-
-Broadcast::routes(['middleware' => ['auth:sanctum']]);
-
-
-//Test Email
-Route::get('/test-email', function () {
-    Mail::raw('Halo dari TUMBUH!', function ($message) {
-        $message->to('adef6477@gmail.com')
-            ->subject('Tes Email dari Resend');
-    });
-
-    return 'Email terkirim';
-});
