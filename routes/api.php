@@ -3,6 +3,7 @@
 use App\Http\Controllers\articleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\cartController;
+use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\locationController;
 use App\Http\Controllers\modulController;
@@ -202,5 +203,12 @@ Route::post('/post/{postId}/comment', [PostCommentController::class, 'store']);
 Route::get('/comment/{commentId}', [PostCommentController::class, 'show']);
 Route::put('/comment/{commentId}', [PostCommentController::class, 'update']);
 Route::delete('/comment/{commentId}', [PostCommentController::class, 'destroy']);
+
+//device
+Route::get('/device', [DeviceController::class, 'myDevices']);
+Route::post('/device', [DeviceController::class, 'store']);
+Route::put('/device/{id}', [DeviceController::class, 'update']);
+Route::delete('/device/{id}', [DeviceController::class, 'destroy']);
+
 
 
