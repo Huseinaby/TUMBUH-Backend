@@ -31,25 +31,48 @@ class DeviceController extends Controller
         ], 200);
     }
 
-    public function store(Request $request)
+    public function pair(Request $request)
     {
         $request->validate([
-            'serial_number' => 'required|string|unique:devices,serial_number',
-            'device_name' => 'required|string',
+            'serial_number' => 'required|string',
+            'device_name' => 'sometimes|string',
         ]);
 
         $userId = Auth::id();
+        $device = Device::where("serial_number", $request->serial_number)->first();
 
-        $device = Device::create([
-            'user_id' => $userId,
-            'serial_number' => $request->input('serial_number'),
-            'device_name' => $request->input('device_name'),
-        ]);
+        // If the device does not exist, create it
+        if (!$device) {
+            $device = Device::create([
+                'user_id' => $userId,
+                'serial_number' => $request->serial_number,
+                'device_name' => $request->device_name ?? 'Unnamed Device',
+            ]);
+
+            return response()->json([
+                'message' => 'Device created successfully',
+                'device' => $device
+            ], 201);
+        }
+
+        // Check if the device is already registered to another user
+        if ($device->user_id && $device->user_id != $userId) {
+            return response()->json([
+                'message' => 'This device is already registered to another user'
+            ], 403);
+        }
+        
+        // Update the device with the new user_id and device_name if provided
+        $updateData = ['user_id' => $userId];
+        if ($request->has('device_name')) {
+            $updateData['device_name'] = $request->device_name;
+        }
+        $device->update($updateData);
 
         return response()->json([
-            'message' => 'Device registered successfully',
+            'message' => 'Device paired successfully',
             'device' => $device
-        ], 201);
+        ], 200);
     }
 
     public function update(Request $request, $id)

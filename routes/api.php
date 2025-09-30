@@ -206,7 +206,7 @@ Route::delete('/comment/{commentId}', [PostCommentController::class, 'destroy'])
 
 //device
 Route::get('/device', [DeviceController::class, 'myDevices']);
-Route::post('/device', [DeviceController::class, 'store']);
+Route::post('/device', [DeviceController::class, 'pair']);
 Route::put('/device/{id}', [DeviceController::class, 'update']);
 Route::delete('/device/{id}', [DeviceController::class, 'destroy']);
 
