@@ -5,9 +5,56 @@ namespace App\Http\Controllers;
 use App\Models\Device;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Kreait\Firebase\Database;
 
 class DeviceController extends Controller
 {
+    protected $database;
+
+    public function __construct()
+    {
+        $this->database = app('firebase.database');
+    }
+
+    public function receiveData(Request $request)
+    {
+        $request->validate([
+            'serial_number' => 'required|string',
+            'temperature' => 'required|numeric',
+            'humidity' => 'required|numeric',
+            'soil_moisture' => 'required|integer',
+            'pump_status' => 'required|string',
+            'status' => 'required|string',
+        ]);
+
+        $device = Device::where("serial_number", $request->serial_number)->first();
+
+        if (!$device) {
+            return response()->json([
+                'message' => 'Device not found'
+            ], 404);
+        }
+
+        $data = [
+            'temperature' => $request->temperature,
+            'humidity' => $request->humidity,
+            'soil_moisture' => $request->soil_moisture,
+            'pump_status' => $request->pump_status,
+            'status' => $request->status,
+            'updated_at' => now()->toDateTimeString(),
+        ];
+
+        $this->database->getReference('devices/' . $device->serial_number)
+            ->set($data);
+
+        return response()->json([
+            'message' => 'Data received and stored successfully',
+            'serial_number' => $device->serial_number,
+            'data' => $data
+        ], 200);
+    }
+
+
     public function myDevices()
     {
         $userId = Auth::id();
@@ -61,7 +108,7 @@ class DeviceController extends Controller
                 'message' => 'This device is already registered to another user'
             ], 403);
         }
-        
+
         // Update the device with the new user_id and device_name if provided
         $updateData = ['user_id' => $userId];
         if ($request->has('device_name')) {
