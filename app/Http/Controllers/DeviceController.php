@@ -27,12 +27,26 @@ class DeviceController extends Controller
             'status' => 'required|string',
         ]);
 
-        $device = Device::where("serial_number", $request->serial_number)->first();
+        // Ambil API Key dari header (bisa juga dari body request, tapi lebih aman di header)
+        $apiKey = $request->header('Authorization');
+        if (!$apiKey) {
+            return response()->json([
+                'message' => 'API Key required'
+            ], 401);
+        }
+
+        // Format header: Authorization: Bearer {API_KEY}
+        $apiKey = str_replace('Bearer ', '', $apiKey);
+
+        // Cari device berdasarkan serial_number dan api_key
+        $device = Device::where('serial_number', $request->serial_number)
+            ->where('api_key', hash('sha256', $apiKey))
+            ->first();
 
         if (!$device) {
             return response()->json([
-                'message' => 'Device not found'
-            ], 404);
+                'message' => 'Invalid device or API Key'
+            ], 403);
         }
 
         $data = [
@@ -44,6 +58,7 @@ class DeviceController extends Controller
             'updated_at' => now()->toDateTimeString(),
         ];
 
+        // Simpan ke Firebase
         $this->database->getReference('devices/' . $device->serial_number)
             ->set($data);
 
@@ -53,7 +68,6 @@ class DeviceController extends Controller
             'data' => $data
         ], 200);
     }
-
 
     public function myDevices()
     {
@@ -78,47 +92,64 @@ class DeviceController extends Controller
         ], 200);
     }
 
-    public function pair(Request $request)
+    public function registerDevice(Request $request)
     {
         $request->validate([
-            'serial_number' => 'required|string',
+            'serial_number' => 'required|string|unique:devices,serial_number',            
+        ]);
+
+        $rawApiKey = bin2hex(random_bytes(16));
+        $device = Device::create([            
+            'api_key' => hash('sha256', $rawApiKey),
+            'serial_number' => $request->serial_number,
+            'device_name' => 'unnamed device'        
+        ]);
+
+        return response()->json([
+            'message' => 'Device registered successfully',
+            'device' => [
+                'serial_number' => $device->serial_number,
+                'api_key' => $rawApiKey,
+            ]
+        ], 201);
+    }
+
+    public function pair(Request $request){
+        $request->validate([
+            'serial_number' => 'required|string|exists:devices,serial_number',
             'device_name' => 'sometimes|string',
         ]);
 
         $userId = Auth::id();
         $device = Device::where("serial_number", $request->serial_number)->first();
 
-        // If the device does not exist, create it
-        if (!$device) {
-            $device = Device::create([
-                'user_id' => $userId,
-                'serial_number' => $request->serial_number,
-                'device_name' => $request->device_name ?? 'Unnamed Device',
-            ]);
-
+        if(!$device){
             return response()->json([
-                'message' => 'Device created successfully',
-                'device' => $device
-            ], 201);
+                'message' => 'Device not found'
+            ], 404);
         }
 
-        // Check if the device is already registered to another user
-        if ($device->user_id && $device->user_id != $userId) {
+        if($device->user_id && $device->user_id != $userId){
             return response()->json([
-                'message' => 'This device is already registered to another user'
+                'message' => 'Device already paired with another user'
             ], 403);
         }
 
-        // Update the device with the new user_id and device_name if provided
-        $updateData = ['user_id' => $userId];
-        if ($request->has('device_name')) {
+        $updateData = ['user_id' => $userId,];
+        if($request->has('device_name')){
             $updateData['device_name'] = $request->device_name;
         }
+
         $device->update($updateData);
 
         return response()->json([
             'message' => 'Device paired successfully',
-            'device' => $device
+            'device' => [
+                'id' => $device->id,
+                'user_id' => $device->user_id,
+                'serial_number' => $device->serial_number,
+                'device_name' => $device->device_name,
+            ]
         ], 200);
     }
 

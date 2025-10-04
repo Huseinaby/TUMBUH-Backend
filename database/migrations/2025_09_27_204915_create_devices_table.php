@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('devices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade')->nullable();
+            $table->string('api_key')->unique();
             $table->string('serial_number')->unique();
             $table->string('device_name');
             $table->timestamps();
