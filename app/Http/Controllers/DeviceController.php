@@ -77,7 +77,13 @@ class DeviceController extends Controller
         }
 
         return response()->json([
-            'device' => $device
+            'device' => [
+                'id' => $device->id,
+                'user_id' => $device->user_id,
+                'serial_number' => $device->serial_number,
+                'device_name' => $device->device_name,                
+                'updated_at' => $device->updated_at,
+            ],
         ], 200);
     }
 
