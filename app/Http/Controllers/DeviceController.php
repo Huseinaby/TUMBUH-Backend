@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Device;
+use App\Models\SensorData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Kreait\Firebase\Database;
@@ -25,7 +26,7 @@ class DeviceController extends Controller
             'humidity' => 'required|numeric',
             'soil_moisture' => 'required|integer',
             'pump_status' => 'required|string',
-            'status' => 'required|string',
+            'status' => 'required|string'            
         ]);        
         
         $device = Device::where('serial_number', $request->serial_number)
@@ -38,7 +39,49 @@ class DeviceController extends Controller
             ], 403);
         }
 
+        $hour = now()->hour;
+        if ($hour >= 5 && $hour < 11) {
+            $time_slot = 'pagi';
+        } elseif ($hour >= 11 && $hour < 15) {
+            $time_slot = 'siang';
+        } elseif ($hour >= 15 && $hour < 18) {
+            $time_slot = 'sore';
+        } else {
+            $time_slot = 'malam';
+        }
+
+        $today = now()->toDateString();
+
+        $existing = SensorData::where('device_id', $device->id)
+                ->where('time_slot', $time_slot)
+                ->where('date', $today)
+                ->first();
+    
+        if ($existing) {
+            $existing->update([
+                'temperature' => $request->temperature,
+                'humidity' => $request->humidity,
+                'soil_moisture' => $request->soil_moisture,
+                'pump_status' => $request->pump_status,
+                'status' => $request->status,
+            ]);
+            $data = $existing;
+        } else {
+            $data = SensorData::create([
+                'device_id' => $device->id,
+                'time_slot' => $time_slot,
+                'temperature' => $request->temperature,
+                'humidity' => $request->humidity,
+                'soil_moisture' => $request->soil_moisture,
+                'pump_status' => $request->pump_status,
+                'status' => $request->status,
+                'date' => $today,
+            ]);
+        }
+            
+
         $data = [
+            'time_slot' => $time_slot,
             'temperature' => $request->temperature,
             'humidity' => $request->humidity,
             'soil_moisture' => $request->soil_moisture,
