@@ -211,6 +211,7 @@ Route::post('/device/pair', [DeviceController::class, 'pair']);
 Route::post('/device/receive', [DeviceController::class, 'receiveData']);
 Route::put('/device/{id}', [DeviceController::class, 'update']);
 Route::delete('/device/{id}', [DeviceController::class, 'destroy']);
+Route::get('/device/{id}/logs', [DeviceController::class, 'getSensorLogs']);
 
 
 

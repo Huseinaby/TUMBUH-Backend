@@ -236,9 +236,9 @@ class DeviceController extends Controller
         ], 200);
     }
 
-    public function getSensorLogs($serialNumber){
+    public function getSensorLogs($id){
 
-        $device = Device::where("serial_number", $serialNumber)->firstOrFail();
+        $device = Device::where("id", $id)->firstOrFail();
 
         if(!$device){
             return response()->json([
