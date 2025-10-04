@@ -20,27 +20,16 @@ class DeviceController extends Controller
     {
         $request->validate([
             'serial_number' => 'required|string',
+            'api_key' => 'required|string',
             'temperature' => 'required|numeric',
             'humidity' => 'required|numeric',
             'soil_moisture' => 'required|integer',
             'pump_status' => 'required|string',
             'status' => 'required|string',
-        ]);
-
-        // Ambil API Key dari header (bisa juga dari body request, tapi lebih aman di header)
-        $apiKey = $request->header('Authorization');
-        if (!$apiKey) {
-            return response()->json([
-                'message' => 'API Key required'
-            ], 401);
-        }
-
-        // Format header: Authorization: Bearer {API_KEY}
-        $apiKey = str_replace('Bearer ', '', $apiKey);
-
-        // Cari device berdasarkan serial_number dan api_key
+        ]);        
+        
         $device = Device::where('serial_number', $request->serial_number)
-            ->where('api_key', hash('sha256', $apiKey))
+            ->where('api_key', hash('sha256', $request->api_key))
             ->first();
 
         if (!$device) {
