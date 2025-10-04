@@ -132,6 +132,7 @@ class DeviceController extends Controller
 
     public function registerDevice(Request $request)
     {
+        dd($request);
         $request->validate([
             'serial_number' => 'required|string|unique:devices,serial_number',            
         ]);
@@ -229,10 +230,13 @@ class DeviceController extends Controller
             ], 404);
         }
 
-        $device->delete();
+        $device->update([
+            'user_id' => null,
+            'device_name' => 'unnamed device'
+        ]);
 
         return response()->json([
-            'message' => 'Device deleted successfully'
+            'message' => 'Device unpair successfully'
         ], 200);
     }
 
