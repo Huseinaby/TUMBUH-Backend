@@ -235,4 +235,32 @@ class DeviceController extends Controller
             'message' => 'Device deleted successfully'
         ], 200);
     }
+
+    public function getSensorLogs($serialNumber){
+
+        $device = Device::where("serial_number", $serialNumber)->firstOrFail();
+
+        if(!$device){
+            return response()->json([
+                'message' => 'Device not found'
+            ], 404);
+        }
+
+        if(!$device->user_id || $device->user_id != Auth::id()){
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        $logs = SensorData::where("device_id", $device->id)
+                ->whereDate('created_at', now()->toDateString())
+                ->orderByRaw("FIELD(time_slot, 'pagi', 'siang', 'sore', 'malam')")
+                ->get();
+        
+        return response()->json([
+            'device' => $device->serial_number,
+            'date' => now()->toDateString(),
+            'logs' => $logs
+        ], 200);
+    }
 }
