@@ -224,7 +224,7 @@ class quizController extends Controller
             return response()->json([
                 'message' => 'Quiz for this module already exists',
                 'quiz' => $quizzes->get()
-            ], 400);
+            ], 200);
         }
 
         $geminiKey = env('GEMINI_API_KEY');
