@@ -14,11 +14,12 @@ class userController extends Controller
     public function getProfile()
     {
         $userId = Auth::id();
+
         if (!$userId) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        $profile = User::find($userId)->with(['posts', 'groups'])->first();
+        $profile = User::with(['posts', 'groups'])->find($userId);
 
         return response()->json([
             'profile' => ProfileResource::make($profile),
